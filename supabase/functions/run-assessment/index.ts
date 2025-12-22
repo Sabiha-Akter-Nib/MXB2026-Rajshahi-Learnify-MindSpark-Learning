@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, userId, subjectId, topic, bloomLevel, answers, assessmentId, questions } = await req.json();
+    const { action, userId, subjectId, topic, bloomLevel, answers, assessmentId, questions, tutorContext } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -26,7 +26,7 @@ serve(async (req) => {
     }
 
     if (action === "generate") {
-      // Generate assessment questions
+      // Generate assessment questions from tutor context
       const { data: profile } = await supabase
         .from("profiles")
         .select("class, version")
@@ -41,35 +41,51 @@ serve(async (req) => {
 
       const currentLevel = bloomLevel || "remember";
       const levelIndex = BLOOM_LEVELS.indexOf(currentLevel);
+      const isBangla = profile?.version === "bangla";
       
-      const prompt = `Generate 5 assessment questions for a Class ${profile?.class || 5} student (${profile?.version || "bangla"} medium).
+      // Use tutor context if available
+      const contextInfo = tutorContext 
+        ? `Based on this AI Tutor conversation content:\n${tutorContext.slice(0, 2000)}\n\n` 
+        : "";
+
+      const prompt = `${contextInfo}Generate exactly 5 MCQ assessment questions for a Class ${profile?.class || 5} student (${profile?.version || "bangla"} medium).
+
+${isBangla ? "IMPORTANT: Generate questions in Bengali language." : "Generate questions in English."}
 
 Subject: ${subject?.name || "General Knowledge"}
-Topic: ${topic || "General"}
+Topic: ${topic || "Based on the conversation above"}
 Bloom's Taxonomy Level: ${currentLevel.toUpperCase()}
 
-Level expectations:
-- Remember: Recall facts, definitions
-- Understand: Explain concepts in own words
-- Apply: Use knowledge in new situations
-- Analyze: Break down into components
-- Evaluate: Make judgments based on criteria
-- Create: Produce new ideas/solutions
+Level expectations for MCQ format:
+- Remember: Basic recall questions (What is...? Which one...? Name the...?)
+- Understand: Comprehension questions (What does X mean? Which statement correctly explains...?)
+- Apply: Application questions (Given this situation, what would...? Calculate...?)
+- Analyze: Analysis questions (What is the relationship between...? Compare these options...?)
+- Evaluate: Judgment MCQs with clear options (Which is the BEST approach? What is the MOST effective...? Which option is MOST suitable?)
+- Create: Creative MCQs (Which combination would work best? What new approach...?)
+
+CRITICAL RULES:
+1. All questions MUST be multiple choice with exactly 4 options
+2. DO NOT include written/essay-style questions
+3. DO NOT use phrases like "আপনার উত্তরের স্বপক্ষে যুক্তি দিন" or "তোমার সিদ্ধান্তের স্বপক্ষে যুক্তি দাও" - these are essay prompts, not MCQ
+4. For Evaluate level, use comparative MCQs like "Which is the BEST option?", "Which is MOST effective?", "Which would be MOST suitable?"
+5. Each option must be a clear, distinct choice
+6. Explanations should gently guide to the correct answer without directly saying "wrong"
 
 Return JSON format:
 {
   "questions": [
     {
-      "question": "Question text",
-      "options": ["A", "B", "C", "D"],
+      "question": "Question text as proper MCQ",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctIndex": 0,
-      "explanation": "Why this is correct",
-      "xpValue": 5
+      "explanation": "${isBangla ? "সঠিক উত্তর হলো [উত্তর] কারণ... আরো ভালোভাবে বুঝতে এই পয়েন্টগুলো মনে রাখো..." : "The correct answer is [answer] because... To understand better, remember these points..."}",
+      "xpValue": ${5 + levelIndex * 2}
     }
   ]
-}
+}`;
 
-Make questions appropriate for ${currentLevel} level. XP should be ${5 + levelIndex * 2} per question.`;
+      console.log(`Generating ${currentLevel} level questions from tutor context: ${tutorContext ? 'Yes' : 'No'}`);
 
       const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -80,13 +96,21 @@ Make questions appropriate for ${currentLevel} level. XP should be ${5 + levelIn
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: "You are an educational assessment generator following Bloom's Taxonomy. Return only valid JSON." },
+            { 
+              role: "system", 
+              content: `You are an educational assessment generator following Bloom's Taxonomy. 
+CRITICAL: Generate ONLY proper MCQ questions with 4 distinct options. 
+NEVER generate essay-style questions or prompts asking students to "explain", "justify", or "give reasons".
+For Evaluate level, use comparative MCQs like "Which is BEST?", "Which is MOST effective?"
+Return only valid JSON.` 
+            },
             { role: "user", content: prompt }
           ],
         }),
       });
 
       if (!aiResponse.ok) {
+        console.error("AI response error:", await aiResponse.text());
         throw new Error("Failed to generate questions");
       }
 
@@ -116,8 +140,6 @@ Make questions appropriate for ${currentLevel} level. XP should be ${5 + levelIn
 
     if (action === "submit") {
       // Grade and save assessment results
-      // questions is already extracted from the initial req.json() call
-      
       let correctCount = 0;
       let totalXp = 0;
       const results: any[] = [];

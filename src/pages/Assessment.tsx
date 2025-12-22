@@ -12,6 +12,7 @@ import {
   ArrowRight,
   RotateCcw,
   Target,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -62,6 +63,9 @@ const Assessment = () => {
     nextLevel: string;
   } | null>(null);
   const [bloomLevel, setBloomLevel] = useState("remember");
+  const [bloomLevelIndex, setBloomLevelIndex] = useState(0);
+  const [noTutorContext, setNoTutorContext] = useState(false);
+  const [isBangla, setIsBangla] = useState(false);
 
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
@@ -79,11 +83,63 @@ const Assessment = () => {
 
   useEffect(() => {
     if (user) {
-      generateQuestions();
+      checkTutorContextAndGenerate();
     }
   }, [user]);
 
-  const generateQuestions = async () => {
+  // Check if there's AI tutor context first
+  const checkTutorContextAndGenerate = async () => {
+    setIsLoading(true);
+    try {
+      // Get user profile for language preference
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("version")
+        .eq("user_id", user?.id)
+        .single();
+      
+      setIsBangla(profile?.version === "bangla");
+
+      // Get the latest conversation
+      const { data: conversations } = await supabase
+        .from("chat_conversations")
+        .select("id")
+        .eq("user_id", user?.id)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+
+      if (!conversations || conversations.length === 0) {
+        setNoTutorContext(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // Get the last assistant message from the latest conversation
+      const { data: messages } = await supabase
+        .from("chat_messages")
+        .select("content")
+        .eq("conversation_id", conversations[0].id)
+        .eq("role", "assistant")
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (!messages || messages.length === 0) {
+        setNoTutorContext(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // We have tutor context, generate questions from it
+      const lastAssistantMessage = messages[0].content;
+      await generateQuestionsFromContext(lastAssistantMessage);
+    } catch (error) {
+      console.error("Error checking tutor context:", error);
+      setNoTutorContext(true);
+      setIsLoading(false);
+    }
+  };
+
+  const generateQuestionsFromContext = async (tutorContext: string) => {
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -100,6 +156,7 @@ const Assessment = () => {
             subjectId,
             topic,
             bloomLevel,
+            tutorContext,
           }),
         }
       );
@@ -115,8 +172,8 @@ const Assessment = () => {
     } catch (error) {
       console.error("Error generating questions:", error);
       toast({
-        title: "Error",
-        description: "Failed to generate questions. Please try again.",
+        title: isBangla ? "ত্রুটি" : "Error",
+        description: isBangla ? "প্রশ্ন তৈরি করতে ব্যর্থ হয়েছে।" : "Failed to generate questions. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -174,15 +231,19 @@ const Assessment = () => {
       if (data.shouldLevelUp) {
         toast({
           title: "🎉 Level Up!",
-          description: `You've advanced to ${data.nextLevel.toUpperCase()} level!`,
+          description: isBangla 
+            ? `তুমি ${data.nextLevel.toUpperCase()} লেভেলে উন্নীত হয়েছো!`
+            : `You've advanced to ${data.nextLevel.toUpperCase()} level!`,
         });
+        const nextLevelIndex = BLOOM_LEVELS.findIndex(b => b.id === data.nextLevel);
+        setBloomLevelIndex(nextLevelIndex);
         setBloomLevel(data.nextLevel);
       }
     } catch (error) {
       console.error("Error submitting assessment:", error);
       toast({
-        title: "Error",
-        description: "Failed to submit assessment.",
+        title: isBangla ? "ত্রুটি" : "Error",
+        description: isBangla ? "মূল্যায়ন জমা দিতে ব্যর্থ হয়েছে।" : "Failed to submit assessment.",
         variant: "destructive",
       });
     } finally {
@@ -190,17 +251,103 @@ const Assessment = () => {
     }
   };
 
+  const handleNextLevel = async () => {
+    // Move to next Bloom's level
+    const nextLevelIndex = bloomLevelIndex + 1;
+    if (nextLevelIndex < BLOOM_LEVELS.length) {
+      setBloomLevelIndex(nextLevelIndex);
+      setBloomLevel(BLOOM_LEVELS[nextLevelIndex].id);
+      setShowResult(false);
+      setResults(null);
+      
+      // Get the last tutor context again and generate new questions
+      try {
+        const { data: conversations } = await supabase
+          .from("chat_conversations")
+          .select("id")
+          .eq("user_id", user?.id)
+          .order("updated_at", { ascending: false })
+          .limit(1);
+
+        if (conversations && conversations.length > 0) {
+          const { data: messages } = await supabase
+            .from("chat_messages")
+            .select("content")
+            .eq("conversation_id", conversations[0].id)
+            .eq("role", "assistant")
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+          if (messages && messages.length > 0) {
+            await generateQuestionsFromContext(messages[0].content);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading next level:", error);
+      }
+    }
+  };
+
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
   const currentBloom = BLOOM_LEVELS.find((b) => b.id === bloomLevel);
+  const isLastLevel = bloomLevel === "create";
 
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Generating assessment...</p>
+          <p className="text-muted-foreground">
+            {isBangla ? "মূল্যায়ন তৈরি হচ্ছে..." : "Generating assessment..."}
+          </p>
         </div>
+      </div>
+    );
+  }
+
+  // Show message if no tutor context
+  if (noTutorContext) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
+          <div className="max-w-4xl mx-auto flex items-center gap-4">
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/dashboard">
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+            </Button>
+            <h1 className="font-heading font-semibold">
+              {isBangla ? "মূল্যায়ন" : "Assessment"}
+            </h1>
+          </div>
+        </header>
+
+        <main className="max-w-2xl mx-auto px-4 py-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+              <MessageSquare className="w-12 h-12 text-muted-foreground" />
+            </div>
+            <h2 className="text-2xl font-bold mb-4">
+              {isBangla ? "প্রথমে AI Tutor এর সাথে কথা বলো!" : "Talk to AI Tutor First!"}
+            </h2>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              {isBangla 
+                ? "মূল্যায়ন প্রশ্নগুলো AI Tutor এর সাথে তোমার শেষ কথোপকথনের উপর ভিত্তি করে তৈরি হবে। প্রথমে AI Tutor এর সাথে যেকোনো বিষয়ে পড়াশোনা করো, তারপর এখানে ফিরে এসো।"
+                : "Assessment questions will be generated based on your last conversation with the AI Tutor. First, study any topic with the AI Tutor, then come back here."}
+            </p>
+            <Button size="lg" asChild>
+              <Link to="/tutor">
+                <Brain className="w-5 h-5 mr-2" />
+                {isBangla ? "AI Tutor এ যাও" : "Go to AI Tutor"}
+              </Link>
+            </Button>
+          </motion.div>
+        </main>
       </div>
     );
   }
@@ -215,7 +362,9 @@ const Assessment = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Link>
             </Button>
-            <h1 className="font-heading font-semibold">Assessment Complete</h1>
+            <h1 className="font-heading font-semibold">
+              {isBangla ? "মূল্যায়ন সম্পন্ন" : "Assessment Complete"}
+            </h1>
           </div>
         </header>
 
@@ -240,7 +389,7 @@ const Assessment = () => {
 
             <h2 className="text-3xl font-bold mb-2">{results.score}%</h2>
             <p className="text-muted-foreground mb-4">
-              {results.results.filter(r => r.isCorrect).length} of {results.results.length} correct
+              {results.results.filter(r => r.isCorrect).length} {isBangla ? "টি সঠিক" : "of"} {results.results.length} {isBangla ? "" : "correct"}
             </p>
 
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -249,19 +398,23 @@ const Assessment = () => {
                 <span className="font-semibold">+{results.xpEarned} XP</span>
               </div>
               <div className={cn("px-4 py-2 rounded-full text-white", currentBloom?.color)}>
-                {currentBloom?.label} Level
+                {isBangla ? currentBloom?.labelBn : currentBloom?.label} {isBangla ? "লেভেল" : "Level"}
               </div>
             </div>
 
-            {results.shouldLevelUp && (
+            {results.shouldLevelUp && !isLastLevel && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-gradient-to-r from-primary/20 to-accent/20 p-4 rounded-xl mb-6"
               >
-                <p className="font-semibold text-primary">🎉 Congratulations! You've leveled up!</p>
+                <p className="font-semibold text-primary">
+                  🎉 {isBangla ? "অভিনন্দন! তুমি লেভেল আপ করেছো!" : "Congratulations! You've leveled up!"}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  Next challenge: {results.nextLevel.toUpperCase()} level questions
+                  {isBangla 
+                    ? `পরবর্তী চ্যালেঞ্জ: ${BLOOM_LEVELS[bloomLevelIndex + 1]?.labelBn || ""} লেভেলের প্রশ্ন`
+                    : `Next challenge: ${results.nextLevel.toUpperCase()} level questions`}
                 </p>
               </motion.div>
             )}
@@ -271,14 +424,14 @@ const Assessment = () => {
             {results.results.map((result, i) => (
               <Card key={i} className={cn(
                 "border-2",
-                result.isCorrect ? "border-success/30 bg-success/5" : "border-destructive/30 bg-destructive/5"
+                result.isCorrect ? "border-success/30 bg-success/5" : "border-muted/30 bg-muted/5"
               )}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {result.isCorrect ? (
                       <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                     ) : (
-                      <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                      <XCircle className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                     )}
                     <div>
                       <p className="font-medium mb-2">{result.question}</p>
@@ -293,15 +446,27 @@ const Assessment = () => {
           </div>
 
           <div className="flex gap-4">
-            <Button variant="outline" className="flex-1" onClick={generateQuestions}>
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Try Again
-            </Button>
-            <Button className="flex-1" asChild>
-              <Link to="/dashboard">
-                Back to Dashboard
-              </Link>
-            </Button>
+            {isLastLevel ? (
+              <Button className="flex-1" asChild>
+                <Link to="/dashboard">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  {isBangla ? "ড্যাশবোর্ডে ফিরে যাও" : "Back to Dashboard"}
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" className="flex-1" asChild>
+                  <Link to="/dashboard">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    {isBangla ? "ড্যাশবোর্ড" : "Dashboard"}
+                  </Link>
+                </Button>
+                <Button className="flex-1" onClick={handleNextLevel}>
+                  {isBangla ? "পরবর্তী লেভেল" : "Next Level"}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </>
+            )}
           </div>
         </main>
       </div>
@@ -322,13 +487,13 @@ const Assessment = () => {
               <div>
                 <h1 className="font-heading font-semibold">{topic}</h1>
                 <div className={cn("text-xs px-2 py-0.5 rounded text-white inline-block", currentBloom?.color)}>
-                  {currentBloom?.label} Level
+                  {isBangla ? currentBloom?.labelBn : currentBloom?.label} {isBangla ? "লেভেল" : "Level"}
                 </div>
               </div>
             </div>
             <div className="text-right">
               <span className="text-sm text-muted-foreground">
-                Question {currentIndex + 1}/{questions.length}
+                {isBangla ? `প্রশ্ন ${currentIndex + 1}/${questions.length}` : `Question ${currentIndex + 1}/${questions.length}`}
               </span>
             </div>
           </div>
@@ -396,10 +561,10 @@ const Assessment = () => {
                 {isSubmitting ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : currentIndex === questions.length - 1 ? (
-                  "Submit Assessment"
+                  isBangla ? "মূল্যায়ন জমা দাও" : "Submit Assessment"
                 ) : (
                   <>
-                    Next Question
+                    {isBangla ? "পরবর্তী প্রশ্ন" : "Next Question"}
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </>
                 )}
