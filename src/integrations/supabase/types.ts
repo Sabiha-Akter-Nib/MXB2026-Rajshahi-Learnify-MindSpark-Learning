@@ -100,6 +100,45 @@ export type Database = {
           },
         ]
       }
+      leaderboard_entries: {
+        Row: {
+          class: number
+          created_at: string
+          current_streak: number
+          display_name: string
+          id: string
+          is_public: boolean
+          school_name: string | null
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          class: number
+          created_at?: string
+          current_streak?: number
+          display_name: string
+          id?: string
+          is_public?: boolean
+          school_name?: string | null
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          class?: number
+          created_at?: string
+          current_streak?: number
+          display_name?: string
+          id?: string
+          is_public?: boolean
+          school_name?: string | null
+          total_xp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       learning_plan_tasks: {
         Row: {
           bloom_level: string
@@ -187,6 +226,50 @@ export type Database = {
         }
         Relationships: []
       }
+      offline_lessons: {
+        Row: {
+          bloom_level: string
+          chapter_number: number
+          class_range: unknown
+          content: Json
+          created_at: string
+          id: string
+          subject_id: string | null
+          title: string
+          title_bn: string | null
+        }
+        Insert: {
+          bloom_level?: string
+          chapter_number: number
+          class_range: unknown
+          content: Json
+          created_at?: string
+          id?: string
+          subject_id?: string | null
+          title: string
+          title_bn?: string | null
+        }
+        Update: {
+          bloom_level?: string
+          chapter_number?: number
+          class_range?: unknown
+          content?: Json
+          created_at?: string
+          id?: string
+          subject_id?: string | null
+          title?: string
+          title_bn?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offline_lessons_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           class: number
@@ -220,6 +303,33 @@ export type Database = {
           updated_at?: string
           user_id?: string
           version?: Database["public"]["Enums"]["curriculum_version"]
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -527,7 +637,19 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_view: {
+        Row: {
+          class: number | null
+          current_streak: number | null
+          full_name: string | null
+          longest_streak: number | null
+          rank: number | null
+          school_name: string | null
+          total_study_minutes: number | null
+          total_xp: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
