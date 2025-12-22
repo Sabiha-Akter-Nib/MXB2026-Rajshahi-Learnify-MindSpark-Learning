@@ -3,66 +3,57 @@ import { motion, useScroll, useTransform, useSpring, useMotionValue } from "fram
 import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, Brain, Sparkles, Star, Zap, Target, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InteractiveBackground, MouseFollowOrbs } from "./InteractiveBackground";
 
-// Floating 3D card component with tilt effect
-function TiltCard({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+// Floating 3D card component with drift effect (moves left/right)
+function FloatingCard({ children, className, delay = 0, driftDirection = "left" }: { 
+  children: React.ReactNode; 
+  className?: string; 
+  delay?: number;
+  driftDirection?: "left" | "right";
+}) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const mouseX = e.clientX - centerX;
-    const mouseY = e.clientY - centerY;
-    
-    setRotateY(mouseX / rect.width * 20);
-    setRotateX(-mouseY / rect.height * 20);
-  };
-
-  const handleMouseLeave = () => {
-    setRotateX(0);
-    setRotateY(0);
-  };
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-        transformStyle: "preserve-3d",
-      }}
-      className={`transition-transform duration-200 ease-out ${className}`}
+      initial={{ opacity: 0, y: 50, x: driftDirection === "left" ? 20 : -20 }}
+      animate={{ opacity: 1, y: 0, x: 0 }}
+      transition={{ duration: 1, delay, ease: [0.16, 1, 0.3, 1] }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`transition-all duration-500 ease-out ${className}`}
     >
-      {children}
+      <motion.div
+        animate={{
+          x: isHovered ? (driftDirection === "left" ? -12 : 12) : 0,
+          scale: isHovered ? 1.05 : 1,
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      >
+        {children}
+      </motion.div>
     </motion.div>
   );
 }
 
-// Tunnel ring component
+// Subtle tunnel ring component (slower animation)
 function TunnelRing({ delay, size }: { delay: number; size: number }) {
   return (
     <motion.div
       initial={{ scale: 0.5, opacity: 0 }}
       animate={{ 
         scale: [0.5, 2.5], 
-        opacity: [0.4, 0],
-        z: [0, 200]
+        opacity: [0.2, 0],
       }}
       transition={{
-        duration: 4,
+        duration: 6,
         delay,
         repeat: Infinity,
         ease: "linear"
       }}
-      className="absolute rounded-full border-2 border-primary/30"
+      className="absolute rounded-full border border-primary/20"
       style={{
         width: size,
         height: size,
@@ -73,7 +64,7 @@ function TunnelRing({ delay, size }: { delay: number; size: number }) {
   );
 }
 
-// Glowing orb component
+// Glowing orb component with smooth animation
 function GlowingOrb({ color, size, position, animationDelay }: { 
   color: 'primary' | 'accent' | 'success'; 
   size: number; 
@@ -81,23 +72,30 @@ function GlowingOrb({ color, size, position, animationDelay }: {
   animationDelay: number;
 }) {
   const colors = {
-    primary: "from-primary/40 to-primary-light/20",
-    accent: "from-accent/40 to-accent-light/20",
-    success: "from-success/40 to-primary-light/20",
+    primary: "from-primary/30 to-primary-light/10",
+    accent: "from-accent/30 to-accent-light/10",
+    success: "from-success/30 to-primary-light/10",
   };
 
   return (
     <motion.div
       initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 1.5, delay: animationDelay, ease: "easeOut" }}
-      className={`absolute rounded-full bg-gradient-radial ${colors[color]} blur-3xl animate-orb-float`}
+      animate={{ 
+        scale: [1, 1.1, 1],
+        opacity: [0.6, 0.8, 0.6],
+      }}
+      transition={{ 
+        duration: 8, 
+        delay: animationDelay, 
+        ease: "easeInOut",
+        repeat: Infinity,
+      }}
+      className={`absolute rounded-full bg-gradient-radial ${colors[color]} blur-3xl`}
       style={{
         width: size,
         height: size,
         left: position.x,
         top: position.y,
-        animationDelay: `${animationDelay}s`,
       }}
     />
   );
@@ -114,44 +112,26 @@ export function HeroSection() {
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   
   // Parallax transforms
-  const y1 = useTransform(smoothProgress, [0, 1], [0, 300]);
-  const y2 = useTransform(smoothProgress, [0, 1], [0, 150]);
-  const y3 = useTransform(smoothProgress, [0, 1], [0, -100]);
+  const y1 = useTransform(smoothProgress, [0, 1], [0, 200]);
+  const y3 = useTransform(smoothProgress, [0, 1], [0, -80]);
   const opacity = useTransform(smoothProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(smoothProgress, [0, 0.5], [1, 0.9]);
-  const rotateX = useTransform(smoothProgress, [0, 1], [0, 15]);
-
-  // Mouse parallax effect
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  
-  const springConfig = { stiffness: 150, damping: 20 };
-  const mouseXSpring = useSpring(mouseX, springConfig);
-  const mouseYSpring = useSpring(mouseY, springConfig);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const { clientX, clientY } = e;
-      const { innerWidth, innerHeight } = window;
-      mouseX.set((clientX - innerWidth / 2) / 50);
-      mouseY.set((clientY - innerHeight / 2) / 50);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
+  const scale = useTransform(smoothProgress, [0, 0.5], [1, 0.95]);
 
   return (
     <section
       ref={containerRef}
-      className="relative min-h-[120vh] flex items-center justify-center overflow-hidden tunnel-perspective"
+      className="relative min-h-[120vh] flex items-center justify-center overflow-hidden"
     >
-      {/* Tunnel effect background */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      {/* Interactive particle background */}
+      <InteractiveBackground />
+      <MouseFollowOrbs />
+
+      {/* Subtle tunnel effect background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <TunnelRing delay={0} size={200} />
-        <TunnelRing delay={1} size={300} />
-        <TunnelRing delay={2} size={400} />
-        <TunnelRing delay={3} size={500} />
+        <TunnelRing delay={1.5} size={300} />
+        <TunnelRing delay={3} size={400} />
+        <TunnelRing delay={4.5} size={500} />
       </div>
 
       {/* Animated gradient background with parallax */}
@@ -160,96 +140,73 @@ export function HeroSection() {
         className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5"
       />
       
-      {/* Glowing orbs */}
-      <GlowingOrb color="primary" size={600} position={{ x: "-10%", y: "-20%" }} animationDelay={0} />
-      <GlowingOrb color="accent" size={500} position={{ x: "70%", y: "60%" }} animationDelay={0.5} />
-      <GlowingOrb color="success" size={400} position={{ x: "80%", y: "-10%" }} animationDelay={1} />
-      <GlowingOrb color="primary" size={300} position={{ x: "20%", y: "70%" }} animationDelay={1.5} />
-      
-      {/* Animated mesh gradient */}
-      <motion.div
-        style={{ y: y2, x: mouseXSpring, rotateX }}
-        className="absolute inset-0 overflow-hidden"
-      >
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-conic from-primary/10 via-accent/5 to-primary/10 blur-3xl animate-spin-slow"
-        />
-        <motion.div
-          animate={{ rotate: -360 }}
-          transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-conic from-accent/10 via-primary/5 to-accent/10 blur-3xl animate-spin-reverse"
-        />
-      </motion.div>
+      {/* Glowing orbs - smoother */}
+      <GlowingOrb color="primary" size={500} position={{ x: "-5%", y: "-15%" }} animationDelay={0} />
+      <GlowingOrb color="accent" size={400} position={{ x: "75%", y: "65%" }} animationDelay={2} />
+      <GlowingOrb color="success" size={350} position={{ x: "85%", y: "-5%" }} animationDelay={4} />
+      <GlowingOrb color="primary" size={250} position={{ x: "25%", y: "75%" }} animationDelay={6} />
 
-      {/* Floating glass cards with icons */}
+      {/* Floating glass cards with icons - drift left/right on hover */}
       <div className="absolute inset-0 pointer-events-none">
-        <TiltCard className="absolute top-[15%] left-[8%]" delay={0.2}>
+        <FloatingCard className="absolute top-[15%] left-[8%]" delay={0.2} driftDirection="left">
           <motion.div
-            style={{ x: mouseXSpring, y: mouseYSpring }}
-            animate={{ y: [-10, 10, -10] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="glass-card p-5 shadow-glass-lg animate-tilt-left"
+            animate={{ y: [-8, 8, -8] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="glass-card p-5 shadow-glass-lg pointer-events-auto cursor-pointer animate-drift-left"
           >
             <BookOpen className="w-8 h-8 text-primary" />
           </motion.div>
-        </TiltCard>
+        </FloatingCard>
 
-        <TiltCard className="absolute top-[25%] right-[10%]" delay={0.4}>
+        <FloatingCard className="absolute top-[25%] right-[10%]" delay={0.4} driftDirection="right">
           <motion.div
-            style={{ x: mouseXSpring, y: mouseYSpring }}
-            animate={{ y: [10, -10, 10] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="glass-card p-5 shadow-glass-lg glow-accent animate-tilt-right"
+            animate={{ y: [8, -8, 8] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="glass-card p-5 shadow-glass-lg glow-accent pointer-events-auto cursor-pointer animate-drift-right"
           >
             <Brain className="w-9 h-9 text-accent" />
           </motion.div>
-        </TiltCard>
+        </FloatingCard>
 
-        <TiltCard className="absolute bottom-[30%] left-[12%]" delay={0.6}>
+        <FloatingCard className="absolute bottom-[30%] left-[12%]" delay={0.6} driftDirection="left">
           <motion.div
-            style={{ x: mouseXSpring, y: mouseYSpring }}
-            animate={{ y: [-5, 15, -5] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="glass-card p-4 shadow-glass animate-drift-left"
+            animate={{ y: [-5, 12, -5] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            className="glass-card p-4 shadow-glass pointer-events-auto cursor-pointer animate-tilt-left"
           >
             <Star className="w-7 h-7 text-warning" />
           </motion.div>
-        </TiltCard>
+        </FloatingCard>
 
-        <TiltCard className="absolute top-[40%] right-[5%]" delay={0.8}>
+        <FloatingCard className="absolute top-[40%] right-[5%]" delay={0.8} driftDirection="right">
           <motion.div
-            style={{ x: mouseXSpring, y: mouseYSpring }}
-            animate={{ y: [8, -12, 8] }}
-            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-            className="glass-card p-4 shadow-glass glow-primary animate-drift-right"
+            animate={{ y: [6, -10, 6] }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+            className="glass-card p-4 shadow-glass glow-primary pointer-events-auto cursor-pointer animate-tilt-right"
           >
             <Zap className="w-6 h-6 text-success" />
           </motion.div>
-        </TiltCard>
+        </FloatingCard>
 
-        <TiltCard className="absolute bottom-[25%] right-[15%]" delay={1}>
+        <FloatingCard className="absolute bottom-[25%] right-[15%]" delay={1} driftDirection="right">
           <motion.div
-            style={{ x: mouseXSpring, y: mouseYSpring }}
-            animate={{ y: [-8, 12, -8] }}
-            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
-            className="glass-card p-5 shadow-glass-lg animate-tilt-left"
+            animate={{ y: [-6, 10, -6] }}
+            transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut" }}
+            className="glass-card p-5 shadow-glass-lg pointer-events-auto cursor-pointer animate-drift-right"
           >
             <Target className="w-8 h-8 text-primary-light" />
           </motion.div>
-        </TiltCard>
+        </FloatingCard>
 
-        <TiltCard className="absolute top-[60%] left-[5%]" delay={1.2}>
+        <FloatingCard className="absolute top-[60%] left-[5%]" delay={1.2} driftDirection="left">
           <motion.div
-            style={{ x: mouseXSpring, y: mouseYSpring }}
-            animate={{ y: [5, -10, 5] }}
-            transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
-            className="glass-card p-4 shadow-glass glow-accent animate-drift-left"
+            animate={{ y: [4, -8, 4] }}
+            transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
+            className="glass-card p-4 shadow-glass glow-accent pointer-events-auto cursor-pointer animate-drift-left"
           >
             <Rocket className="w-6 h-6 text-accent" />
           </motion.div>
-        </TiltCard>
+        </FloatingCard>
       </div>
 
       {/* Main content */}
@@ -313,16 +270,22 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col sm:flex-row items-center justify-center gap-5"
         >
-          <TiltCard delay={0.5}>
+          <motion.div 
+            whileHover={{ scale: 1.02, x: -5 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          >
             <Button variant="hero" size="xl" asChild className="btn-glow group relative overflow-hidden">
               <Link to="/signup" className="flex items-center gap-2">
                 <span className="relative z-10">Start Learning Free</span>
                 <ArrowRight className="w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
-          </TiltCard>
+          </motion.div>
           
-          <TiltCard delay={0.6}>
+          <motion.div
+            whileHover={{ scale: 1.02, x: 5 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          >
             <Button 
               variant="outline" 
               size="xl" 
@@ -331,7 +294,7 @@ export function HeroSection() {
             >
               <Link to="/demo">Watch Demo</Link>
             </Button>
-          </TiltCard>
+          </motion.div>
         </motion.div>
 
         {/* Stats */}
@@ -342,26 +305,27 @@ export function HeroSection() {
           className="mt-20 grid grid-cols-3 gap-8 max-w-3xl mx-auto"
         >
           {[
-            { value: "10K+", label: "Active Students", color: "primary" },
-            { value: "15+", label: "Subjects", color: "accent" },
-            { value: "98%", label: "Success Rate", color: "success" },
+            { value: "10K+", label: "Active Students", color: "primary", drift: -8 },
+            { value: "15+", label: "Subjects", color: "accent", drift: 0 },
+            { value: "98%", label: "Success Rate", color: "success", drift: 8 },
           ].map((stat, index) => (
-            <TiltCard key={stat.label} delay={0.7 + index * 0.1}>
-              <motion.div 
-                whileHover={{ scale: 1.05, y: -5 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="glass-card p-6 text-center cursor-pointer group"
-              >
-                <p className={`font-heading font-bold text-3xl md:text-5xl bg-gradient-to-r ${
-                  stat.color === 'primary' ? 'from-primary to-primary-light' :
-                  stat.color === 'accent' ? 'from-accent to-accent-light' :
-                  'from-success to-primary-light'
-                } bg-clip-text text-transparent group-hover:scale-110 transition-transform`}>
-                  {stat.value}
-                </p>
-                <p className="text-sm md:text-base text-muted-foreground mt-2 font-medium">{stat.label}</p>
-              </motion.div>
-            </TiltCard>
+            <motion.div 
+              key={stat.label}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 + index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ scale: 1.05, y: -5, x: stat.drift }}
+              className="glass-card p-6 text-center cursor-pointer group"
+            >
+              <p className={`font-heading font-bold text-3xl md:text-5xl bg-gradient-to-r ${
+                stat.color === 'primary' ? 'from-primary to-primary-light' :
+                stat.color === 'accent' ? 'from-accent to-accent-light' :
+                'from-success to-primary-light'
+              } bg-clip-text text-transparent group-hover:scale-110 transition-transform`}>
+                {stat.value}
+              </p>
+              <p className="text-sm md:text-base text-muted-foreground mt-2 font-medium">{stat.label}</p>
+            </motion.div>
           ))}
         </motion.div>
       </motion.div>
