@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.track-session]
 verify_jwt = false
+
+[functions.generate-learning-plan]
+verify_jwt = false
+
+[functions.run-assessment]
+verify_jwt = false
