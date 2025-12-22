@@ -6,16 +6,26 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface ChapterInput {
+  subjectId: string;
+  subjectName: string;
+  chapterName: string;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { userId, planType = "daily" } = await req.json();
+    const { userId, chapters, bloomLevel = "remember" } = await req.json();
 
     if (!userId) {
       throw new Error("User ID required");
+    }
+
+    if (!chapters || chapters.length === 0) {
+      throw new Error("At least one chapter is required");
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -34,50 +44,47 @@ serve(async (req) => {
       .eq("user_id", userId)
       .single();
 
-    // Fetch weak topics
-    const { data: weakTopics } = await supabase
-      .from("topic_mastery")
-      .select("topic_name, subject_id, bloom_level, mastery_score")
-      .eq("user_id", userId)
-      .eq("is_weak_topic", true)
-      .order("mastery_score", { ascending: true })
-      .limit(5);
+    console.log(`Generating ${bloomLevel} level plan for ${chapters.length} chapters`);
 
-    // Fetch subjects for the student's class
-    const { data: subjects } = await supabase
-      .from("subjects")
-      .select("id, name, name_bn")
-      .lte("min_class", profile?.class || 1)
-      .gte("max_class", profile?.class || 10);
+    // Generate quizzes for each chapter using AI
+    const prompt = `You are an educational AI for Bangladesh NCTB curriculum.
 
-    // Generate learning plan using AI
-    const prompt = `Generate a ${planType} learning plan for a Class ${profile?.class || 5} student (${profile?.version || "bangla"} version).
+Generate exactly 5 quiz topics for the following chapters at the "${bloomLevel}" level of Bloom's Taxonomy.
 
-Weak areas to focus on:
-${weakTopics?.map(t => `- ${t.topic_name} (Mastery: ${t.mastery_score}%, Bloom Level: ${t.bloom_level})`).join("\n") || "No weak areas identified yet"}
+Student Class: ${profile?.class || 5}
+Curriculum Version: ${profile?.version || "bangla"}
 
-Available subjects:
-${subjects?.map(s => `- ${s.name}`).join("\n") || "General subjects"}
+Chapters to create quizzes for:
+${(chapters as ChapterInput[]).map((ch, i) => `${i + 1}. Subject: ${ch.subjectName}, Chapter: ${ch.chapterName}`).join("\n")}
 
-Create a structured plan with 3-5 tasks. Each task should:
-1. Target a specific topic
-2. Specify a Bloom's Taxonomy level (remember, understand, apply, analyze, evaluate, create)
-3. Include estimated XP reward (5-20 based on difficulty)
-4. Prioritize weak topics
+Bloom's Taxonomy Level: ${bloomLevel}
+- Remember: Recall facts and basic concepts
+- Understand: Explain ideas or concepts
+- Apply: Use information in new situations
+- Analyze: Draw connections among ideas
+- Evaluate: Justify a decision or course of action
+- Create: Produce new or original work
 
-Return JSON format:
+For each chapter, create ONE focused quiz topic that tests the "${bloomLevel}" level.
+
+Return ONLY valid JSON:
 {
-  "tasks": [
+  "quizzes": [
     {
-      "subject": "subject name",
-      "topic": "specific topic",
-      "bloomLevel": "understand",
-      "targetXp": 10,
-      "priority": 1,
-      "description": "Brief task description"
+      "subjectId": "subject-uuid-here",
+      "subjectName": "Subject Name",
+      "topic": "Specific quiz topic from the chapter",
+      "bloomLevel": "${bloomLevel}",
+      "targetXp": 10
     }
   ]
-}`;
+}
+
+Rules:
+- Create exactly one quiz per chapter provided (up to 5 total)
+- Each topic must be specific and testable
+- XP should be 5-20 based on complexity
+- All quizzes must be at the "${bloomLevel}" level`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -88,7 +95,7 @@ Return JSON format:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You are an educational AI that creates personalized learning plans following Bloom's Taxonomy. Return only valid JSON." },
+          { role: "system", content: "You are an educational AI that creates quiz topics following Bloom's Taxonomy. Return only valid JSON." },
           { role: "user", content: prompt }
         ],
       }),
@@ -110,23 +117,19 @@ Return JSON format:
       planData = JSON.parse(jsonMatch?.[0] || "{}");
     } catch {
       console.error("Failed to parse AI response:", content);
-      planData = { tasks: [] };
+      planData = { quizzes: [] };
     }
 
     // Create the learning plan
     const startDate = new Date();
     const endDate = new Date();
-    if (planType === "weekly") {
-      endDate.setDate(endDate.getDate() + 7);
-    } else {
-      endDate.setDate(endDate.getDate() + 1);
-    }
+    endDate.setDate(endDate.getDate() + 7); // Default to weekly
 
     const { data: plan, error: planError } = await supabase
       .from("learning_plans")
       .insert({
         user_id: userId,
-        plan_type: planType,
+        plan_type: "custom",
         start_date: startDate.toISOString().split("T")[0],
         end_date: endDate.toISOString().split("T")[0],
         status: "active"
@@ -139,21 +142,25 @@ Return JSON format:
       throw new Error("Failed to create learning plan");
     }
 
-    // Create plan tasks
-    const tasks = planData.tasks || [];
-    for (const task of tasks) {
-      // Find subject ID
-      const subject = subjects?.find(s => 
-        s.name.toLowerCase().includes(task.subject?.toLowerCase() || "")
-      );
+    // Create plan tasks from quizzes
+    const quizzes = planData.quizzes || [];
+    const chaptersMap = new Map((chapters as ChapterInput[]).map(ch => [ch.subjectName.toLowerCase(), ch.subjectId]));
+
+    for (let i = 0; i < quizzes.length; i++) {
+      const quiz = quizzes[i];
+      
+      // Find the correct subject ID from input chapters
+      const subjectId = chaptersMap.get(quiz.subjectName?.toLowerCase()) || 
+                       (chapters as ChapterInput[])[i]?.subjectId || 
+                       null;
 
       await supabase.from("learning_plan_tasks").insert({
         plan_id: plan.id,
-        subject_id: subject?.id || null,
-        topic: task.topic || "General Practice",
-        bloom_level: task.bloomLevel || "understand",
-        target_xp: task.targetXp || 10,
-        priority: task.priority || 1
+        subject_id: subjectId,
+        topic: quiz.topic || `Quiz ${i + 1}`,
+        bloom_level: bloomLevel,
+        target_xp: quiz.targetXp || 10,
+        priority: i + 1
       });
     }
 
@@ -164,13 +171,13 @@ Return JSON format:
       .eq("plan_id", plan.id)
       .order("priority");
 
-    console.log(`Generated ${planType} plan with ${createdTasks?.length || 0} tasks for user ${userId}`);
+    console.log(`Generated plan with ${createdTasks?.length || 0} quizzes at ${bloomLevel} level`);
 
     return new Response(
       JSON.stringify({ 
         plan, 
         tasks: createdTasks,
-        message: `${planType === "daily" ? "Daily" : "Weekly"} learning plan created successfully!`
+        message: `Learning plan created with ${createdTasks?.length || 0} quizzes!`
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
