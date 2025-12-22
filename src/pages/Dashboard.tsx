@@ -151,7 +151,7 @@ const Dashboard = () => {
           setStats(statsData);
         }
 
-        // Fetch weekly stats from study_sessions (last 7 days)
+        // Fetch weekly stats - combine study_sessions XP with assessments XP
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
@@ -161,7 +161,15 @@ const Dashboard = () => {
           .eq("user_id", user.id)
           .gte("created_at", oneWeekAgo.toISOString());
 
-        const weeklyXP = weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
+        const { data: weeklyAssessmentsData } = await supabase
+          .from("assessments")
+          .select("xp_earned")
+          .eq("user_id", user.id)
+          .gte("created_at", oneWeekAgo.toISOString());
+
+        const sessionsXP = weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
+        const assessmentsXP = weeklyAssessmentsData?.reduce((sum, a) => sum + (a.xp_earned || 0), 0) || 0;
+        const weeklyXP = sessionsXP + assessmentsXP;
         const weeklyMinutes = weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
         
         // Weekly goal: aim for 500 XP per week (adjustable)
@@ -428,7 +436,7 @@ const Dashboard = () => {
                           <div className="flex-1 min-w-0">
                             <p className="font-medium truncate">{subject.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {subject.completed}/{subject.total_chapters} chapters
+                              NCTB Curriculum
                             </p>
                           </div>
                           <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />

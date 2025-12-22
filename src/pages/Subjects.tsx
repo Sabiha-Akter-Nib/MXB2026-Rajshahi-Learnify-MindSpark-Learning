@@ -336,7 +336,7 @@ const Subjects = () => {
                     {isBangla && subject.name_bn ? subject.name_bn : subject.name}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {subject.total_chapters} chapters
+                    NCTB Curriculum
                   </p>
 
                   {/* Activity Stats */}
