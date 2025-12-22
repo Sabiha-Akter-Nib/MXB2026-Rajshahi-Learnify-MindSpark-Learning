@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.revision-scheduler]
 verify_jwt = false
+
+[functions.check-achievements]
+verify_jwt = false

@@ -125,6 +125,28 @@ serve(async (req) => {
       }
     }
 
+    // 4. Check for new achievements
+    try {
+      const achievementResponse = await fetch(
+        `${supabaseUrl}/functions/v1/check-achievements`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify({ userId, trigger: "session" }),
+        }
+      );
+      const achievementData = await achievementResponse.json();
+      if (achievementData.newlyEarned?.length > 0) {
+        console.log(`New achievements unlocked: ${achievementData.newlyEarned.join(", ")}`);
+      }
+    } catch (achievementError) {
+      console.error("Achievement check error:", achievementError);
+      // Don't fail the whole request if achievement check fails
+    }
+
     return new Response(
       JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

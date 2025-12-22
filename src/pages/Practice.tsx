@@ -13,9 +13,17 @@ import {
   Trophy,
   Target,
   Lightbulb,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -36,6 +44,12 @@ interface Profile {
   full_name: string;
 }
 
+interface Subject {
+  id: string;
+  name: string;
+  name_bn: string;
+}
+
 const bloomLevels = [
   { id: "remember", name: "Remember", color: "bg-blue-500" },
   { id: "understand", name: "Understand", color: "bg-green-500" },
@@ -47,6 +61,8 @@ const bloomLevels = [
 
 const Practice = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -56,7 +72,9 @@ const Practice = () => {
   const [score, setScore] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
   const [topic, setTopic] = useState("");
+  const [selectedBloomLevel, setSelectedBloomLevel] = useState<string>("all");
   const [searchParams] = useSearchParams();
+  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -68,25 +86,38 @@ const Practice = () => {
       return;
     }
 
-    const fetchProfile = async () => {
-      const { data } = await supabase
+    const fetchData = async () => {
+      // Fetch profile
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("class, version, full_name")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (data) {
-        setProfile(data);
+      if (profileData) {
+        setProfile(profileData);
+
+        // Fetch subjects for this class
+        const { data: subjectsData } = await supabase
+          .from("subjects")
+          .select("id, name, name_bn")
+          .lte("min_class", profileData.class)
+          .gte("max_class", profileData.class);
+
+        setSubjects(subjectsData || []);
       }
       setLoading(false);
     };
 
-    fetchProfile();
+    fetchData();
 
     const subjectParam = searchParams.get("subject");
     const topicParam = searchParams.get("topic");
-    if (subjectParam || topicParam) {
-      setTopic(topicParam || subjectParam || "");
+    if (subjectParam) {
+      setSelectedSubjectId(subjectParam);
+    }
+    if (topicParam) {
+      setTopic(topicParam);
     }
   }, [user, navigate, searchParams]);
 
@@ -105,6 +136,7 @@ const Practice = () => {
     setCurrentIndex(0);
     setScore(0);
     setAnsweredQuestions(new Set());
+    setSessionStartTime(new Date());
 
     try {
       const response = await fetch(
@@ -120,6 +152,7 @@ const Practice = () => {
             studentClass: profile?.class || 5,
             version: profile?.version || "bangla",
             count: 5,
+            bloomLevel: selectedBloomLevel !== "all" ? selectedBloomLevel : undefined,
           }),
         }
       );
@@ -139,6 +172,83 @@ const Practice = () => {
       });
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const trackPracticeCompletion = async () => {
+    if (!user || !sessionStartTime) return;
+
+    const durationMinutes = Math.round((new Date().getTime() - sessionStartTime.getTime()) / 60000);
+    const xpEarned = score * 5 + (score === questions.length ? 10 : 0); // Bonus for perfect
+
+    try {
+      // Track study session
+      await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/track-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            subjectId: selectedSubjectId || null,
+            durationMinutes,
+            xpEarned,
+            topic,
+            bloomLevel: questions[0]?.bloomLevel || "understand",
+          }),
+        }
+      );
+
+      // Update topic mastery
+      const masteryScore = Math.round((score / questions.length) * 100);
+      const isWeak = masteryScore < 70;
+
+      const { data: existingMastery } = await supabase
+        .from("topic_mastery")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("topic_name", topic)
+        .maybeSingle();
+
+      if (existingMastery) {
+        await supabase
+          .from("topic_mastery")
+          .update({
+            attempts: existingMastery.attempts + 1,
+            correct_answers: existingMastery.correct_answers + score,
+            mastery_score: Math.round(
+              ((existingMastery.correct_answers + score) /
+                (existingMastery.attempts * questions.length + questions.length)) *
+                100
+            ),
+            is_weak_topic: isWeak,
+            last_practiced_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingMastery.id);
+      } else {
+        await supabase.from("topic_mastery").insert({
+          user_id: user.id,
+          topic_name: topic,
+          subject_id: selectedSubjectId || null,
+          attempts: 1,
+          correct_answers: score,
+          mastery_score: masteryScore,
+          is_weak_topic: isWeak,
+          bloom_level: questions[0]?.bloomLevel || "understand",
+          last_practiced_at: new Date().toISOString(),
+        });
+      }
+
+      toast({
+        title: `+${xpEarned} XP Earned!`,
+        description: score === questions.length ? "Perfect score bonus!" : "Keep practicing!",
+      });
+    } catch (error) {
+      console.error("Error tracking practice:", error);
     }
   };
 
@@ -240,6 +350,26 @@ const Practice = () => {
             </div>
 
             <div className="max-w-md mx-auto space-y-4">
+              {/* Subject Selector */}
+              {subjects.length > 0 && (
+                <Select value={selectedSubjectId} onValueChange={setSelectedSubjectId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isBangla ? "বিষয় নির্বাচন করুন" : "Select a subject"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map((subject) => (
+                      <SelectItem key={subject.id} value={subject.id}>
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4" />
+                          {isBangla ? subject.name_bn || subject.name : subject.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {/* Topic Input */}
               <input
                 type="text"
                 value={topic}
@@ -251,6 +381,24 @@ const Practice = () => {
                 }
                 className="w-full px-4 py-3 rounded-xl border border-border bg-card focus:ring-2 focus:ring-primary focus:border-primary outline-none"
               />
+
+              {/* Bloom Level Filter */}
+              <Select value={selectedBloomLevel} onValueChange={setSelectedBloomLevel}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Difficulty Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  {bloomLevels.map((level) => (
+                    <SelectItem key={level.id} value={level.id}>
+                      <div className="flex items-center gap-2">
+                        <div className={cn("w-3 h-3 rounded-full", level.color)} />
+                        {level.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               <Button
                 onClick={generateQuestions}
@@ -426,6 +574,7 @@ const Practice = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
+            onAnimationComplete={trackPracticeCompletion}
             className="text-center py-8 space-y-6"
           >
             <div className="w-24 h-24 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
@@ -451,6 +600,22 @@ const Practice = () => {
                   ? `আপনি ${questions.length} টি প্রশ্নের মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন`
                   : `You got ${score} out of ${questions.length} questions correct`}
               </p>
+            </div>
+
+            {/* Score Breakdown */}
+            <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <p className="text-2xl font-bold text-primary">{score}</p>
+                <p className="text-xs text-muted-foreground">Correct</p>
+              </div>
+              <div className="p-3 bg-destructive/10 rounded-lg">
+                <p className="text-2xl font-bold text-destructive">{questions.length - score}</p>
+                <p className="text-xs text-muted-foreground">Incorrect</p>
+              </div>
+              <div className="p-3 bg-accent/10 rounded-lg">
+                <p className="text-2xl font-bold text-accent">+{score * 5 + (score === questions.length ? 10 : 0)}</p>
+                <p className="text-xs text-muted-foreground">XP</p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
