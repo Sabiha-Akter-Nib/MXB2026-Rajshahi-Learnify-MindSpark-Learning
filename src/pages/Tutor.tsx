@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Send,
   Mic,
@@ -17,33 +17,77 @@ import {
   ThumbsDown,
   Copy,
   Volume2,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
-  bloomLevel?: string;
 }
 
-const initialMessages: Message[] = [
-  {
-    id: "1",
-    role: "assistant",
-    content: "আসসালামু আলাইকুম! I'm your MindSpark AI Tutor. I'm here to help you learn any subject from your NCTB curriculum.\n\nYou can:\n• Ask me to explain any topic\n• Upload a photo of your homework\n• Practice with adaptive questions\n\nWhat would you like to learn today?",
-    timestamp: new Date(),
-  },
-];
+interface StudentInfo {
+  name: string;
+  class: number;
+  version: string;
+}
+
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-tutor`;
 
 const Tutor = () => {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      role: "assistant",
+      content: "আসসালামু আলাইকুম! I'm your MindSpark AI Tutor. I'm here to help you learn any subject from your NCTB curriculum.\n\nYou can:\n• Ask me to explain any topic\n• Upload a photo of your homework\n• Practice with adaptive questions\n\nWhat would you like to learn today?",
+      timestamp: new Date(),
+    },
+  ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/login");
+    }
+  }, [user, loading, navigate]);
+
+  // Fetch student profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, class, version")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      if (data) {
+        setStudentInfo({
+          name: data.full_name,
+          class: data.class,
+          version: data.version,
+        });
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,8 +97,114 @@ const Tutor = () => {
     scrollToBottom();
   }, [messages]);
 
+  const streamChat = async (userMessages: Array<{ role: string; content: string }>) => {
+    const resp = await fetch(CHAT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ 
+        messages: userMessages,
+        studentInfo: studentInfo 
+      }),
+    });
+
+    if (!resp.ok) {
+      const errorData = await resp.json().catch(() => ({}));
+      if (resp.status === 429) {
+        throw new Error("Rate limit exceeded. Please wait a moment and try again.");
+      }
+      if (resp.status === 402) {
+        throw new Error("AI credits exhausted. Please contact support.");
+      }
+      throw new Error(errorData.error || "Failed to get AI response");
+    }
+
+    if (!resp.body) throw new Error("No response body");
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let textBuffer = "";
+    let assistantContent = "";
+    const assistantId = Date.now().toString();
+
+    // Create initial assistant message
+    setMessages(prev => [...prev, {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+      timestamp: new Date(),
+    }]);
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      textBuffer += decoder.decode(value, { stream: true });
+
+      let newlineIndex: number;
+      while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+        let line = textBuffer.slice(0, newlineIndex);
+        textBuffer = textBuffer.slice(newlineIndex + 1);
+
+        if (line.endsWith("\r")) line = line.slice(0, -1);
+        if (line.startsWith(":") || line.trim() === "") continue;
+        if (!line.startsWith("data: ")) continue;
+
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === "[DONE]") break;
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) {
+            assistantContent += content;
+            setMessages(prev => 
+              prev.map(m => 
+                m.id === assistantId 
+                  ? { ...m, content: assistantContent }
+                  : m
+              )
+            );
+          }
+        } catch {
+          // Incomplete JSON, put it back
+          textBuffer = line + "\n" + textBuffer;
+          break;
+        }
+      }
+    }
+
+    // Final flush
+    if (textBuffer.trim()) {
+      for (let raw of textBuffer.split("\n")) {
+        if (!raw) continue;
+        if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+        if (raw.startsWith(":") || raw.trim() === "") continue;
+        if (!raw.startsWith("data: ")) continue;
+        const jsonStr = raw.slice(6).trim();
+        if (jsonStr === "[DONE]") continue;
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) {
+            assistantContent += content;
+            setMessages(prev => 
+              prev.map(m => 
+                m.id === assistantId 
+                  ? { ...m, content: assistantContent }
+                  : m
+              )
+            );
+          }
+        } catch { /* ignore */ }
+      }
+    }
+  };
+
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -63,35 +213,30 @@ const Tutor = () => {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: getAIResponse(input),
-        timestamp: new Date(),
-        bloomLevel: "Understanding",
-      };
-      setMessages((prev) => [...prev, aiResponse]);
+    try {
+      // Build message history for context
+      const chatHistory = messages
+        .filter(m => m.id !== "1") // Skip initial greeting
+        .map(m => ({ role: m.role, content: m.content }));
+      
+      chatHistory.push({ role: "user", content: currentInput });
+
+      await streamChat(chatHistory);
+    } catch (error) {
+      console.error("Chat error:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to get response",
+        variant: "destructive",
+      });
+    } finally {
       setIsTyping(false);
-    }, 1500);
-  };
-
-  const getAIResponse = (question: string): string => {
-    // Mock responses based on keywords
-    if (question.toLowerCase().includes("quadratic") || question.toLowerCase().includes("equation")) {
-      return `Great question! Let me explain **Quadratic Equations** step by step.\n\n**📚 What is a Quadratic Equation?**\n\nA quadratic equation is a polynomial equation of degree 2, which means the highest power of the variable is 2.\n\n**Standard Form:** ax² + bx + c = 0\n\nWhere:\n- a, b, c are constants (a ≠ 0)\n- x is the variable\n\n**🔍 Example:**\nx² + 5x + 6 = 0\n\nHere, a = 1, b = 5, c = 6\n\n**💡 Methods to Solve:**\n1. Factorization\n2. Completing the Square\n3. Quadratic Formula\n\nWould you like me to show you how to solve this example using any of these methods?`;
     }
-    
-    if (question.toLowerCase().includes("photosynthesis")) {
-      return `Excellent choice! Let's learn about **Photosynthesis** 🌱\n\n**📚 Definition:**\nPhotosynthesis is the process by which green plants make their own food using sunlight, carbon dioxide, and water.\n\n**⚡ The Equation:**\n6CO₂ + 6H₂O + Light Energy → C₆H₁₂O₆ + 6O₂\n\n**🔬 Key Components:**\n• **Chlorophyll** - Green pigment that captures light\n• **Stomata** - Tiny pores for gas exchange\n• **Chloroplasts** - Where the magic happens!\n\n**📍 Two Stages:**\n1. **Light Reaction** - In thylakoids\n2. **Dark Reaction** - In stroma (Calvin Cycle)\n\nShall I explain either stage in more detail, or would you like some practice questions?`;
-    }
-
-    return `I understand you're asking about "${question}".\n\nTo give you the most accurate information aligned with your NCTB curriculum, could you please:\n\n1. **Specify the subject** (e.g., Mathematics, Science, Bangla)\n2. **Tell me the chapter name** or topic from your textbook\n3. Or **upload a photo** of the relevant page from your textbook\n\nThis helps me ensure I'm teaching you exactly what's in your syllabus! 📚`;
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -100,6 +245,26 @@ const Tutor = () => {
       handleSend();
     }
   };
+
+  const handleCopy = (content: string) => {
+    navigator.clipboard.writeText(content);
+    toast({
+      title: "Copied!",
+      description: "Message copied to clipboard",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -163,15 +328,7 @@ const Tutor = () => {
                       : "bg-card border border-border rounded-bl-md"
                   )}
                 >
-                  {message.bloomLevel && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs px-2 py-0.5 bg-accent/20 text-accent rounded-full font-medium">
-                        {message.bloomLevel}
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
                     {message.content.split("\n").map((line, i) => (
                       <p key={i} className={cn(
                         "mb-2 last:mb-0",
@@ -182,13 +339,18 @@ const Tutor = () => {
                     ))}
                   </div>
 
-                  {message.role === "assistant" && (
+                  {message.role === "assistant" && message.content && (
                     <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
                       <Button variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground hover:text-foreground">
                         <Volume2 className="w-3 h-3 mr-1" />
                         Listen
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground hover:text-foreground">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 px-2 text-muted-foreground hover:text-foreground"
+                        onClick={() => handleCopy(message.content)}
+                      >
                         <Copy className="w-3 h-3 mr-1" />
                         Copy
                       </Button>
@@ -213,7 +375,7 @@ const Tutor = () => {
           </AnimatePresence>
 
           {/* Typing indicator */}
-          {isTyping && (
+          {isTyping && messages[messages.length - 1]?.role === "user" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -242,12 +404,13 @@ const Tutor = () => {
           {/* Quick Actions */}
           <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar pb-2">
             {[
-              { icon: BookOpen, label: "Explain Topic" },
-              { icon: Brain, label: "Practice Questions" },
-              { icon: RefreshCw, label: "Revise Chapter" },
+              { icon: BookOpen, label: "Explain Topic", prompt: "Please explain " },
+              { icon: Brain, label: "Practice Questions", prompt: "Give me practice questions for " },
+              { icon: RefreshCw, label: "Revise Chapter", prompt: "Help me revise " },
             ].map((action) => (
               <button
                 key={action.label}
+                onClick={() => setInput(action.prompt)}
                 className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full text-sm font-medium hover:bg-muted/80 transition-colors whitespace-nowrap"
               >
                 <action.icon className="w-4 h-4" />
@@ -266,6 +429,7 @@ const Tutor = () => {
                 placeholder="Ask me anything about your studies..."
                 className="min-h-[52px] max-h-32 pr-24 resize-none"
                 rows={1}
+                disabled={isTyping}
               />
               <div className="absolute right-2 bottom-2 flex items-center gap-1">
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
@@ -283,16 +447,20 @@ const Tutor = () => {
               variant="hero"
               size="icon"
               onClick={handleSend}
-              disabled={!input.trim()}
+              disabled={!input.trim() || isTyping}
               className="h-[52px] w-[52px]"
             >
-              <Send className="w-5 h-5" />
+              {isTyping ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
             </Button>
           </div>
 
           <p className="text-center text-xs text-muted-foreground mt-3">
             MindSpark AI is designed for study-related questions only. 
-            <Link to="/guidelines" className="text-primary hover:underline ml-1">Learn more</Link>
+            <Link to="/" className="text-primary hover:underline ml-1">Learn more</Link>
           </p>
         </div>
       </div>
