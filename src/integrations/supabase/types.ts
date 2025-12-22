@@ -187,6 +187,69 @@ export type Database = {
         }
         Relationships: []
       }
+      revision_schedule: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          ease_factor: number
+          id: string
+          is_completed: boolean
+          next_review_date: string
+          repetition_count: number
+          review_interval_days: number
+          subject_id: string | null
+          topic_mastery_id: string | null
+          topic_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          ease_factor?: number
+          id?: string
+          is_completed?: boolean
+          next_review_date: string
+          repetition_count?: number
+          review_interval_days?: number
+          subject_id?: string | null
+          topic_mastery_id?: string | null
+          topic_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          ease_factor?: number
+          id?: string
+          is_completed?: boolean
+          next_review_date?: string
+          repetition_count?: number
+          review_interval_days?: number
+          subject_id?: string | null
+          topic_mastery_id?: string | null
+          topic_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revision_schedule_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revision_schedule_topic_mastery_id_fkey"
+            columns: ["topic_mastery_id"]
+            isOneToOne: false
+            referencedRelation: "topic_mastery"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_progress: {
         Row: {
           chapters_completed: number
