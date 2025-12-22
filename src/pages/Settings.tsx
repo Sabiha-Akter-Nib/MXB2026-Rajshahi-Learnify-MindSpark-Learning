@@ -25,6 +25,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { NotificationSettings } from "@/components/notifications/NotificationSettings";
+import { OfflineLessonManager } from "@/components/offline/OfflineLessonManager";
 
 interface ProfileData {
   full_name: string;
@@ -277,11 +279,29 @@ const Settings = () => {
           </Button>
         </motion.div>
 
-        {/* Navigation Links */}
+        {/* Notification Settings */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+        >
+          <NotificationSettings />
+        </motion.div>
+
+        {/* Offline Lesson Packs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <OfflineLessonManager />
+        </motion.div>
+
+        {/* Navigation Links */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
         >
           <Card>
             <CardHeader>
@@ -292,6 +312,9 @@ const Settings = () => {
                 <Link to="/achievements">View Achievements</Link>
               </Button>
               <Button variant="outline" asChild>
+                <Link to="/leaderboard">View Leaderboard</Link>
+              </Button>
+              <Button variant="outline" asChild className="col-span-2">
                 <Link to="/dashboard">Back to Dashboard</Link>
               </Button>
             </CardContent>
