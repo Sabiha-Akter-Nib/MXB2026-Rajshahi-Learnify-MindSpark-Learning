@@ -75,7 +75,8 @@ const Tutor = () => {
     return () => {
       endSession();
     };
-  }, [user, searchParams, startSession, endSession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
   useEffect(() => {
     if (!loading && !user) {
       navigate("/login");

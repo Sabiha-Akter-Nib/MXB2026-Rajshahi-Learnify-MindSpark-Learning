@@ -93,6 +93,25 @@ serve(async (req) => {
       }
 
       console.log(`Updated stats: streak=${newStreak}, total_xp=${currentStats.total_xp + (xpEarned || 0)}`);
+    } else {
+      // Create stats record if it doesn't exist
+      const { error: insertError } = await supabase
+        .from("student_stats")
+        .insert({
+          user_id: userId,
+          total_xp: xpEarned || 0,
+          total_study_minutes: durationMinutes || 0,
+          current_streak: 1,
+          longest_streak: 1,
+          last_activity_date: today,
+        });
+
+      if (insertError) {
+        console.error("Stats insert error:", insertError);
+        throw insertError;
+      }
+
+      console.log(`Created new stats: total_xp=${xpEarned || 0}, study_minutes=${durationMinutes || 0}`);
     }
 
     // 3. Update subject progress if subject provided
