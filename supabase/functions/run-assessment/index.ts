@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, userId, subjectId, topic, bloomLevel, answers, assessmentId } = await req.json();
+    const { action, userId, subjectId, topic, bloomLevel, answers, assessmentId, questions } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -116,7 +116,7 @@ Make questions appropriate for ${currentLevel} level. XP should be ${5 + levelIn
 
     if (action === "submit") {
       // Grade and save assessment results
-      const { questions } = await req.json();
+      // questions is already extracted from the initial req.json() call
       
       let correctCount = 0;
       let totalXp = 0;
