@@ -49,13 +49,14 @@ interface StudentInfo {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-tutor`;
 
-// Format text by removing asterisks and applying proper styling
+// Format text by removing asterisks, hashtags and applying proper styling
 const formatMessageContent = (content: string): React.ReactNode[] => {
-  // Remove markdown asterisks but keep the text
+  // Remove markdown asterisks and hashtags but keep the text
   let formattedContent = content
     .replace(/\*\*\*(.+?)\*\*\*/g, '$1') // Remove ***bold italic***
     .replace(/\*\*(.+?)\*\*/g, '$1')     // Remove **bold**
-    .replace(/\*(.+?)\*/g, '$1');         // Remove *italic*
+    .replace(/\*(.+?)\*/g, '$1')         // Remove *italic*
+    .replace(/^#{1,6}\s+(.+)$/gm, '$1'); // Remove # ## ### etc. headings
 
   return formattedContent.split("\n").map((line, i) => {
     // Check if line is a heading (ends with colon or starts with caps)
@@ -63,7 +64,7 @@ const formatMessageContent = (content: string): React.ReactNode[] => {
                       /^(Step|Example|Note|Key|Important|Why|How|What|When|Where|Think|Remember|Summary|Practice|Question)/i.test(line.trim());
     
     // Check if line is a bullet point
-    const isBullet = /^[\•\-\*]\s/.test(line.trim()) || /^\d+[\.\)]\s/.test(line.trim());
+    const isBullet = /^[\•\-]\s/.test(line.trim()) || /^\d+[\.\)]\s/.test(line.trim());
     
     if (!line.trim()) {
       return <div key={i} className="h-3" />;
@@ -130,13 +131,13 @@ const Tutor = () => {
     }
   }, [user, loading, navigate]);
 
-  // Create initial greeting
+  // Create initial greeting - no names, no curriculum change mention
   const createInitialGreeting = useCallback((data: { full_name: string; class: number; version: string }) => {
     const isBangla = data.version === "bangla";
     const greeting = isBangla 
-      ? `আসসালামু আলাইকুম, ${data.full_name}! 
+      ? `আসসালামু আলাইকুম!
 
-আমি তোমার MindSpark AI Tutor। আমি তোমাকে Class ${data.class} এর NCTB পাঠ্যক্রম অনুযায়ী পড়াশোনায় সাহায্য করতে এসেছি।
+আমি MindSpark AI Tutor। আমি Class ${data.class} এর NCTB পাঠ্যক্রম অনুযায়ী পড়াশোনায় সাহায্য করতে এসেছি।
 
 তুমি আমাকে যা বলতে পারো:
 
@@ -145,12 +146,12 @@ const Tutor = () => {
 • হোমওয়ার্কে সাহায্য করতে
 • পরীক্ষার প্রস্তুতিতে সহায়তা করতে
 
-আমি ওয়েব থেকে সবচেয়ে সাম্প্রতিক এবং সঠিক তথ্য খুঁজে তোমাকে সাহায্য করব। NCTB পাঠ্যক্রম প্রতিবছর পরিবর্তন হয়, তাই আমি সবসময় আপডেট তথ্য দেওয়ার চেষ্টা করব।
+আমি প্রতিটি উত্তর দেওয়ার আগে ওয়েব থেকে সঠিক তথ্য যাচাই করে নিই।
 
-${data.full_name}, আজ কোন বিষয়ে পড়তে চাও?`
-      : `Hello, ${data.full_name}! 
+আজ কোন বিষয়ে পড়তে চাও?`
+      : `Assalamu Alaikum!
 
-I am your MindSpark AI Tutor, and I am here to help you with your Class ${data.class} NCTB curriculum.
+I am MindSpark AI Tutor, here to help you with your Class ${data.class} NCTB curriculum.
 
 Here is what I can help you with:
 
@@ -159,9 +160,9 @@ Here is what I can help you with:
 • Help you with your homework and assignments
 • Assist with exam preparation
 
-I search the web to find the most recent and accurate information for you. Since the NCTB curriculum changes every year, I always verify my answers to give you the most up-to-date information.
+I verify every answer by searching the web for the most accurate information.
 
-${data.full_name}, what would you like to study today?`;
+What would you like to study today?`;
     
     return {
       id: "1",
@@ -191,20 +192,20 @@ ${data.full_name}, what would you like to study today?`;
         setStudentInfo(info);
         setMessages([createInitialGreeting(data)]);
       } else {
-        // Default greeting if no profile
+        // Default greeting if no profile - no names, no curriculum change mention
         setMessages([{
           id: "1",
           role: "assistant",
-          content: `Assalamu Alaikum! 
+          content: `Assalamu Alaikum!
 
-I am your MindSpark AI Tutor. I am here to help you learn any subject from your NCTB curriculum.
+I am MindSpark AI Tutor. I am here to help you learn any subject from your NCTB curriculum.
 
 You can ask me to:
 • Explain any topic in detail
 • Practice with adaptive questions
 • Get homework help
 
-I search the web to provide you with the most accurate and current information.
+I verify every answer by searching the web for the most accurate information.
 
 What would you like to learn today?`,
           timestamp: new Date(),
