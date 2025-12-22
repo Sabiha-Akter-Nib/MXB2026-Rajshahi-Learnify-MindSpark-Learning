@@ -1,0 +1,16 @@
+{
+  "name": "MindSpark Learning",
+  "short_name": "MindSpark",
+  "description": "AI-Powered Personalized Learning for Bangladeshi Students",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf9f7",
+  "theme_color": "#0d7377",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
