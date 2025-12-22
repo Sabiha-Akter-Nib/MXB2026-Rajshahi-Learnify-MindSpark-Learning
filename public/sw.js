@@ -1,74 +1,69 @@
-const CACHE_NAME = "mindspark-v1";
+const CACHE_NAME = "mindspark-v2"; // Increment version to force cache refresh
 const OFFLINE_URLS = [
   "/",
-  "/dashboard",
-  "/tutor",
-  "/subjects",
-  "/practice",
-  "/login",
-  "/signup",
+  "/index.html",
 ];
 
 // Install event - cache essential resources
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log("Caching app shell");
+      console.log("Caching app shell v2");
       return cache.addAll(OFFLINE_URLS);
     })
   );
+  // Force activation immediately
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up ALL old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log("Deleting old cache:", name);
+            return caches.delete(name);
+          })
       );
     })
   );
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - network first for most requests
 self.addEventListener("fetch", (event) => {
   // Skip non-GET requests
   if (event.request.method !== "GET") return;
 
-  // Skip API calls and edge functions
+  const url = new URL(event.request.url);
+
+  // Skip caching for:
+  // - API calls and edge functions
+  // - node_modules (can cause React duplicate issues)
+  // - Hot module replacement
   if (
-    event.request.url.includes("/functions/") ||
-    event.request.url.includes("/rest/") ||
-    event.request.url.includes("/auth/")
+    url.pathname.includes("/functions/") ||
+    url.pathname.includes("/rest/") ||
+    url.pathname.includes("/auth/") ||
+    url.pathname.includes("/node_modules/") ||
+    url.pathname.includes(".vite/") ||
+    url.pathname.includes("@vite") ||
+    url.pathname.includes("@react-refresh") ||
+    url.search.includes("v=")
   ) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Return cached version and update in background
-        event.waitUntil(
-          fetch(event.request).then((response) => {
-            if (response.ok) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, response);
-              });
-            }
-          }).catch(() => {})
-        );
-        return cachedResponse;
-      }
-
-      // Try network first
-      return fetch(event.request)
+  // For HTML navigation, always fetch fresh
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
         .then((response) => {
-          // Cache successful responses
-          if (response.ok && response.type === "basic") {
+          // Cache the fresh version
+          if (response.ok) {
             const responseToCache = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseToCache);
@@ -77,13 +72,29 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => {
-          // Return offline page for navigation requests
-          if (event.request.mode === "navigate") {
-            return caches.match("/");
-          }
-          return new Response("Offline", { status: 503 });
-        });
-    })
+          // Fallback to cache only if network fails
+          return caches.match("/") || caches.match("/index.html");
+        })
+    );
+    return;
+  }
+
+  // For other assets, use network first strategy
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Only cache static assets, not JS modules
+        if (response.ok && response.type === "basic" && !url.pathname.endsWith(".js")) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
 
@@ -95,6 +106,12 @@ self.addEventListener("sync", (event) => {
 });
 
 async function syncPendingSessions() {
-  // Get pending sessions from IndexedDB and sync when online
   console.log("Syncing pending study sessions...");
 }
+
+// Listen for skip waiting message
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
