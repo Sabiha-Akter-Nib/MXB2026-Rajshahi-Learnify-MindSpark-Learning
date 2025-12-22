@@ -236,9 +236,9 @@ const Dashboard = () => {
         <nav className="flex-1 p-4 space-y-2">
           {[
             { icon: BarChart3, label: "Dashboard", active: true, href: "/dashboard" },
-            { icon: BookOpen, label: "Subjects", href: "#" },
+            { icon: BookOpen, label: "Subjects", href: "/subjects" },
             { icon: Brain, label: "AI Tutor", href: "/tutor" },
-            { icon: Target, label: "Practice", href: "#" },
+            { icon: Target, label: "Practice", href: "/practice" },
             { icon: Award, label: "Achievements", href: "#" },
             { icon: Calendar, label: "Schedule", href: "#" },
           ].map((item) => (
