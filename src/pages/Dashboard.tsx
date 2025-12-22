@@ -53,6 +53,12 @@ interface StudentStats {
   total_study_minutes: number;
 }
 
+interface WeeklyStats {
+  weekly_xp: number;
+  weekly_study_minutes: number;
+  weekly_goal_percent: number;
+}
+
 interface Subject {
   id: string;
   name: string;
@@ -99,6 +105,11 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<StudentStats | null>(null);
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStats>({
+    weekly_xp: 0,
+    weekly_study_minutes: 0,
+    weekly_goal_percent: 0,
+  });
   const [subjects, setSubjects] = useState<SubjectWithProgress[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const { user, loading, signOut } = useAuth();
@@ -139,6 +150,29 @@ const Dashboard = () => {
         if (statsData) {
           setStats(statsData);
         }
+
+        // Fetch weekly stats from study_sessions (last 7 days)
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        
+        const { data: weeklySessionsData } = await supabase
+          .from("study_sessions")
+          .select("xp_earned, duration_minutes")
+          .eq("user_id", user.id)
+          .gte("created_at", oneWeekAgo.toISOString());
+
+        const weeklyXP = weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
+        const weeklyMinutes = weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
+        
+        // Weekly goal: aim for 500 XP per week (adjustable)
+        const weeklyGoalXP = 500;
+        const weeklyGoalPercent = Math.min(Math.round((weeklyXP / weeklyGoalXP) * 100), 100);
+        
+        setWeeklyStats({
+          weekly_xp: weeklyXP,
+          weekly_study_minutes: weeklyMinutes,
+          weekly_goal_percent: weeklyGoalPercent,
+        });
 
         // Fetch subjects based on student class
         const studentClass = profileData?.class || 5;
@@ -328,10 +362,10 @@ const Dashboard = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[
-              { icon: TrendingUp, label: "Total XP", value: (stats?.total_xp || 0).toLocaleString(), color: "primary" },
+              { icon: TrendingUp, label: "Weekly XP", value: weeklyStats.weekly_xp.toLocaleString(), color: "primary" },
               { icon: Flame, label: "Day Streak", value: stats?.current_streak || 0, color: "accent" },
-              { icon: Target, label: "Weekly Goal", value: "0/70%", color: "success" },
-              { icon: Clock, label: "Study Time", value: formatStudyTime(stats?.total_study_minutes || 0), color: "warning" },
+              { icon: Target, label: "Weekly Goal", value: `${weeklyStats.weekly_goal_percent}%`, color: "success" },
+              { icon: Clock, label: "Study Time", value: formatStudyTime(weeklyStats.weekly_study_minutes), color: "warning" },
             ].map((stat, index) => (
               <motion.div
                 key={stat.label}
