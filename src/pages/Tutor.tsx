@@ -16,7 +16,6 @@ import {
   ThumbsUp,
   ThumbsDown,
   Copy,
-  Volume2,
   Loader2,
   MicOff,
   Settings2,
@@ -28,7 +27,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
-import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+
 import { useStudySession } from "@/hooks/useStudySession";
 import { PersonaSelector, PersonaType, getPersonaPrompt } from "@/components/tutor/PersonaSelector";
 import { FileUploadModal } from "@/components/tutor/FileUploadModal";
@@ -63,7 +62,6 @@ const Tutor = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isRecording, isProcessing, startRecording, stopRecording, cancelRecording } = useVoiceInput();
-  const { isSpeaking, speak, stop: stopSpeaking, isSupported: ttsSupported } = useTextToSpeech();
   const { startSession, endSession, addXP } = useStudySession();
 
   // Start study session when component mounts
@@ -380,24 +378,6 @@ const Tutor = () => {
 
                   {message.role === "assistant" && message.content && (
                     <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className={cn(
-                          "h-7 px-2",
-                          isSpeaking ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                        )}
-                        onClick={() => {
-                          if (isSpeaking) {
-                            stopSpeaking();
-                          } else {
-                            speak(message.content, studentInfo?.version === "bangla" ? "bn" : "en");
-                          }
-                        }}
-                      >
-                        <Volume2 className={cn("w-3 h-3 mr-1", isSpeaking && "animate-pulse")} />
-                        {isSpeaking ? "Stop" : "Listen"}
-                      </Button>
                       <Button 
                         variant="ghost" 
                         size="sm" 

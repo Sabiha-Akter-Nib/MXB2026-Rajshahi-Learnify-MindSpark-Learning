@@ -9,8 +9,5 @@ verify_jwt = false
 [functions.generate-practice]
 verify_jwt = false
 
-[functions.text-to-speech]
-verify_jwt = false
-
 [functions.track-session]
 verify_jwt = false
