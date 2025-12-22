@@ -243,8 +243,8 @@ const Dashboard = () => {
             { icon: BookOpen, label: "Subjects", href: "/subjects" },
             { icon: Brain, label: "AI Tutor", href: "/tutor" },
             { icon: Target, label: "Practice", href: "/practice" },
-            { icon: Award, label: "Achievements", href: "#" },
-            { icon: Calendar, label: "Schedule", href: "#" },
+            { icon: Award, label: "Achievements", href: "/achievements" },
+            { icon: Calendar, label: "Schedule", href: "/learning-plan" },
           ].map((item) => (
             <Link
               key={item.label}
@@ -265,7 +265,7 @@ const Dashboard = () => {
         {/* Bottom Actions */}
         <div className="p-4 border-t border-sidebar-border space-y-2">
           <Link
-            to="#"
+            to="/settings"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors"
           >
             <Settings className="w-5 h-5 flex-shrink-0" />
