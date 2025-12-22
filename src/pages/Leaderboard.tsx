@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -14,6 +14,7 @@ import {
   Sparkles,
   Zap,
   TrendingUp,
+  PartyPopper,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 
 interface LeaderboardEntry {
   rank: number;
@@ -66,7 +68,8 @@ const generateDummyLeaderboard = (
 
   // Generate base entries - some with user's school, some with other schools
   const entries: LeaderboardEntry[] = dummyNames.map((name, index) => {
-    const baseXP = Math.floor(Math.random() * 3000) + 500;
+    // Make sure dummy XP is always less than current user for filtered views
+    const baseXP = Math.floor(Math.random() * Math.max(currentUserXP - 100, 500)) + 100;
     // 40% chance to be from same school
     const isSameSchool = Math.random() < 0.4;
     // 30% chance to be from same class
@@ -114,9 +117,56 @@ const Leaderboard = () => {
   const [filter, setFilter] = useState<FilterType>("all");
   const [userRank, setUserRank] = useState<LeaderboardEntry | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const celebrationTriggered = useRef(false);
 
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Celebration confetti effect
+  const triggerCelebration = () => {
+    if (celebrationTriggered.current) return;
+    celebrationTriggered.current = true;
+    setShowCelebration(true);
+
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const colors = ['#FFD700', '#FFA500', '#FF6347', '#9370DB', '#00CED1', '#32CD32'];
+
+    (function frame() {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.8 },
+        colors: colors
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.8 },
+        colors: colors
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
+
+    // Big burst in the middle
+    setTimeout(() => {
+      confetti({
+        particleCount: 100,
+        spread: 100,
+        origin: { x: 0.5, y: 0.5 },
+        colors: colors
+      });
+    }, 500);
+
+    setTimeout(() => setShowCelebration(false), duration);
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -189,13 +239,30 @@ const Leaderboard = () => {
     if (allEntries.length === 0) return;
 
     let filtered = [...allEntries];
+    celebrationTriggered.current = false; // Reset celebration for new filter
 
     if (filter === "class" && userProfile?.class) {
       filtered = allEntries.filter(e => e.studentClass === userProfile.class);
+      
+      // Ensure current user is first in class filter
+      const userEntry = filtered.find(e => e.isCurrentUser);
+      if (userEntry) {
+        // Boost user XP to be first
+        const maxOtherXP = Math.max(...filtered.filter(e => !e.isCurrentUser).map(e => e.totalXp), 0);
+        userEntry.totalXp = Math.max(userEntry.totalXp, maxOtherXP + 100);
+      }
     }
     
     if (filter === "school" && userProfile?.school_name) {
       filtered = allEntries.filter(e => e.schoolName === userProfile.school_name);
+      
+      // Ensure current user is first in school filter
+      const userEntry = filtered.find(e => e.isCurrentUser);
+      if (userEntry) {
+        // Boost user XP to be first
+        const maxOtherXP = Math.max(...filtered.filter(e => !e.isCurrentUser).map(e => e.totalXp), 0);
+        userEntry.totalXp = Math.max(userEntry.totalXp, maxOtherXP + 100);
+      }
     }
 
     // Re-rank after filtering
@@ -211,6 +278,11 @@ const Leaderboard = () => {
     // Update user rank for filtered view
     const currentUserEntry = filtered.find(e => e.isCurrentUser);
     setUserRank(currentUserEntry || null);
+
+    // Trigger celebration if user is in top 3
+    if (currentUserEntry && currentUserEntry.rank <= 3) {
+      setTimeout(() => triggerCelebration(), 500);
+    }
   }, [filter, allEntries, userProfile]);
 
   const getRankIcon = (rank: number) => {
@@ -249,6 +321,32 @@ const Leaderboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 relative overflow-hidden">
+      {/* Celebration Overlay */}
+      {showCelebration && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center"
+        >
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            className="bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-3xl p-8 shadow-2xl shadow-amber-500/50"
+          >
+            <div className="flex items-center gap-4 text-white">
+              <PartyPopper className="w-12 h-12" />
+              <div>
+                <p className="text-2xl font-black">Congratulations!</p>
+                <p className="text-lg opacity-90">You're in the Top 3!</p>
+              </div>
+              <PartyPopper className="w-12 h-12 scale-x-[-1]" />
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
@@ -296,9 +394,24 @@ const Leaderboard = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
           >
-            <Card className="bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 border-primary/30 overflow-hidden relative group hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500">
+            <Card className={cn(
+              "overflow-hidden relative group hover:shadow-2xl transition-all duration-500",
+              userRank.rank <= 3 
+                ? "bg-gradient-to-r from-yellow-500/20 via-amber-500/10 to-orange-500/20 border-yellow-500/40 hover:shadow-yellow-500/20" 
+                : "bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 border-primary/30 hover:shadow-primary/20"
+            )}>
               <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+              {userRank.rank <= 3 && (
+                <div className="absolute top-2 right-2">
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <PartyPopper className="w-6 h-6 text-yellow-500" />
+                  </motion.div>
+                </div>
+              )}
               <CardContent className="p-6 sm:p-8 relative">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-5">
@@ -413,11 +526,11 @@ const Leaderboard = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-3 gap-4 py-8"
+            className="grid grid-cols-3 gap-4 py-8 items-end"
           >
             {/* Second Place */}
             <motion.div 
-              className="flex flex-col items-center pt-8"
+              className="flex flex-col items-center"
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -440,7 +553,7 @@ const Leaderboard = () => {
               <p className="text-sm font-bold bg-gradient-to-r from-slate-500 to-slate-600 bg-clip-text text-transparent">
                 {entries[1]?.totalXp.toLocaleString()} XP
               </p>
-              <div className="w-full h-28 bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 rounded-t-3xl mt-3 flex items-end justify-center pb-3 shadow-inner relative overflow-hidden">
+              <div className="w-full h-24 bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 rounded-t-3xl mt-3 flex items-end justify-center pb-3 shadow-inner relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
                 <span className="text-white font-black text-3xl drop-shadow-lg relative z-10">2</span>
               </div>
@@ -488,7 +601,7 @@ const Leaderboard = () => {
 
             {/* Third Place */}
             <motion.div 
-              className="flex flex-col items-center pt-12"
+              className="flex flex-col items-center"
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -511,7 +624,7 @@ const Leaderboard = () => {
               <p className="text-sm font-bold bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
                 {entries[2]?.totalXp.toLocaleString()} XP
               </p>
-              <div className="w-full h-24 bg-gradient-to-t from-orange-600 via-orange-500 to-amber-500 rounded-t-3xl mt-3 flex items-end justify-center pb-3 shadow-inner relative overflow-hidden">
+              <div className="w-full h-20 bg-gradient-to-t from-orange-600 via-orange-500 to-amber-500 rounded-t-3xl mt-3 flex items-end justify-center pb-3 shadow-inner relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
                 <span className="text-white font-black text-2xl drop-shadow-lg relative z-10">3</span>
               </div>
