@@ -12,11 +12,21 @@ import {
   RefreshCw,
   BookOpen,
   Brain,
+  Plus,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +50,26 @@ interface LearningPlan {
   status: string;
 }
 
+interface Subject {
+  id: string;
+  name: string;
+  name_bn: string;
+}
+
+interface ChapterInput {
+  subjectId: string;
+  chapterName: string;
+}
+
+const BLOOM_LEVELS = [
+  { value: "remember", label: "Remember" },
+  { value: "understand", label: "Understand" },
+  { value: "apply", label: "Apply" },
+  { value: "analyze", label: "Analyze" },
+  { value: "evaluate", label: "Evaluate" },
+  { value: "create", label: "Create" },
+];
+
 const BLOOM_COLORS: Record<string, string> = {
   remember: "bg-blue-500",
   understand: "bg-green-500",
@@ -54,7 +84,15 @@ const LearningPlanPage = () => {
   const [tasks, setTasks] = useState<PlanTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [weakTopics, setWeakTopics] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [selectedBloomLevel, setSelectedBloomLevel] = useState("remember");
+  const [chapterInputs, setChapterInputs] = useState<ChapterInput[]>([
+    { subjectId: "", chapterName: "" },
+    { subjectId: "", chapterName: "" },
+    { subjectId: "", chapterName: "" },
+    { subjectId: "", chapterName: "" },
+    { subjectId: "", chapterName: "" },
+  ]);
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -69,9 +107,27 @@ const LearningPlanPage = () => {
   useEffect(() => {
     if (user) {
       fetchActivePlan();
-      fetchWeakTopics();
+      fetchSubjects();
     }
   }, [user]);
+
+  const fetchSubjects = async () => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("class")
+      .eq("user_id", user?.id)
+      .single();
+
+    const studentClass = profile?.class || 5;
+
+    const { data } = await supabase
+      .from("subjects")
+      .select("id, name, name_bn")
+      .lte("min_class", studentClass)
+      .gte("max_class", studentClass);
+
+    setSubjects(data || []);
+  };
 
   const fetchActivePlan = async () => {
     setIsLoading(true);
@@ -86,7 +142,7 @@ const LearningPlanPage = () => {
 
       if (plans && plans.length > 0) {
         setActivePlan(plans[0]);
-        
+
         const { data: planTasks } = await supabase
           .from("learning_plan_tasks")
           .select("*, subjects(name, name_bn)")
@@ -102,37 +158,49 @@ const LearningPlanPage = () => {
     }
   };
 
-  const fetchWeakTopics = async () => {
-    const { data } = await supabase
-      .from("topic_mastery")
-      .select("*, subjects(name, name_bn)")
-      .eq("user_id", user?.id)
-      .eq("is_weak_topic", true)
-      .order("mastery_score", { ascending: true })
-      .limit(5);
-
-    setWeakTopics(data || []);
+  const updateChapterInput = (index: number, field: keyof ChapterInput, value: string) => {
+    const updated = [...chapterInputs];
+    updated[index] = { ...updated[index], [field]: value };
+    setChapterInputs(updated);
   };
 
-  const generatePlan = async (planType: "daily" | "weekly") => {
+  const isFormValid = () => {
+    // At least one chapter with both subject and chapter name filled
+    return chapterInputs.some(
+      (input) => input.subjectId && input.chapterName.trim()
+    );
+  };
+
+  const generatePlan = async () => {
+    if (!isFormValid()) {
+      toast({
+        title: "Incomplete Form",
+        description: "Please fill in at least one chapter with subject and chapter name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-learning-plan`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            userId: user?.id,
-            planType,
-          }),
-        }
+      // Filter only filled chapter inputs
+      const validChapters = chapterInputs.filter(
+        (input) => input.subjectId && input.chapterName.trim()
       );
 
-      const data = await response.json();
+      const { data, error } = await supabase.functions.invoke("generate-learning-plan", {
+        body: {
+          userId: user?.id,
+          chapters: validChapters.map((ch) => ({
+            subjectId: ch.subjectId,
+            subjectName: subjects.find((s) => s.id === ch.subjectId)?.name || "",
+            chapterName: ch.chapterName.trim(),
+          })),
+          bloomLevel: selectedBloomLevel,
+        },
+      });
+
+      if (error) throw error;
       if (data.error) throw new Error(data.error);
 
       setActivePlan(data.plan);
@@ -140,7 +208,7 @@ const LearningPlanPage = () => {
 
       toast({
         title: "Plan Created!",
-        description: data.message,
+        description: `${data.tasks?.length || 0} quizzes generated at ${selectedBloomLevel} level.`,
       });
     } catch (error) {
       console.error("Error generating plan:", error);
@@ -154,6 +222,24 @@ const LearningPlanPage = () => {
     }
   };
 
+  const resetPlan = async () => {
+    if (activePlan) {
+      await supabase
+        .from("learning_plans")
+        .update({ status: "completed" })
+        .eq("id", activePlan.id);
+    }
+    setActivePlan(null);
+    setTasks([]);
+    setChapterInputs([
+      { subjectId: "", chapterName: "" },
+      { subjectId: "", chapterName: "" },
+      { subjectId: "", chapterName: "" },
+      { subjectId: "", chapterName: "" },
+      { subjectId: "", chapterName: "" },
+    ]);
+  };
+
   const toggleTaskComplete = async (taskId: string, currentStatus: boolean) => {
     try {
       await supabase
@@ -164,14 +250,16 @@ const LearningPlanPage = () => {
         })
         .eq("id", taskId);
 
-      setTasks(tasks.map(t => 
-        t.id === taskId ? { ...t, is_completed: !currentStatus } : t
-      ));
+      setTasks(
+        tasks.map((t) =>
+          t.id === taskId ? { ...t, is_completed: !currentStatus } : t
+        )
+      );
 
       if (!currentStatus) {
         toast({
           title: "Task Completed!",
-          description: "Keep up the great work! 🎉",
+          description: "Keep up the great work!",
         });
       }
     } catch (error) {
@@ -179,9 +267,11 @@ const LearningPlanPage = () => {
     }
   };
 
-  const completedTasks = tasks.filter(t => t.is_completed).length;
+  const completedTasks = tasks.filter((t) => t.is_completed).length;
   const totalXpTarget = tasks.reduce((sum, t) => sum + t.target_xp, 0);
-  const earnedXp = tasks.filter(t => t.is_completed).reduce((sum, t) => sum + t.target_xp, 0);
+  const earnedXp = tasks
+    .filter((t) => t.is_completed)
+    .reduce((sum, t) => sum + t.target_xp, 0);
   const progress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
 
   if (loading || isLoading) {
@@ -220,38 +310,111 @@ const LearningPlanPage = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
           >
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Target className="w-10 h-10 text-primary" />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">No Active Plan</h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Generate a personalized learning plan based on your progress and weak areas.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                onClick={() => generatePlan("daily")}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                ) : (
-                  <Calendar className="w-5 h-5 mr-2" />
-                )}
-                Generate Daily Plan
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => generatePlan("weekly")}
-                disabled={isGenerating}
-              >
-                Generate Weekly Plan
-              </Button>
-            </div>
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-primary" />
+                  Create Your Learning Plan
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-muted-foreground">
+                  Enter up to 5 chapters from different subjects. We'll generate
+                  quizzes based on your selected Bloom's Taxonomy level.
+                </p>
+
+                {/* Bloom's Level Selection */}
+                <div className="space-y-2">
+                  <Label>Select Bloom's Taxonomy Level</Label>
+                  <Select
+                    value={selectedBloomLevel}
+                    onValueChange={setSelectedBloomLevel}
+                  >
+                    <SelectTrigger className="w-full md:w-64">
+                      <SelectValue placeholder="Select level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BLOOM_LEVELS.map((level) => (
+                        <SelectItem key={level.value} value={level.value}>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={cn(
+                                "w-3 h-3 rounded-full",
+                                BLOOM_COLORS[level.value]
+                              )}
+                            />
+                            {level.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Chapter Inputs */}
+                <div className="space-y-4">
+                  <Label>Enter Chapters (at least 1 required)</Label>
+                  {chapterInputs.map((input, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-col md:flex-row gap-3 p-4 bg-muted/30 rounded-lg border border-border"
+                    >
+                      <div className="flex items-center gap-2 text-muted-foreground min-w-[2rem]">
+                        <span className="font-medium">{index + 1}.</span>
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <Select
+                          value={input.subjectId}
+                          onValueChange={(value) =>
+                            updateChapterInput(index, "subjectId", value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Subject" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {subjects.map((subject) => (
+                              <SelectItem key={subject.id} value={subject.id}>
+                                {subject.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex-[2]">
+                        <Input
+                          placeholder="Enter chapter name..."
+                          value={input.chapterName}
+                          onChange={(e) =>
+                            updateChapterInput(index, "chapterName", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={generatePlan}
+                  disabled={isGenerating || !isFormValid()}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Generating Plan...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      Generate Learning Plan
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
           </motion.div>
         ) : (
           <>
@@ -264,17 +427,18 @@ const LearningPlanPage = () => {
                       {activePlan.plan_type} Plan
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(activePlan.start_date).toLocaleDateString()} - {new Date(activePlan.end_date).toLocaleDateString()}
+                      {new Date(activePlan.start_date).toLocaleDateString()} -{" "}
+                      {new Date(activePlan.end_date).toLocaleDateString()}
                     </p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => generatePlan(activePlan.plan_type as "daily" | "weekly")}
+                    onClick={resetPlan}
                     disabled={isGenerating}
                   >
-                    <RefreshCw className={cn("w-4 h-4 mr-2", isGenerating && "animate-spin")} />
-                    Regenerate
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    New Plan
                   </Button>
                 </div>
 
@@ -282,17 +446,19 @@ const LearningPlanPage = () => {
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
-                    {completedTasks} of {tasks.length} tasks completed
+                    {completedTasks} of {tasks.length} quizzes completed
                   </span>
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    <span className="font-semibold">{earnedXp}/{totalXpTarget} XP</span>
+                    <span className="font-semibold">
+                      {earnedXp}/{totalXpTarget} XP
+                    </span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Tasks */}
+            {/* Tasks/Quizzes */}
             <div className="space-y-3 mb-8">
               {tasks.map((task, i) => (
                 <motion.div
@@ -301,14 +467,18 @@ const LearningPlanPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                 >
-                  <Card className={cn(
-                    "transition-all",
-                    task.is_completed && "bg-success/5 border-success/30"
-                  )}>
+                  <Card
+                    className={cn(
+                      "transition-all",
+                      task.is_completed && "bg-success/5 border-success/30"
+                    )}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
                         <button
-                          onClick={() => toggleTaskComplete(task.id, task.is_completed)}
+                          onClick={() =>
+                            toggleTaskComplete(task.id, task.is_completed)
+                          }
                           className="mt-1"
                         >
                           {task.is_completed ? (
@@ -321,10 +491,13 @@ const LearningPlanPage = () => {
                         <div className="flex-1">
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <p className={cn(
-                                "font-medium",
-                                task.is_completed && "line-through text-muted-foreground"
-                              )}>
+                              <p
+                                className={cn(
+                                  "font-medium",
+                                  task.is_completed &&
+                                    "line-through text-muted-foreground"
+                                )}
+                              >
                                 {task.topic}
                               </p>
                               {task.subjects && (
@@ -334,10 +507,12 @@ const LearningPlanPage = () => {
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className={cn(
-                                "text-xs px-2 py-1 rounded text-white capitalize",
-                                BLOOM_COLORS[task.bloom_level] || "bg-gray-500"
-                              )}>
+                              <span
+                                className={cn(
+                                  "text-xs px-2 py-1 rounded text-white capitalize",
+                                  BLOOM_COLORS[task.bloom_level] || "bg-gray-500"
+                                )}
+                              >
                                 {task.bloom_level}
                               </span>
                               <span className="text-sm font-medium text-primary">
@@ -348,23 +523,24 @@ const LearningPlanPage = () => {
 
                           {!task.is_completed && (
                             <div className="flex gap-2 mt-3">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                asChild
-                              >
-                                <Link to={`/tutor?topic=${encodeURIComponent(task.topic)}`}>
+                              <Button size="sm" variant="outline" asChild>
+                                <Link
+                                  to={`/tutor?topic=${encodeURIComponent(
+                                    task.topic
+                                  )}`}
+                                >
                                   <Brain className="w-4 h-4 mr-1" />
                                   Study
                                 </Link>
                               </Button>
-                              <Button
-                                size="sm"
-                                asChild
-                              >
-                                <Link to={`/assessment?topic=${encodeURIComponent(task.topic)}`}>
+                              <Button size="sm" asChild>
+                                <Link
+                                  to={`/assessment?topic=${encodeURIComponent(
+                                    task.topic
+                                  )}&bloomLevel=${task.bloom_level}`}
+                                >
                                   <Target className="w-4 h-4 mr-1" />
-                                  Practice
+                                  Take Quiz
                                 </Link>
                               </Button>
                             </div>
@@ -377,38 +553,6 @@ const LearningPlanPage = () => {
               ))}
             </div>
           </>
-        )}
-
-        {/* Weak Topics Section */}
-        {weakTopics.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Target className="w-5 h-5 text-destructive" />
-                Weak Areas to Focus
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {weakTopics.map((topic) => (
-                <div
-                  key={topic.id}
-                  className="flex items-center justify-between p-3 bg-destructive/5 rounded-lg border border-destructive/20"
-                >
-                  <div>
-                    <p className="font-medium">{topic.topic_name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {topic.subjects?.name} • Mastery: {topic.mastery_score}%
-                    </p>
-                  </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <Link to={`/assessment?topic=${encodeURIComponent(topic.topic_name)}&subject=${topic.subject_id}`}>
-                      Practice
-                    </Link>
-                  </Button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
         )}
       </main>
     </div>
