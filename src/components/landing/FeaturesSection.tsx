@@ -10,6 +10,7 @@ import {
   Globe2, 
   Sparkles 
 } from "lucide-react";
+import { ScrollAnimatedBackground } from "./ScrollAnimatedBackground";
 
 const features = [
   {
@@ -78,7 +79,7 @@ const features = [
   },
 ];
 
-// 3D Tilt Card Component
+// Subtle Rotate Card Component
 function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -86,9 +87,12 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   
-  const springConfig = { stiffness: 300, damping: 20 };
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [15, -15]), springConfig);
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-15, 15]), springConfig);
+  // Reduced rotation values for subtle effect (was 15, now 4)
+  const springConfig = { stiffness: 400, damping: 30 };
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [4, -4]), springConfig);
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-4, 4]), springConfig);
+  // Subtle horizontal movement
+  const translateX = useSpring(useTransform(x, [-0.5, 0.5], [-3, 3]), springConfig);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -154,6 +158,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       style={{
         rotateX,
         rotateY,
+        x: translateX,
         transformStyle: "preserve-3d",
       }}
       className={`group relative cursor-pointer`}
@@ -222,28 +227,8 @@ export function FeaturesSection() {
 
   return (
     <section ref={sectionRef} className="py-32 relative overflow-hidden">
-      {/* Background elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/30 to-background" />
-      
-      {/* Floating orbs */}
-      <motion.div
-        animate={{ 
-          x: [0, 30, 0],
-          y: [0, -20, 0],
-          scale: [1, 1.1, 1],
-        }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-20 left-10 w-96 h-96 bg-gradient-radial from-primary/10 to-transparent rounded-full blur-3xl"
-      />
-      <motion.div
-        animate={{ 
-          x: [0, -40, 0],
-          y: [0, 30, 0],
-          scale: [1, 0.9, 1],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-gradient-radial from-accent/10 to-transparent rounded-full blur-3xl"
-      />
+      {/* Scroll-animated background */}
+      <ScrollAnimatedBackground variant="features" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}

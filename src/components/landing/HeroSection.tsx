@@ -1,9 +1,43 @@
-import { useRef, useEffect, useState } from "react";
-import { motion, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, Brain, Sparkles, Star, Zap, Target, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InteractiveBackground, MouseFollowOrbs } from "./InteractiveBackground";
+
+// Animated Counter Component
+function AnimatedCounter({ end, suffix = "", duration = 2 }: { end: number; suffix?: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [displayValue, setDisplayValue] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  // Trigger animation when in view
+  if (isInView && !hasAnimated) {
+    setHasAnimated(true);
+    let startTime: number | null = null;
+    
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / (duration * 1000), 1);
+      const eased = 1 - Math.pow(1 - progress, 4);
+      setDisplayValue(Math.round(eased * end));
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }
+
+  return (
+    <span ref={ref} className="tabular-nums">
+      {displayValue}{suffix}
+    </span>
+  );
+}
 
 // Floating 3D card component with drift effect (moves left/right)
 function FloatingCard({ children, className, delay = 0, driftDirection = "left" }: { 
@@ -297,7 +331,7 @@ export function HeroSection() {
           </motion.div>
         </motion.div>
 
-        {/* Stats */}
+        {/* Stats with Counter Animations */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -305,9 +339,9 @@ export function HeroSection() {
           className="mt-20 grid grid-cols-3 gap-8 max-w-3xl mx-auto"
         >
           {[
-            { value: "10K+", label: "Active Students", color: "primary", drift: -8 },
-            { value: "15+", label: "Subjects", color: "accent", drift: 0 },
-            { value: "98%", label: "Success Rate", color: "success", drift: 8 },
+            { value: 10000, suffix: "+", label: "Active Students", color: "primary", drift: -8 },
+            { value: 15, suffix: "+", label: "Subjects", color: "accent", drift: 0 },
+            { value: 98, suffix: "%", label: "Success Rate", color: "success", drift: 8 },
           ].map((stat, index) => (
             <motion.div 
               key={stat.label}
@@ -322,7 +356,11 @@ export function HeroSection() {
                 stat.color === 'accent' ? 'from-accent to-accent-light' :
                 'from-success to-primary-light'
               } bg-clip-text text-transparent group-hover:scale-110 transition-transform`}>
-                {stat.value}
+                {stat.value >= 1000 ? (
+                  <><AnimatedCounter end={stat.value / 1000} suffix="" duration={2} />K{stat.suffix}</>
+                ) : (
+                  <AnimatedCounter end={stat.value} suffix={stat.suffix} duration={2} />
+                )}
               </p>
               <p className="text-sm md:text-base text-muted-foreground mt-2 font-medium">{stat.label}</p>
             </motion.div>
