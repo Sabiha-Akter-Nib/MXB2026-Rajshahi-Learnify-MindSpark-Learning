@@ -47,27 +47,79 @@ async function searchWeb(query: string, apiKey: string): Promise<string> {
   }
 }
 
-// Extract topic/chapter from user message for web search
+// Parse chapter requests like "1st chapter", "Chapter 2", "অধ্যায় ৩" and (optionally) detect subject
+function parseChapterRequest(message: string): {
+  chapterNumber?: number;
+  subjectHint?: string;
+  hasExplicitChapterTitle: boolean;
+} {
+  const text = message.toLowerCase();
+
+  const subjectHints: Array<{ re: RegExp; label: string }> = [
+    { re: /bangla\s*1(st)?\s*paper|বাংলা\s*১ম\s*পত্র|বাংলা\s*1ম\s*পত্র/i, label: "Bangla 1st Paper" },
+    { re: /bangla\s*2(nd)?\s*paper|বাংলা\s*২য়\s*পত্র|বাংলা\s*2য়\s*পত্র/i, label: "Bangla 2nd Paper" },
+    { re: /english\s*1(st)?\s*paper|ইংরেজি\s*১ম\s*পত্র/i, label: "English 1st Paper" },
+    { re: /english\s*2(nd)?\s*paper|ইংরেজি\s*২য়\s*পত্র/i, label: "English 2nd Paper" },
+    { re: /mathematics|math|গণিত/i, label: "Mathematics" },
+    { re: /general\s*science|সাধারণ\s*বিজ্ঞান/i, label: "General Science" },
+    { re: /bangladesh\s*&\s*global\s*studies|bgs|বাংলাদেশ\s*ও\s*বিশ্বপরিচয়/i, label: "Bangladesh & Global Studies" },
+    { re: /ict|তথ্য\s*ও\s*যোগাযোগ\s*প্রযুক্তি/i, label: "ICT" },
+    { re: /physics|পদার্থবিজ্ঞান/i, label: "Physics" },
+    { re: /chemistry|রসায়ন/i, label: "Chemistry" },
+    { re: /biology|জীববিজ্ঞান/i, label: "Biology" },
+    { re: /higher\s*mathematics|উচ্চতর\s*গণিত/i, label: "Higher Mathematics" },
+  ];
+
+  const subjectHint = subjectHints.find((s) => s.re.test(message))?.label;
+
+  // Detect chapter number in EN + BN
+  const chapterMatch = message.match(/\bchapter\s*(\d{1,2})\b/i)
+    || message.match(/\b(\d{1,2})\s*(?:st|nd|rd|th)\s*chapter\b/i)
+    || message.match(/অধ্যা(?:য়|য়)\s*(\d{1,2})/i);
+
+  const chapterNumber = chapterMatch?.[1] ? Number(chapterMatch[1]) : undefined;
+
+  // If the message includes a quoted title or anything beyond just "chapter N", treat as explicit
+  // Examples: "Chapter 2: লোকহার একুশে", "অধ্যায় ৩ — অণু পরমাণু"
+  const hasExplicitChapterTitle =
+    /chapter\s*\d{1,2}\s*[:–-]/i.test(message) ||
+    /অধ্যা(?:য়|য়)\s*\d{1,2}\s*[:–-]/i.test(message) ||
+    /chapter\s*\d{1,2}\s+\S+/i.test(message) ||
+    /অধ্যা(?:য়|য়)\s*\d{1,2}\s+\S+/i.test(message);
+
+  return { chapterNumber: Number.isFinite(chapterNumber) ? chapterNumber : undefined, subjectHint, hasExplicitChapterTitle };
+}
+
+// Extract topic/chapter from user message for web search (best-effort)
 function extractSearchQuery(message: string, studentClass: number): string {
+  const { chapterNumber, subjectHint, hasExplicitChapterTitle } = parseChapterRequest(message);
+
+  // If user only said "chapter 1/2/3" without title, do a targeted ToC lookup instead of letting the tutor guess.
+  if (chapterNumber && !hasExplicitChapterTitle) {
+    const subjectPart = subjectHint ? `${subjectHint} ` : "";
+    return `Bangladesh NCTB Class ${studentClass} ${subjectPart}textbook table of contents chapter ${chapterNumber} title`;
+  }
+
   // Common patterns for chapter/topic requests
   const patterns = [
     /explain\s+(?:the\s+)?(?:chapter\s+)?(?:on\s+)?["']?([^"'\n]+)["']?/i,
     /(?:what\s+is|tell\s+me\s+about|describe)\s+["']?([^"'\n?]+)["']?\??/i,
     /chapter\s+(?:\d+[\s:-]*)?["']?([^"'\n]+)["']?/i,
-    /(?:অধ্যায়|বিষয়)\s*[:–-]?\s*["']?([^"'\n]+)["']?/i,
+    /(?:অধ্যায়|অধ্যায়|বিষয়)\s*[:–-]?\s*["']?([^"'\n]+)["']?/i,
     /^([^?]+)\s+(?:explain|বুঝিয়ে\s+দাও|ব্যাখ্যা\s+করো)/i,
   ];
 
   for (const pattern of patterns) {
     const match = message.match(pattern);
     if (match && match[1]) {
-      return `Bangladesh NCTB Class ${studentClass} curriculum: ${match[1].trim()}`;
+      const subjectPart = subjectHint ? `${subjectHint} ` : "";
+      return `Bangladesh NCTB Class ${studentClass} ${subjectPart}curriculum: ${match[1].trim()}`;
     }
   }
 
-  // If no specific pattern, use the whole message as context
   if (message.length > 10) {
-    return `Bangladesh NCTB Class ${studentClass}: ${message.slice(0, 200)}`;
+    const subjectPart = subjectHint ? `${subjectHint} ` : "";
+    return `Bangladesh NCTB Class ${studentClass} ${subjectPart}${message.slice(0, 200)}`;
   }
 
   return "";
@@ -264,11 +316,26 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Minimal SSE helper for “ask for clarification” responses
+  const sseText = (text: string) => {
+    const payload = {
+      id: `clarify-${Date.now()}`,
+      object: "chat.completion.chunk",
+      created: Math.floor(Date.now() / 1000),
+      choices: [{ index: 0, delta: { role: "assistant", content: text }, finish_reason: null }],
+    };
+
+    const body = `data: ${JSON.stringify(payload)}\n\n` + `data: [DONE]\n\n`;
+    return new Response(body, {
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    });
+  };
+
   try {
     const { messages, studentInfo, persona } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
-    
+
     if (!LOVABLE_API_KEY) {
       console.error("LOVABLE_API_KEY is not configured");
       throw new Error("AI service is not configured");
@@ -277,12 +344,40 @@ serve(async (req) => {
     // Get the latest user message for web search
     const latestMessage = messages[messages.length - 1];
     let webContext = "";
-    
-    // Perform web search if we have Perplexity API key and there's a substantial question
-    if (PERPLEXITY_API_KEY && latestMessage?.content?.length > 10) {
-      const searchQuery = extractSearchQuery(latestMessage.content, studentInfo?.class || 5);
-      if (searchQuery) {
-        webContext = await searchWeb(searchQuery, PERPLEXITY_API_KEY);
+
+    // If the student asks only by chapter number, we must first resolve the exact chapter title.
+    const chapterReq = latestMessage?.content ? parseChapterRequest(String(latestMessage.content)) : { hasExplicitChapterTitle: true };
+
+    if (latestMessage?.content && chapterReq?.chapterNumber && !chapterReq?.hasExplicitChapterTitle) {
+      // Without a subject, we cannot safely map “chapter 2” to a real chapter.
+      if (!chapterReq.subjectHint) {
+        return sseText(
+          studentInfo?.version === "english"
+            ? "I cannot be 100% sure which book you mean from only a chapter number. Please tell me: (1) Subject/book (e.g., Bangla 1st Paper / Mathematics), and (2) the chapter title (or upload a photo of the chapter list/table of contents)."
+            : "শুধু ‘অধ্যায় ২/৩’ বললে আমি কোন বই/বিষয় বুঝবো নিশ্চিত হতে পারি না। দয়া করে বলো: (১) বিষয়/বই (যেমন বাংলা ১ম পত্র/গণিত), এবং (২) অধ্যায়ের নাম। অথবা বইয়ের সূচিপত্র/অধ্যায়ের তালিকার ছবি আপলোড করো।"
+        );
+      }
+
+      // With subject hint, do a targeted web lookup for the chapter title first.
+      if (PERPLEXITY_API_KEY) {
+        const tocQuery = extractSearchQuery(String(latestMessage.content), studentInfo?.class || 5);
+        webContext = await searchWeb(tocQuery, PERPLEXITY_API_KEY);
+      }
+
+      if (!webContext) {
+        return sseText(
+          studentInfo?.version === "english"
+            ? `I could not verify the exact title for Chapter ${chapterReq.chapterNumber} of ${chapterReq.subjectHint} from reliable web sources. Please share the chapter title, or upload a photo/PDF of the table of contents (সূচিপত্র).`
+            : `${chapterReq.subjectHint} এর অধ্যায় ${chapterReq.chapterNumber} এর সঠিক নাম আমি নির্ভরযোগ্যভাবে যাচাই করতে পারিনি। দয়া করে অধ্যায়ের নাম বলো, অথবা সূচিপত্র/চ্যাপ্টার লিস্টের ছবি/PDF আপলোড করো।`
+        );
+      }
+    } else {
+      // Perform web search if we have Perplexity API key and there's a substantial question
+      if (PERPLEXITY_API_KEY && latestMessage?.content?.length > 10) {
+        const searchQuery = extractSearchQuery(latestMessage.content, studentInfo?.class || 5);
+        if (searchQuery) {
+          webContext = await searchWeb(searchQuery, PERPLEXITY_API_KEY);
+        }
       }
     }
 
