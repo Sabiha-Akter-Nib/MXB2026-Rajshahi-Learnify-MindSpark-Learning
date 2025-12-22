@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -32,6 +32,7 @@ import { useStudySession } from "@/hooks/useStudySession";
 import { PersonaSelector, PersonaType, getPersonaPrompt } from "@/components/tutor/PersonaSelector";
 import { FileUploadModal } from "@/components/tutor/FileUploadModal";
 import { MultimodalInput } from "@/components/tutor/MultimodalInput";
+import { ChatHistory } from "@/components/tutor/ChatHistory";
 
 interface Message {
   id: string;
@@ -48,6 +49,50 @@ interface StudentInfo {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-tutor`;
 
+// Format text by removing asterisks and applying proper styling
+const formatMessageContent = (content: string): React.ReactNode[] => {
+  // Remove markdown asterisks but keep the text
+  let formattedContent = content
+    .replace(/\*\*\*(.+?)\*\*\*/g, '$1') // Remove ***bold italic***
+    .replace(/\*\*(.+?)\*\*/g, '$1')     // Remove **bold**
+    .replace(/\*(.+?)\*/g, '$1');         // Remove *italic*
+
+  return formattedContent.split("\n").map((line, i) => {
+    // Check if line is a heading (ends with colon or starts with caps)
+    const isHeading = /^[A-Z][^.!?]*:$/.test(line.trim()) || 
+                      /^(Step|Example|Note|Key|Important|Why|How|What|When|Where|Think|Remember|Summary|Practice|Question)/i.test(line.trim());
+    
+    // Check if line is a bullet point
+    const isBullet = /^[\•\-\*]\s/.test(line.trim()) || /^\d+[\.\)]\s/.test(line.trim());
+    
+    if (!line.trim()) {
+      return <div key={i} className="h-3" />;
+    }
+    
+    if (isHeading) {
+      return (
+        <p key={i} className="font-semibold text-foreground mt-4 mb-2 first:mt-0">
+          {line}
+        </p>
+      );
+    }
+    
+    if (isBullet) {
+      return (
+        <p key={i} className="pl-4 mb-1 text-foreground/90">
+          {line}
+        </p>
+      );
+    }
+    
+    return (
+      <p key={i} className="mb-2 leading-relaxed">
+        {line}
+      </p>
+    );
+  });
+};
+
 const Tutor = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -57,6 +102,7 @@ const Tutor = () => {
   const [showPersonaSelector, setShowPersonaSelector] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showMultimodal, setShowMultimodal] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
   
@@ -77,11 +123,53 @@ const Tutor = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+  
   useEffect(() => {
     if (!loading && !user) {
       navigate("/login");
     }
   }, [user, loading, navigate]);
+
+  // Create initial greeting
+  const createInitialGreeting = useCallback((data: { full_name: string; class: number; version: string }) => {
+    const isBangla = data.version === "bangla";
+    const greeting = isBangla 
+      ? `আসসালামু আলাইকুম, ${data.full_name}! 
+
+আমি তোমার MindSpark AI Tutor। আমি তোমাকে Class ${data.class} এর NCTB পাঠ্যক্রম অনুযায়ী পড়াশোনায় সাহায্য করতে এসেছি।
+
+তুমি আমাকে যা বলতে পারো:
+
+• যেকোনো টপিক বিস্তারিতভাবে বুঝিয়ে দিতে
+• অধ্যায় ভিত্তিক প্র্যাক্টিস প্রশ্ন (MCQ, CQ, SQ) দিতে
+• হোমওয়ার্কে সাহায্য করতে
+• পরীক্ষার প্রস্তুতিতে সহায়তা করতে
+
+আমি ওয়েব থেকে সবচেয়ে সাম্প্রতিক এবং সঠিক তথ্য খুঁজে তোমাকে সাহায্য করব। NCTB পাঠ্যক্রম প্রতিবছর পরিবর্তন হয়, তাই আমি সবসময় আপডেট তথ্য দেওয়ার চেষ্টা করব।
+
+${data.full_name}, আজ কোন বিষয়ে পড়তে চাও?`
+      : `Hello, ${data.full_name}! 
+
+I am your MindSpark AI Tutor, and I am here to help you with your Class ${data.class} NCTB curriculum.
+
+Here is what I can help you with:
+
+• Explain any topic in great detail with step-by-step breakdowns
+• Provide practice questions (MCQ, CQ, SQ) based on your chapters
+• Help you with your homework and assignments
+• Assist with exam preparation
+
+I search the web to find the most recent and accurate information for you. Since the NCTB curriculum changes every year, I always verify my answers to give you the most up-to-date information.
+
+${data.full_name}, what would you like to study today?`;
+    
+    return {
+      id: "1",
+      role: "assistant" as const,
+      content: greeting,
+      timestamp: new Date(),
+    };
+  }, []);
 
   // Fetch student profile and set initial greeting
   useEffect(() => {
@@ -101,32 +189,31 @@ const Tutor = () => {
           version: data.version,
         };
         setStudentInfo(info);
-        
-        // Set personalized greeting based on student info
-        const isBangla = data.version === "bangla";
-        const greeting = isBangla 
-          ? `আসসালামু আলাইকুম, ${data.full_name}! 👋\n\nআমি তোমার MindSpark AI Tutor। আমি তোমাকে Class ${data.class} এর NCTB পাঠ্যক্রম অনুযায়ী পড়াশোনায় সাহায্য করতে এসেছি।\n\nতুমি আমাকে:\n• যেকোনো টপিক বুঝিয়ে দিতে বলতে পারো\n• অধ্যায় ভিত্তিক প্র্যাক্টিস প্রশ্ন চাইতে পারো\n• হোমওয়ার্কে সাহায্য নিতে পারো\n\n🔍 আমি ওয়েব থেকে তোমার ক্লাসের জন্য উপযুক্ত প্রশ্ন খুঁজে আনতে পারি!\n\nআজ কী পড়তে চাও?`
-          : `Hello, ${data.full_name}! 👋\n\nI'm your MindSpark AI Tutor. I'm here to help you with your Class ${data.class} NCTB curriculum.\n\nYou can ask me to:\n• Explain any topic in detail\n• Provide chapter-based practice questions\n• Help with your homework\n\n🔍 I can search the web to find relevant practice questions for your grade!\n\nWhat would you like to study today?`;
-        
-        setMessages([{
-          id: "1",
-          role: "assistant",
-          content: greeting,
-          timestamp: new Date(),
-        }]);
+        setMessages([createInitialGreeting(data)]);
       } else {
         // Default greeting if no profile
         setMessages([{
           id: "1",
           role: "assistant",
-          content: "আসসালামু আলাইকুম! I'm your MindSpark AI Tutor. I'm here to help you learn any subject from your NCTB curriculum.\n\nYou can:\n• Ask me to explain any topic\n• Practice with adaptive questions\n• Get homework help\n\nWhat would you like to learn today?",
+          content: `Assalamu Alaikum! 
+
+I am your MindSpark AI Tutor. I am here to help you learn any subject from your NCTB curriculum.
+
+You can ask me to:
+• Explain any topic in detail
+• Practice with adaptive questions
+• Get homework help
+
+I search the web to provide you with the most accurate and current information.
+
+What would you like to learn today?`,
           timestamp: new Date(),
         }]);
       }
     };
 
     fetchProfile();
-  }, [user]);
+  }, [user, createInitialGreeting]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -135,6 +222,87 @@ const Tutor = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Save messages to database
+  const saveMessage = async (conversationId: string, role: "user" | "assistant", content: string) => {
+    try {
+      await supabase.from("chat_messages").insert({
+        conversation_id: conversationId,
+        role,
+        content,
+      });
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
+  };
+
+  // Create or get conversation
+  const ensureConversation = async (firstUserMessage?: string): Promise<string> => {
+    if (currentConversationId) return currentConversationId;
+    
+    if (!user) throw new Error("User not authenticated");
+    
+    // Generate title from first message
+    const title = firstUserMessage 
+      ? firstUserMessage.slice(0, 50) + (firstUserMessage.length > 50 ? "..." : "")
+      : "New Conversation";
+    
+    const { data, error } = await supabase
+      .from("chat_conversations")
+      .insert({
+        user_id: user.id,
+        title,
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    setCurrentConversationId(data.id);
+    return data.id;
+  };
+
+  // Load conversation messages
+  const loadConversation = async (conversationId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("chat_messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+      
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        const loadedMessages: Message[] = data.map((msg) => ({
+          id: msg.id,
+          role: msg.role as "user" | "assistant",
+          content: msg.content,
+          timestamp: new Date(msg.created_at),
+        }));
+        setMessages(loadedMessages);
+        setCurrentConversationId(conversationId);
+      }
+    } catch (error) {
+      console.error("Error loading conversation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load conversation",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleNewConversation = () => {
+    setCurrentConversationId(null);
+    if (studentInfo) {
+      setMessages([createInitialGreeting({
+        full_name: studentInfo.name,
+        class: studentInfo.class,
+        version: studentInfo.version,
+      })]);
+    }
+  };
 
   const streamChat = async (userMessages: Array<{ role: string; content: string }>) => {
     const resp = await fetch(CHAT_URL, {
@@ -241,6 +409,8 @@ const Tutor = () => {
         } catch { /* ignore */ }
       }
     }
+
+    return assistantContent;
   };
 
   const handleSend = async () => {
@@ -259,6 +429,12 @@ const Tutor = () => {
     setIsTyping(true);
 
     try {
+      // Ensure we have a conversation
+      const conversationId = await ensureConversation(currentInput);
+      
+      // Save user message
+      await saveMessage(conversationId, "user", currentInput);
+
       // Build message history for context
       const chatHistory = messages
         .filter(m => m.id !== "1") // Skip initial greeting
@@ -266,7 +442,18 @@ const Tutor = () => {
       
       chatHistory.push({ role: "user", content: currentInput });
 
-      await streamChat(chatHistory);
+      const assistantContent = await streamChat(chatHistory);
+      
+      // Save assistant response
+      if (assistantContent) {
+        await saveMessage(conversationId, "assistant", assistantContent);
+        
+        // Update conversation title and timestamp
+        await supabase
+          .from("chat_conversations")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", conversationId);
+      }
     } catch (error) {
       console.error("Chat error:", error);
       toast({
@@ -332,6 +519,15 @@ const Tutor = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {user && (
+              <ChatHistory
+                userId={user.id}
+                currentConversationId={currentConversationId}
+                onSelectConversation={loadConversation}
+                onNewConversation={handleNewConversation}
+                isBangla={studentInfo?.version === "bangla"}
+              />
+            )}
             <Button variant="ghost" size="icon">
               <MoreVertical className="w-5 h-5" />
             </Button>
@@ -355,32 +551,35 @@ const Tutor = () => {
                 )}
               >
                 {message.role === "assistant" && (
-                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                     <Sparkles className="w-4 h-4 text-primary-foreground" />
                   </div>
                 )}
 
                 <div
                   className={cn(
-                    "max-w-[80%] rounded-2xl px-4 py-3",
+                    "max-w-[85%] rounded-2xl px-5 py-4",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-card border border-border rounded-bl-md"
+                      : "bg-card border border-border rounded-bl-md shadow-sm"
                   )}
                 >
-                  <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-                    {message.content.split("\n").map((line, i) => (
-                      <p key={i} className={cn(
-                        "mb-2 last:mb-0",
-                        message.role === "user" ? "text-primary-foreground" : "text-foreground"
-                      )}>
-                        {line}
-                      </p>
-                    ))}
+                  <div className={cn(
+                    "prose prose-sm max-w-none",
+                    message.role === "user" 
+                      ? "text-primary-foreground" 
+                      : "dark:prose-invert text-foreground"
+                  )}>
+                    {message.role === "assistant" 
+                      ? formatMessageContent(message.content)
+                      : message.content.split("\n").map((line, i) => (
+                          <p key={i} className="mb-2 last:mb-0">{line}</p>
+                        ))
+                    }
                   </div>
 
                   {message.role === "assistant" && message.content && (
-                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
+                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border">
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -402,7 +601,7 @@ const Tutor = () => {
                 </div>
 
                 {message.role === "user" && (
-                  <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                     <User className="w-4 h-4 text-accent-foreground" />
                   </div>
                 )}
@@ -494,9 +693,9 @@ const Tutor = () => {
           {/* Quick Actions */}
           <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar pb-2">
             {[
-              { icon: BookOpen, label: "Explain Topic", prompt: "Please explain " },
-              { icon: Brain, label: "Practice Questions", prompt: "Give me practice questions for " },
-              { icon: RefreshCw, label: "Revise Chapter", prompt: "Help me revise " },
+              { icon: BookOpen, label: studentInfo?.version === "bangla" ? "টপিক ব্যাখ্যা" : "Explain Topic", prompt: studentInfo?.version === "bangla" ? "দয়া করে বিস্তারিতভাবে ব্যাখ্যা করো " : "Please explain in detail " },
+              { icon: Brain, label: studentInfo?.version === "bangla" ? "প্র্যাক্টিস প্রশ্ন" : "Practice Questions", prompt: studentInfo?.version === "bangla" ? "এই বিষয়ে MCQ, CQ এবং সংক্ষিপ্ত প্রশ্ন দাও " : "Give me MCQ, CQ and short questions for " },
+              { icon: RefreshCw, label: studentInfo?.version === "bangla" ? "রিভিশন" : "Revise Chapter", prompt: studentInfo?.version === "bangla" ? "রিভিশন করতে সাহায্য করো " : "Help me revise " },
             ].map((action) => (
               <button
                 key={action.label}
@@ -528,7 +727,9 @@ const Tutor = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask me anything about your studies..."
+                placeholder={studentInfo?.version === "bangla" 
+                  ? "তোমার পড়াশোনা সম্পর্কে যেকোনো প্রশ্ন করো..." 
+                  : "Ask me anything about your studies..."}
                 className="min-h-[52px] max-h-32 pr-24 resize-none"
                 rows={1}
                 disabled={isTyping}
@@ -587,8 +788,12 @@ const Tutor = () => {
           </div>
 
           <p className="text-center text-xs text-muted-foreground mt-3">
-            MindSpark AI is designed for study-related questions only. 
-            <Link to="/" className="text-primary hover:underline ml-1">Learn more</Link>
+            {studentInfo?.version === "bangla" 
+              ? "MindSpark AI শুধুমাত্র পড়াশোনা সংক্রান্ত প্রশ্নের জন্য তৈরি।"
+              : "MindSpark AI is designed for study-related questions only."}
+            <Link to="/" className="text-primary hover:underline ml-1">
+              {studentInfo?.version === "bangla" ? "আরো জানুন" : "Learn more"}
+            </Link>
           </p>
         </div>
       </div>
