@@ -10,6 +10,7 @@ import {
   Laptop,
   Languages
 } from "lucide-react";
+import { ScrollAnimatedBackground } from "./ScrollAnimatedBackground";
 
 const subjects = [
   { icon: BookText, name: "Bangla 1st Paper", color: "primary", delay: 0 },
@@ -179,25 +180,8 @@ export function SubjectsSection() {
 
   return (
     <section ref={sectionRef} className="py-32 relative overflow-hidden bg-background">
-      {/* Animated background */}
-      <div className="absolute inset-0">
-        <motion.div
-          animate={{ 
-            x: [0, 50, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-radial from-primary/5 to-transparent rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ 
-            x: [0, -40, 0],
-            y: [0, 40, 0],
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-radial from-accent/5 to-transparent rounded-full blur-3xl"
-        />
-      </div>
+      {/* Scroll-animated background */}
+      <ScrollAnimatedBackground variant="subjects" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
