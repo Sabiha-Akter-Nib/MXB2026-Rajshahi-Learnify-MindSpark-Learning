@@ -551,7 +551,15 @@ const Assessment = () => {
           </div>
 
           <div className="flex gap-4">
-            {hasWrongAnswers ? (
+            {fromPlan ? (
+              // From learning plan - only show Back to Dashboard
+              <Button className="flex-1" asChild>
+                <Link to="/dashboard">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  {isBangla ? "ড্যাশবোর্ডে ফিরে যাও" : "Back to Dashboard"}
+                </Link>
+              </Button>
+            ) : hasWrongAnswers ? (
               // Show Try Again if there are wrong answers
               <>
                 <Button variant="outline" className="flex-1" asChild>
