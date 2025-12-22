@@ -19,6 +19,7 @@ import {
   Loader2,
   MicOff,
   Settings2,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -305,6 +306,48 @@ What would you like to learn today?`,
     }
   };
 
+  const handleDeleteAllHistory = async () => {
+    if (!user) return;
+    
+    const confirmMessage = studentInfo?.version === "bangla" 
+      ? "তুমি কি নিশ্চিত যে সব কথোপকথন মুছে ফেলতে চাও?" 
+      : "Are you sure you want to delete all chat history?";
+    
+    if (!window.confirm(confirmMessage)) return;
+    
+    try {
+      // Delete all conversations for this user
+      const { error } = await supabase
+        .from("chat_conversations")
+        .delete()
+        .eq("user_id", user.id);
+      
+      if (error) throw error;
+      
+      // Reset current conversation
+      setCurrentConversationId(null);
+      if (studentInfo) {
+        setMessages([createInitialGreeting({
+          full_name: studentInfo.name,
+          class: studentInfo.class,
+          version: studentInfo.version,
+        })]);
+      }
+      
+      toast({
+        title: studentInfo?.version === "bangla" ? "মুছে ফেলা হয়েছে" : "Deleted",
+        description: studentInfo?.version === "bangla" ? "সব কথোপকথন মুছে ফেলা হয়েছে" : "All chat history deleted",
+      });
+    } catch (error) {
+      console.error("Error deleting history:", error);
+      toast({
+        title: studentInfo?.version === "bangla" ? "ত্রুটি" : "Error",
+        description: studentInfo?.version === "bangla" ? "মুছতে পারিনি" : "Failed to delete history",
+        variant: "destructive",
+      });
+    }
+  };
+
   const streamChat = async (userMessages: Array<{ role: string; content: string }>) => {
     const resp = await fetch(CHAT_URL, {
       method: "POST",
@@ -529,8 +572,13 @@ What would you like to learn today?`,
                 isBangla={studentInfo?.version === "bangla"}
               />
             )}
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="w-5 h-5" />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleDeleteAllHistory}
+              title={studentInfo?.version === "bangla" ? "সব ইতিহাস মুছুন" : "Delete all history"}
+            >
+              <Trash2 className="w-5 h-5 text-destructive" />
             </Button>
           </div>
         </div>
