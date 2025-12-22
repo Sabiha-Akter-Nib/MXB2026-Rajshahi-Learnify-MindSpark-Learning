@@ -142,29 +142,21 @@ const Assessment = () => {
   const generateQuestionsFromContext = async (tutorContext: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/run-assessment`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            action: "generate",
-            userId: user?.id,
-            subjectId,
-            topic,
-            bloomLevel,
-            tutorContext,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke("run-assessment", {
+        body: {
+          action: "generate",
+          userId: user?.id,
+          subjectId,
+          topic,
+          bloomLevel,
+          tutorContext,
+        },
+      });
 
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
 
-      setQuestions(data.questions || []);
+      setQuestions(((data as any)?.questions as Question[]) || []);
       setCurrentIndex(0);
       setAnswers([]);
       setSelectedAnswer(null);
@@ -173,7 +165,9 @@ const Assessment = () => {
       console.error("Error generating questions:", error);
       toast({
         title: isBangla ? "ত্রুটি" : "Error",
-        description: isBangla ? "প্রশ্ন তৈরি করতে ব্যর্থ হয়েছে।" : "Failed to generate questions. Please try again.",
+        description: isBangla
+          ? "প্রশ্ন তৈরি করতে ব্যর্থ হয়েছে।"
+          : "Failed to generate questions. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -202,48 +196,33 @@ const Assessment = () => {
   const submitAssessment = async (finalAnswers: number[]) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/run-assessment`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            action: "submit",
-            userId: user?.id,
-            subjectId,
-            topic,
-            bloomLevel,
-            answers: finalAnswers,
-            questions,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke("run-assessment", {
+        body: {
+          action: "submit",
+          userId: user?.id,
+          subjectId,
+          topic,
+          bloomLevel,
+          answers: finalAnswers,
+          questions,
+        },
+      });
 
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
 
-      setResults(data);
+      setResults(data as any);
       setShowResult(true);
 
-      if (data.shouldLevelUp) {
-        toast({
-          title: "🎉 Level Up!",
-          description: isBangla 
-            ? `তুমি ${data.nextLevel.toUpperCase()} লেভেলে উন্নীত হয়েছো!`
-            : `You've advanced to ${data.nextLevel.toUpperCase()} level!`,
-        });
-        const nextLevelIndex = BLOOM_LEVELS.findIndex(b => b.id === data.nextLevel);
-        setBloomLevelIndex(nextLevelIndex);
-        setBloomLevel(data.nextLevel);
-      }
+      // IMPORTANT: do NOT mutate bloomLevel/bloomLevelIndex here.
+      // The user advances only when they press "Next Level".
     } catch (error) {
       console.error("Error submitting assessment:", error);
       toast({
         title: isBangla ? "ত্রুটি" : "Error",
-        description: isBangla ? "মূল্যায়ন জমা দিতে ব্যর্থ হয়েছে।" : "Failed to submit assessment.",
+        description: isBangla
+          ? "মূল্যায়ন জমা দিতে ব্যর্থ হয়েছে।"
+          : "Failed to submit assessment.",
         variant: "destructive",
       });
     } finally {
@@ -252,18 +231,17 @@ const Assessment = () => {
   };
 
   const handleNextLevel = async () => {
-    // Move to next Bloom's level
-    const nextLevelIndex = bloomLevelIndex + 1;
-    if (nextLevelIndex < BLOOM_LEVELS.length) {
-      const newLevel = BLOOM_LEVELS[nextLevelIndex].id;
-      setBloomLevelIndex(nextLevelIndex);
-      setBloomLevel(newLevel);
-      setShowResult(false);
-      setResults(null);
-      
-      // Get the last tutor context and generate new questions with the new level
-      await regenerateQuestions(newLevel);
-    }
+    if (!results?.shouldLevelUp || !results.nextLevel) return;
+
+    const nextLevelIndex = BLOOM_LEVELS.findIndex((b) => b.id === results.nextLevel);
+    if (nextLevelIndex === -1) return;
+
+    setBloomLevelIndex(nextLevelIndex);
+    setBloomLevel(results.nextLevel);
+    setShowResult(false);
+    setResults(null);
+
+    await regenerateQuestions(results.nextLevel);
   };
 
   const handleTryAgain = async () => {
@@ -305,29 +283,21 @@ const Assessment = () => {
 
   const generateQuestionsWithLevel = async (tutorContext: string, level: string) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/run-assessment`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            action: "generate",
-            userId: user?.id,
-            subjectId,
-            topic,
-            bloomLevel: level,
-            tutorContext,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke("run-assessment", {
+        body: {
+          action: "generate",
+          userId: user?.id,
+          subjectId,
+          topic,
+          bloomLevel: level,
+          tutorContext,
+        },
+      });
 
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
 
-      setQuestions(data.questions || []);
+      setQuestions(((data as any)?.questions as Question[]) || []);
       setCurrentIndex(0);
       setAnswers([]);
       setSelectedAnswer(null);
@@ -336,7 +306,9 @@ const Assessment = () => {
       console.error("Error generating questions:", error);
       toast({
         title: isBangla ? "ত্রুটি" : "Error",
-        description: isBangla ? "প্রশ্ন তৈরি করতে ব্যর্থ হয়েছে।" : "Failed to generate questions. Please try again.",
+        description: isBangla
+          ? "প্রশ্ন তৈরি করতে ব্যর্থ হয়েছে।"
+          : "Failed to generate questions. Please try again.",
         variant: "destructive",
       });
     }
@@ -453,7 +425,7 @@ const Assessment = () => {
                 <span className="font-semibold">+{results.xpEarned} XP</span>
               </div>
               <div className={cn("px-4 py-2 rounded-full text-white", currentBloom?.color)}>
-                {isBangla ? currentBloom?.labelBn : currentBloom?.label} {isBangla ? "লেভেল" : "Level"}
+                {currentBloom?.label} Level
               </div>
             </div>
 
@@ -467,9 +439,12 @@ const Assessment = () => {
                   🎉 {isBangla ? "অভিনন্দন! তুমি লেভেল আপ করেছো!" : "Congratulations! You've leveled up!"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {isBangla 
-                    ? `পরবর্তী চ্যালেঞ্জ: ${BLOOM_LEVELS[bloomLevelIndex + 1]?.labelBn || ""} লেভেলের প্রশ্ন`
-                    : `Next challenge: ${results.nextLevel.toUpperCase()} level questions`}
+                  {(() => {
+                    const next = BLOOM_LEVELS.find((b) => b.id === results.nextLevel);
+                    return isBangla
+                      ? `পরবর্তী চ্যালেঞ্জ: ${next?.label || ""} লেভেলের প্রশ্ন`
+                      : `Next challenge: ${next?.label?.toUpperCase() || ""} level questions`;
+                  })()}
                 </p>
               </motion.div>
             )}
@@ -557,8 +532,13 @@ const Assessment = () => {
               </Button>
               <div>
                 <h1 className="font-heading font-semibold">{topic}</h1>
-                <div className={cn("text-xs px-2 py-0.5 rounded text-white inline-block", currentBloom?.color)}>
-                  {isBangla ? currentBloom?.labelBn : currentBloom?.label} {isBangla ? "লেভেল" : "Level"}
+                <div
+                  className={cn(
+                    "text-xs px-2 py-0.5 rounded text-white inline-block",
+                    currentBloom?.color
+                  )}
+                >
+                  {currentBloom?.label} Level
                 </div>
               </div>
             </div>
