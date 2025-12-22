@@ -18,7 +18,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, chapters, bloomLevel = "remember" } = await req.json();
+    const { userId, chapters, bloomLevel = "remember", planType = "weekly" } = await req.json();
 
     if (!userId) {
       throw new Error("User ID required");
@@ -123,13 +123,13 @@ Rules:
     // Create the learning plan
     const startDate = new Date();
     const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 7); // Default to weekly
+    endDate.setDate(endDate.getDate() + (planType === "daily" ? 1 : 7));
 
     const { data: plan, error: planError } = await supabase
       .from("learning_plans")
       .insert({
         user_id: userId,
-        plan_type: "weekly",
+        plan_type: planType,
         start_date: startDate.toISOString().split("T")[0],
         end_date: endDate.toISOString().split("T")[0],
         status: "active"

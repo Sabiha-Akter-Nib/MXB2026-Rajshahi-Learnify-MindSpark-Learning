@@ -74,6 +74,10 @@ const Assessment = () => {
 
   const topic = searchParams.get("topic") || "General Knowledge";
   const subjectId = searchParams.get("subject");
+  const fromPlan = searchParams.get("fromPlan") === "true";
+  const chapterNameParam = searchParams.get("chapterName");
+  const subjectNameParam = searchParams.get("subjectName");
+  const bloomLevelParam = searchParams.get("bloomLevel");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -83,9 +87,80 @@ const Assessment = () => {
 
   useEffect(() => {
     if (user) {
-      checkTutorContextAndGenerate();
+      // If coming from learning plan, use the generate-quiz function
+      if (fromPlan && chapterNameParam) {
+        generateQuestionsFromPlan();
+      } else {
+        checkTutorContextAndGenerate();
+      }
     }
-  }, [user]);
+  }, [user, fromPlan, chapterNameParam]);
+
+  // Generate questions from learning plan using chapter search
+  const generateQuestionsFromPlan = async () => {
+    setIsLoading(true);
+    try {
+      // Get user profile for language preference
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("version")
+        .eq("user_id", user?.id)
+        .single();
+      
+      setIsBangla(profile?.version === "bangla");
+      
+      // Set bloom level from URL param
+      if (bloomLevelParam) {
+        setBloomLevel(bloomLevelParam);
+        const levelIdx = BLOOM_LEVELS.findIndex(b => b.id === bloomLevelParam);
+        if (levelIdx !== -1) setBloomLevelIndex(levelIdx);
+      }
+
+      // Call generate-quiz edge function
+      const { data, error } = await supabase.functions.invoke("generate-quiz", {
+        body: {
+          userId: user?.id,
+          chapterName: chapterNameParam,
+          subjectName: subjectNameParam || "",
+          subjectId: subjectId,
+          bloomLevel: bloomLevelParam || "remember",
+        },
+      });
+
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      const generatedQuestions = ((data as any)?.questions as Question[]) || [];
+      
+      if (generatedQuestions.length === 0) {
+        toast({
+          title: isBangla ? "কোনো প্রশ্ন তৈরি হয়নি" : "No questions generated",
+          description: isBangla 
+            ? "এই অধ্যায়ের জন্য প্রশ্ন তৈরি করা যায়নি। আবার চেষ্টা করো।" 
+            : "Could not generate questions for this chapter. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setQuestions(generatedQuestions);
+      setCurrentIndex(0);
+      setAnswers([]);
+      setSelectedAnswer(null);
+      setShowResult(false);
+    } catch (error) {
+      console.error("Error generating questions from plan:", error);
+      toast({
+        title: isBangla ? "ত্রুটি" : "Error",
+        description: isBangla
+          ? "প্রশ্ন তৈরি করতে ব্যর্থ হয়েছে।"
+          : "Failed to generate questions. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Check if there's AI tutor context first
   const checkTutorContextAndGenerate = async () => {

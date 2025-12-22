@@ -70,6 +70,11 @@ const BLOOM_LEVELS = [
   { value: "create", label: "Create" },
 ];
 
+const PLAN_TYPES = [
+  { value: "daily", label: "Daily Plan" },
+  { value: "weekly", label: "Weekly Plan" },
+];
+
 const BLOOM_COLORS: Record<string, string> = {
   remember: "bg-blue-500",
   understand: "bg-green-500",
@@ -86,6 +91,7 @@ const LearningPlanPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedBloomLevel, setSelectedBloomLevel] = useState("remember");
+  const [selectedPlanType, setSelectedPlanType] = useState("weekly");
   const [chapterInputs, setChapterInputs] = useState<ChapterInput[]>([
     { subjectId: "", chapterName: "" },
     { subjectId: "", chapterName: "" },
@@ -197,6 +203,7 @@ const LearningPlanPage = () => {
             chapterName: ch.chapterName.trim(),
           })),
           bloomLevel: selectedBloomLevel,
+          planType: selectedPlanType,
         },
       });
 
@@ -323,6 +330,26 @@ const LearningPlanPage = () => {
                   Enter up to 5 chapters from different subjects. We'll generate
                   quizzes based on your selected Bloom's Taxonomy level.
                 </p>
+
+                {/* Plan Type Selection */}
+                <div className="space-y-2">
+                  <Label>Select Plan Type</Label>
+                  <Select
+                    value={selectedPlanType}
+                    onValueChange={setSelectedPlanType}
+                  >
+                    <SelectTrigger className="w-full md:w-64">
+                      <SelectValue placeholder="Select plan type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PLAN_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* Bloom's Level Selection */}
                 <div className="space-y-2">
@@ -537,7 +564,7 @@ const LearningPlanPage = () => {
                                 <Link
                                   to={`/assessment?topic=${encodeURIComponent(
                                     task.topic
-                                  )}&bloomLevel=${task.bloom_level}`}
+                                  )}&bloomLevel=${task.bloom_level}&subjectId=${task.subjects ? subjects.find(s => s.name === task.subjects?.name)?.id || '' : ''}&chapterName=${encodeURIComponent(task.topic)}&subjectName=${encodeURIComponent(task.subjects?.name || '')}&fromPlan=true`}
                                 >
                                   <Target className="w-4 h-4 mr-1" />
                                   Take Quiz
