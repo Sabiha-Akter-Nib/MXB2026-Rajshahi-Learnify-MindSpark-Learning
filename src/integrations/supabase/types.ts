@@ -50,6 +50,163 @@ export type Database = {
         }
         Relationships: []
       }
+      student_progress: {
+        Row: {
+          chapters_completed: number
+          created_at: string
+          current_chapter: number
+          id: string
+          last_studied_at: string | null
+          subject_id: string
+          updated_at: string
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          chapters_completed?: number
+          created_at?: string
+          current_chapter?: number
+          id?: string
+          last_studied_at?: string | null
+          subject_id: string
+          updated_at?: string
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          chapters_completed?: number
+          created_at?: string
+          current_chapter?: number
+          id?: string
+          last_studied_at?: string | null
+          subject_id?: string
+          updated_at?: string
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_progress_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_stats: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_activity_date: string | null
+          longest_streak: number
+          total_study_minutes: number
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          total_study_minutes?: number
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          total_study_minutes?: number
+          total_xp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_sessions: {
+        Row: {
+          bloom_level: string | null
+          created_at: string
+          duration_minutes: number
+          id: string
+          subject_id: string | null
+          topic: string | null
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          bloom_level?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          subject_id?: string | null
+          topic?: string | null
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          bloom_level?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          subject_id?: string | null
+          topic?: string | null
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          max_class: number
+          min_class: number
+          name: string
+          name_bn: string | null
+          total_chapters: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          max_class?: number
+          min_class?: number
+          name: string
+          name_bn?: string | null
+          total_chapters?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          max_class?: number
+          min_class?: number
+          name?: string
+          name_bn?: string | null
+          total_chapters?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
