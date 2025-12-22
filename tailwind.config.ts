@@ -167,20 +167,20 @@ export default {
           "50%": { borderColor: "hsl(174 62% 45% / 0.6)" },
         },
         "tilt-left": {
-          "0%, 100%": { transform: "rotate(-1deg)" },
-          "50%": { transform: "rotate(-3deg)" },
+          "0%, 100%": { transform: "translateX(-8px) rotate(-1deg)" },
+          "50%": { transform: "translateX(-16px) rotate(-2deg)" },
         },
         "tilt-right": {
-          "0%, 100%": { transform: "rotate(1deg)" },
-          "50%": { transform: "rotate(3deg)" },
+          "0%, 100%": { transform: "translateX(8px) rotate(1deg)" },
+          "50%": { transform: "translateX(16px) rotate(2deg)" },
         },
         "drift-left": {
-          "0%, 100%": { transform: "translateX(0)" },
-          "50%": { transform: "translateX(-10px)" },
+          "0%, 100%": { transform: "translateX(0) translateY(0)" },
+          "50%": { transform: "translateX(-20px) translateY(-5px)" },
         },
         "drift-right": {
-          "0%, 100%": { transform: "translateX(0)" },
-          "50%": { transform: "translateX(10px)" },
+          "0%, 100%": { transform: "translateX(0) translateY(0)" },
+          "50%": { transform: "translateX(20px) translateY(-5px)" },
         },
         "morph": {
           "0%, 100%": { borderRadius: "60% 40% 30% 70%/60% 30% 70% 40%" },

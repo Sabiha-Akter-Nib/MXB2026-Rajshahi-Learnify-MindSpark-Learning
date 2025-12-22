@@ -215,21 +215,17 @@
     background-image: var(--gradient-accent);
   }
   
-  /* Rainbow shimmer text */
+  /* Gradient text - Static (no animation) */
   .shimmer-text {
     background: linear-gradient(
-      90deg,
+      135deg,
       hsl(var(--primary)) 0%,
-      hsl(var(--accent)) 25%,
-      hsl(var(--primary-light)) 50%,
-      hsl(var(--accent-light)) 75%,
-      hsl(var(--primary)) 100%
+      hsl(var(--accent)) 50%,
+      hsl(var(--primary-light)) 100%
     );
-    background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: shimmer 3s linear infinite;
   }
   
   /* Focus Ring */
