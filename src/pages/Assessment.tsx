@@ -261,37 +261,49 @@ const Assessment = () => {
       setResults(null);
       
       // Get the last tutor context again and generate new questions
-      try {
-        const { data: conversations } = await supabase
-          .from("chat_conversations")
-          .select("id")
-          .eq("user_id", user?.id)
-          .order("updated_at", { ascending: false })
+      await regenerateQuestions();
+    }
+  };
+
+  const handleTryAgain = async () => {
+    // Retry the same level
+    setShowResult(false);
+    setResults(null);
+    await regenerateQuestions();
+  };
+
+  const regenerateQuestions = async () => {
+    try {
+      const { data: conversations } = await supabase
+        .from("chat_conversations")
+        .select("id")
+        .eq("user_id", user?.id)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+
+      if (conversations && conversations.length > 0) {
+        const { data: messages } = await supabase
+          .from("chat_messages")
+          .select("content")
+          .eq("conversation_id", conversations[0].id)
+          .eq("role", "assistant")
+          .order("created_at", { ascending: false })
           .limit(1);
 
-        if (conversations && conversations.length > 0) {
-          const { data: messages } = await supabase
-            .from("chat_messages")
-            .select("content")
-            .eq("conversation_id", conversations[0].id)
-            .eq("role", "assistant")
-            .order("created_at", { ascending: false })
-            .limit(1);
-
-          if (messages && messages.length > 0) {
-            await generateQuestionsFromContext(messages[0].content);
-          }
+        if (messages && messages.length > 0) {
+          await generateQuestionsFromContext(messages[0].content);
         }
-      } catch (error) {
-        console.error("Error loading next level:", error);
       }
+    } catch (error) {
+      console.error("Error regenerating questions:", error);
     }
   };
 
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
   const currentBloom = BLOOM_LEVELS.find((b) => b.id === bloomLevel);
-  const isLastLevel = bloomLevel === "create";
+  const isLastLevel = bloomLevelIndex >= BLOOM_LEVELS.length - 1;
+  const hasWrongAnswers = results?.results.some(r => !r.isCorrect);
 
   if (loading || isLoading) {
     return (
@@ -446,7 +458,22 @@ const Assessment = () => {
           </div>
 
           <div className="flex gap-4">
-            {isLastLevel ? (
+            {hasWrongAnswers ? (
+              // Show Try Again if there are wrong answers
+              <>
+                <Button variant="outline" className="flex-1" asChild>
+                  <Link to="/dashboard">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    {isBangla ? "ড্যাশবোর্ড" : "Dashboard"}
+                  </Link>
+                </Button>
+                <Button className="flex-1" onClick={handleTryAgain}>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  {isBangla ? "আবার চেষ্টা করো" : "Try Again"}
+                </Button>
+              </>
+            ) : isLastLevel ? (
+              // All levels complete - only show Dashboard
               <Button className="flex-1" asChild>
                 <Link to="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
@@ -454,6 +481,7 @@ const Assessment = () => {
                 </Link>
               </Button>
             ) : (
+              // Pass - show Next Level
               <>
                 <Button variant="outline" className="flex-1" asChild>
                   <Link to="/dashboard">
