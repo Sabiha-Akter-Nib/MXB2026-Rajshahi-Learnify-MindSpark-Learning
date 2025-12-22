@@ -1,22 +1,101 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Sparkles, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { signIn, user, loading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login:", formData);
+    setErrors({});
+    
+    // Validate form
+    const result = loginSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setIsLoading(true);
+    
+    const { error } = await signIn(formData.email, formData.password);
+
+    setIsLoading(false);
+
+    if (error) {
+      // Handle specific error cases
+      if (error.message.includes("Invalid login credentials")) {
+        toast({
+          title: "Login failed",
+          description: "Invalid email or password. Please try again.",
+          variant: "destructive",
+        });
+      } else if (error.message.includes("Email not confirmed")) {
+        toast({
+          title: "Email not verified",
+          description: "Please check your email and verify your account first.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    toast({
+      title: "Welcome back!",
+      description: "You have successfully logged in.",
+    });
+    
+    navigate("/dashboard");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 flex">
@@ -87,8 +166,9 @@ const Login = () => {
                 placeholder="you@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
+                className={errors.email ? "border-destructive" : ""}
               />
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
 
             {/* Password */}
@@ -106,7 +186,7 @@ const Login = () => {
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
+                  className={errors.password ? "border-destructive" : ""}
                 />
                 <button
                   type="button"
@@ -116,12 +196,22 @@ const Login = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
             </div>
 
             {/* Submit */}
-            <Button variant="hero" size="lg" className="w-full" type="submit">
-              Log In
-              <ArrowRight className="w-4 h-4" />
+            <Button variant="hero" size="lg" className="w-full" type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                <>
+                  Log In
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </Button>
           </form>
 
