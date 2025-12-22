@@ -127,7 +127,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, studentInfo } = await req.json();
+    const { messages, studentInfo, persona } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -135,8 +135,9 @@ serve(async (req) => {
       throw new Error("AI service is not configured");
     }
 
-    // Generate context-aware system prompt
-    const systemPrompt = getSystemPrompt(studentInfo);
+    // Generate context-aware system prompt with persona
+    const basePrompt = getSystemPrompt(studentInfo);
+    const systemPrompt = persona ? `${basePrompt}\n\n${persona}` : basePrompt;
 
     console.log("Student Info:", JSON.stringify(studentInfo));
     console.log("Sending request to Lovable AI Gateway with enhanced curriculum support...");

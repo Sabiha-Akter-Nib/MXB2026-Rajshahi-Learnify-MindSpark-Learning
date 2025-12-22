@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Send,
   Mic,
@@ -18,6 +18,8 @@ import {
   Copy,
   Volume2,
   Loader2,
+  MicOff,
+  Settings2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +27,9 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { PersonaSelector, PersonaType, getPersonaPrompt } from "@/components/tutor/PersonaSelector";
+import { FileUploadModal } from "@/components/tutor/FileUploadModal";
 
 interface Message {
   id: string;
@@ -46,11 +51,16 @@ const Tutor = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
+  const [persona, setPersona] = useState<PersonaType>("friendly");
+  const [showPersonaSelector, setShowPersonaSelector] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [searchParams] = useSearchParams();
   
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isRecording, isProcessing, startRecording, stopRecording, cancelRecording } = useVoiceInput();
 
   // Redirect if not logged in
   useEffect(() => {
@@ -121,7 +131,8 @@ const Tutor = () => {
       },
       body: JSON.stringify({ 
         messages: userMessages,
-        studentInfo: studentInfo 
+        studentInfo: studentInfo,
+        persona: getPersonaPrompt(persona),
       }),
     });
 
@@ -413,9 +424,39 @@ const Tutor = () => {
         </div>
       </main>
 
+      {/* Upload Modal */}
+      <FileUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onFileProcessed={(content) => {
+          setInput(content);
+          setShowUploadModal(false);
+        }}
+      />
+
       {/* Input Area */}
       <div className="sticky bottom-0 bg-background border-t border-border px-4 py-4">
         <div className="max-w-4xl mx-auto">
+          {/* Persona Selector */}
+          {showPersonaSelector && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-3"
+            >
+              <PersonaSelector
+                selected={persona}
+                onSelect={(p) => {
+                  setPersona(p);
+                  setShowPersonaSelector(false);
+                }}
+                isBangla={studentInfo?.version === "bangla"}
+                compact
+              />
+            </motion.div>
+          )}
+          
           {/* Quick Actions */}
           <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar pb-2">
             {[
@@ -447,14 +488,40 @@ const Tutor = () => {
                 disabled={isTyping}
               />
               <div className="absolute right-2 bottom-2 flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowUploadModal(true)}
+                >
                   <Image className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                  <Upload className="w-4 h-4" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPersonaSelector(!showPersonaSelector)}
+                >
+                  <Settings2 className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                  <Mic className="w-4 h-4" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={cn(
+                    "h-8 w-8",
+                    isRecording ? "text-destructive animate-pulse" : "text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={async () => {
+                    if (isRecording) {
+                      const text = await stopRecording();
+                      if (text) setInput(prev => prev + " " + text);
+                    } else {
+                      await startRecording();
+                    }
+                  }}
+                  disabled={isProcessing}
+                >
+                  {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                 </Button>
               </div>
             </div>
