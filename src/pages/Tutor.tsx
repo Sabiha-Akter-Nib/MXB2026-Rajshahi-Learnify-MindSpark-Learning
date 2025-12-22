@@ -42,14 +42,7 @@ interface StudentInfo {
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-tutor`;
 
 const Tutor = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content: "আসসালামু আলাইকুম! I'm your MindSpark AI Tutor. I'm here to help you learn any subject from your NCTB curriculum.\n\nYou can:\n• Ask me to explain any topic\n• Upload a photo of your homework\n• Practice with adaptive questions\n\nWhat would you like to learn today?",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
@@ -66,7 +59,7 @@ const Tutor = () => {
     }
   }, [user, loading, navigate]);
 
-  // Fetch student profile
+  // Fetch student profile and set initial greeting
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
@@ -78,11 +71,33 @@ const Tutor = () => {
         .maybeSingle();
       
       if (data) {
-        setStudentInfo({
+        const info = {
           name: data.full_name,
           class: data.class,
           version: data.version,
-        });
+        };
+        setStudentInfo(info);
+        
+        // Set personalized greeting based on student info
+        const isBangla = data.version === "bangla";
+        const greeting = isBangla 
+          ? `আসসালামু আলাইকুম, ${data.full_name}! 👋\n\nআমি তোমার MindSpark AI Tutor। আমি তোমাকে Class ${data.class} এর NCTB পাঠ্যক্রম অনুযায়ী পড়াশোনায় সাহায্য করতে এসেছি।\n\nতুমি আমাকে:\n• যেকোনো টপিক বুঝিয়ে দিতে বলতে পারো\n• অধ্যায় ভিত্তিক প্র্যাক্টিস প্রশ্ন চাইতে পারো\n• হোমওয়ার্কে সাহায্য নিতে পারো\n\n🔍 আমি ওয়েব থেকে তোমার ক্লাসের জন্য উপযুক্ত প্রশ্ন খুঁজে আনতে পারি!\n\nআজ কী পড়তে চাও?`
+          : `Hello, ${data.full_name}! 👋\n\nI'm your MindSpark AI Tutor. I'm here to help you with your Class ${data.class} NCTB curriculum.\n\nYou can ask me to:\n• Explain any topic in detail\n• Provide chapter-based practice questions\n• Help with your homework\n\n🔍 I can search the web to find relevant practice questions for your grade!\n\nWhat would you like to study today?`;
+        
+        setMessages([{
+          id: "1",
+          role: "assistant",
+          content: greeting,
+          timestamp: new Date(),
+        }]);
+      } else {
+        // Default greeting if no profile
+        setMessages([{
+          id: "1",
+          role: "assistant",
+          content: "আসসালামু আলাইকুম! I'm your MindSpark AI Tutor. I'm here to help you learn any subject from your NCTB curriculum.\n\nYou can:\n• Ask me to explain any topic\n• Practice with adaptive questions\n• Get homework help\n\nWhat would you like to learn today?",
+          timestamp: new Date(),
+        }]);
       }
     };
 
@@ -285,7 +300,7 @@ const Tutor = () => {
                 <h1 className="font-heading font-semibold">AI Tutor</h1>
                 <p className="text-xs text-success flex items-center gap-1">
                   <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                  Online
+                  {studentInfo ? `Class ${studentInfo.class} • ${studentInfo.version === "bangla" ? "বাংলা" : "English"}` : "Online"}
                 </p>
               </div>
             </div>
