@@ -255,13 +255,14 @@ const Assessment = () => {
     // Move to next Bloom's level
     const nextLevelIndex = bloomLevelIndex + 1;
     if (nextLevelIndex < BLOOM_LEVELS.length) {
+      const newLevel = BLOOM_LEVELS[nextLevelIndex].id;
       setBloomLevelIndex(nextLevelIndex);
-      setBloomLevel(BLOOM_LEVELS[nextLevelIndex].id);
+      setBloomLevel(newLevel);
       setShowResult(false);
       setResults(null);
       
-      // Get the last tutor context again and generate new questions
-      await regenerateQuestions();
+      // Get the last tutor context and generate new questions with the new level
+      await regenerateQuestions(newLevel);
     }
   };
 
@@ -269,10 +270,11 @@ const Assessment = () => {
     // Retry the same level
     setShowResult(false);
     setResults(null);
-    await regenerateQuestions();
+    await regenerateQuestions(bloomLevel);
   };
 
-  const regenerateQuestions = async () => {
+  const regenerateQuestions = async (level: string) => {
+    setIsLoading(true);
     try {
       const { data: conversations } = await supabase
         .from("chat_conversations")
@@ -291,11 +293,52 @@ const Assessment = () => {
           .limit(1);
 
         if (messages && messages.length > 0) {
-          await generateQuestionsFromContext(messages[0].content);
+          await generateQuestionsWithLevel(messages[0].content, level);
         }
       }
     } catch (error) {
       console.error("Error regenerating questions:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateQuestionsWithLevel = async (tutorContext: string, level: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/run-assessment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            action: "generate",
+            userId: user?.id,
+            subjectId,
+            topic,
+            bloomLevel: level,
+            tutorContext,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      setQuestions(data.questions || []);
+      setCurrentIndex(0);
+      setAnswers([]);
+      setSelectedAnswer(null);
+      setShowResult(false);
+    } catch (error) {
+      console.error("Error generating questions:", error);
+      toast({
+        title: isBangla ? "ত্রুটি" : "Error",
+        description: isBangla ? "প্রশ্ন তৈরি করতে ব্যর্থ হয়েছে।" : "Failed to generate questions. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
