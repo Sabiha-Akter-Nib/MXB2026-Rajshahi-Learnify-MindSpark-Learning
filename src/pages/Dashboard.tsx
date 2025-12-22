@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   Brain,
@@ -27,21 +27,19 @@ import {
   LogOut,
   Settings,
   User,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock data
-const studentData = {
-  name: "Farhan Ahmed",
-  class: "Class 8",
-  version: "English",
-  streak: 12,
-  xp: 2450,
-  weeklyGoal: 70,
-  weeklyProgress: 45,
-};
+interface Profile {
+  full_name: string;
+  class: number;
+  version: string;
+}
 
 const subjects = [
   { icon: BookText, name: "Bangla 1st Paper", progress: 65, color: "bg-primary", chapters: 12, completed: 8 },
@@ -66,6 +64,56 @@ const upcomingTasks = [
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/login");
+    }
+  }, [user, loading, navigate]);
+
+  // Fetch profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, class, version")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      if (data) {
+        setProfile(data);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  const displayName = profile?.full_name?.split(" ")[0] || "Student";
+  const classText = profile?.class ? `Class ${profile.class}` : "";
+  const versionText = profile?.version === "bangla" ? "বাংলা" : "English";
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -126,13 +174,13 @@ const Dashboard = () => {
             <Settings className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span className="font-medium">Settings</span>}
           </Link>
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors"
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors w-full"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span className="font-medium">Logout</span>}
-          </Link>
+          </button>
         </div>
       </motion.aside>
 
@@ -150,10 +198,10 @@ const Dashboard = () => {
               </button>
               <div>
                 <h1 className="font-heading font-bold text-2xl">
-                  Welcome back, {studentData.name.split(" ")[0]}! 👋
+                  Welcome back, {displayName}! 👋
                 </h1>
                 <p className="text-muted-foreground text-sm">
-                  {studentData.class} • {studentData.version} Version
+                  {classText} • {versionText} Version
                 </p>
               </div>
             </div>
@@ -162,7 +210,7 @@ const Dashboard = () => {
               {/* Streak */}
               <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-full">
                 <Flame className="w-5 h-5 text-accent" />
-                <span className="font-semibold text-accent">{studentData.streak} Day Streak</span>
+                <span className="font-semibold text-accent">0 Day Streak</span>
               </div>
 
               {/* Profile */}
@@ -178,10 +226,10 @@ const Dashboard = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[
-              { icon: TrendingUp, label: "Total XP", value: studentData.xp.toLocaleString(), color: "primary" },
-              { icon: Flame, label: "Day Streak", value: studentData.streak, color: "accent" },
-              { icon: Target, label: "Weekly Goal", value: `${studentData.weeklyProgress}/${studentData.weeklyGoal}%`, color: "success" },
-              { icon: Clock, label: "Study Time", value: "4h 32m", color: "warning" },
+              { icon: TrendingUp, label: "Total XP", value: "0", color: "primary" },
+              { icon: Flame, label: "Day Streak", value: 0, color: "accent" },
+              { icon: Target, label: "Weekly Goal", value: "0/70%", color: "success" },
+              { icon: Clock, label: "Study Time", value: "0h 0m", color: "warning" },
             ].map((stat, index) => (
               <motion.div
                 key={stat.label}

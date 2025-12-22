@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Sparkles, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,14 +12,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 const classes = [
-  "Class 1", "Class 2", "Class 3", "Class 4", "Class 5",
-  "Class 6", "Class 7", "Class 8", "Class 9", "Class 10"
+  { value: "1", label: "Class 1" },
+  { value: "2", label: "Class 2" },
+  { value: "3", label: "Class 3" },
+  { value: "4", label: "Class 4" },
+  { value: "5", label: "Class 5" },
+  { value: "6", label: "Class 6" },
+  { value: "7", label: "Class 7" },
+  { value: "8", label: "Class 8" },
+  { value: "9", label: "Class 9" },
+  { value: "10", label: "Class 10" },
 ];
+
+const signupSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  school: z.string().min(2, "School name is required").max(200),
+  class: z.string().min(1, "Please select a class"),
+  version: z.enum(["bangla", "english"], { required_error: "Please select a version" }),
+});
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -28,11 +49,85 @@ const Signup = () => {
     class: "",
     version: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const { signUp, user, loading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signup:", formData);
+    setErrors({});
+    
+    // Validate form
+    const result = signupSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setIsLoading(true);
+    
+    const { error } = await signUp(
+      formData.email,
+      formData.password,
+      {
+        full_name: formData.name,
+        school_name: formData.school,
+        class: parseInt(formData.class),
+        version: formData.version as "bangla" | "english",
+      }
+    );
+
+    setIsLoading(false);
+
+    if (error) {
+      // Handle specific error cases
+      if (error.message.includes("already registered")) {
+        toast({
+          title: "Account exists",
+          description: "An account with this email already exists. Please log in instead.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Signup failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    toast({
+      title: "Account created!",
+      description: "Please check your email to verify your account.",
+    });
+    
+    // Navigate to dashboard (will work after email confirmation)
+    navigate("/dashboard");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 flex">
@@ -70,8 +165,9 @@ const Signup = () => {
                 placeholder="Enter your full name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
+                className={errors.name ? "border-destructive" : ""}
               />
+              {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
             </div>
 
             {/* Email */}
@@ -83,8 +179,9 @@ const Signup = () => {
                 placeholder="you@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
+                className={errors.email ? "border-destructive" : ""}
               />
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
 
             {/* Password */}
@@ -97,7 +194,7 @@ const Signup = () => {
                   placeholder="Create a strong password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
+                  className={errors.password ? "border-destructive" : ""}
                 />
                 <button
                   type="button"
@@ -107,6 +204,7 @@ const Signup = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
             </div>
 
             {/* School */}
@@ -117,8 +215,9 @@ const Signup = () => {
                 placeholder="Enter your school name"
                 value={formData.school}
                 onChange={(e) => setFormData({ ...formData, school: e.target.value })}
-                required
+                className={errors.school ? "border-destructive" : ""}
               />
+              {errors.school && <p className="text-sm text-destructive">{errors.school}</p>}
             </div>
 
             {/* Class & Version */}
@@ -129,17 +228,18 @@ const Signup = () => {
                   value={formData.class}
                   onValueChange={(value) => setFormData({ ...formData, class: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.class ? "border-destructive" : ""}>
                     <SelectValue placeholder="Select class" />
                   </SelectTrigger>
                   <SelectContent>
                     {classes.map((cls) => (
-                      <SelectItem key={cls} value={cls}>
-                        {cls}
+                      <SelectItem key={cls.value} value={cls.value}>
+                        {cls.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.class && <p className="text-sm text-destructive">{errors.class}</p>}
               </div>
 
               <div className="space-y-2">
@@ -148,7 +248,7 @@ const Signup = () => {
                   value={formData.version}
                   onValueChange={(value) => setFormData({ ...formData, version: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.version ? "border-destructive" : ""}>
                     <SelectValue placeholder="Select version" />
                   </SelectTrigger>
                   <SelectContent>
@@ -156,13 +256,23 @@ const Signup = () => {
                     <SelectItem value="english">English</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.version && <p className="text-sm text-destructive">{errors.version}</p>}
               </div>
             </div>
 
             {/* Submit */}
-            <Button variant="hero" size="lg" className="w-full" type="submit">
-              Create Account
-              <ArrowRight className="w-4 h-4" />
+            <Button variant="hero" size="lg" className="w-full" type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </Button>
           </form>
 
