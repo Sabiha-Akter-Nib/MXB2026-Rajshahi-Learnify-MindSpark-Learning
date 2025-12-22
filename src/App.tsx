@@ -15,6 +15,7 @@ import Assessment from "./pages/Assessment";
 import LearningPlan from "./pages/LearningPlan";
 import Settings from "./pages/Settings";
 import Achievements from "./pages/Achievements";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ function AppContent() {
         <Route path="/learning-plan" element={<LearningPlan />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/achievements" element={<Achievements />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
