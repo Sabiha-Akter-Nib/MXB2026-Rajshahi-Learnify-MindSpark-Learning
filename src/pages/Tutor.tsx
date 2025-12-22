@@ -31,6 +31,7 @@ import { useVoiceInput } from "@/hooks/useVoiceInput";
 import { useStudySession } from "@/hooks/useStudySession";
 import { PersonaSelector, PersonaType, getPersonaPrompt } from "@/components/tutor/PersonaSelector";
 import { FileUploadModal } from "@/components/tutor/FileUploadModal";
+import { MultimodalInput } from "@/components/tutor/MultimodalInput";
 
 interface Message {
   id: string;
@@ -55,6 +56,7 @@ const Tutor = () => {
   const [persona, setPersona] = useState<PersonaType>("friendly");
   const [showPersonaSelector, setShowPersonaSelector] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showMultimodal, setShowMultimodal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
   
@@ -464,6 +466,30 @@ const Tutor = () => {
             </motion.div>
           )}
           
+          {/* Multimodal Input Section */}
+          {showMultimodal && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-3"
+            >
+              <MultimodalInput
+                onContentReady={(content, imageData) => {
+                  if (imageData) {
+                    // For now, just set the text prompt - image analysis would need backend support
+                    setInput(content);
+                  } else {
+                    setInput(content);
+                  }
+                  setShowMultimodal(false);
+                }}
+                disabled={isTyping}
+                isBangla={studentInfo?.version === "bangla"}
+              />
+            </motion.div>
+          )}
+
           {/* Quick Actions */}
           <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar pb-2">
             {[
@@ -480,6 +506,18 @@ const Tutor = () => {
                 {action.label}
               </button>
             ))}
+            <button
+              onClick={() => setShowMultimodal(!showMultimodal)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
+                showMultimodal 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-muted hover:bg-muted/80"
+              )}
+            >
+              <Upload className="w-4 h-4" />
+              {studentInfo?.version === "bangla" ? "মাল্টিমিডিয়া" : "Multimodal"}
+            </button>
           </div>
 
           {/* Input */}

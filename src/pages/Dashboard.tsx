@@ -22,6 +22,7 @@ import {
   BarChart3,
   Calendar,
   Award,
+  Trophy,
   Menu,
   X,
   LogOut,
@@ -244,6 +245,7 @@ const Dashboard = () => {
             { icon: Brain, label: "AI Tutor", href: "/tutor" },
             { icon: Target, label: "Practice", href: "/practice" },
             { icon: Award, label: "Achievements", href: "/achievements" },
+            { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
             { icon: Calendar, label: "Schedule", href: "/learning-plan" },
           ].map((item) => (
             <Link
