@@ -637,19 +637,7 @@ export type Database = {
       }
     }
     Views: {
-      leaderboard_view: {
-        Row: {
-          class: number | null
-          current_streak: number | null
-          full_name: string | null
-          longest_streak: number | null
-          rank: number | null
-          school_name: string | null
-          total_study_minutes: number | null
-          total_xp: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never
