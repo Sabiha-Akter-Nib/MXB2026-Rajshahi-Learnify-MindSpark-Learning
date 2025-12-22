@@ -14,6 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessments: {
+        Row: {
+          bloom_level: string
+          completed_at: string
+          correct_answers: number
+          created_at: string
+          id: string
+          subject_id: string | null
+          time_taken_seconds: number | null
+          topic: string | null
+          total_questions: number
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          bloom_level?: string
+          completed_at?: string
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          subject_id?: string | null
+          time_taken_seconds?: number | null
+          topic?: string | null
+          total_questions?: number
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          bloom_level?: string
+          completed_at?: string
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          subject_id?: string | null
+          time_taken_seconds?: number | null
+          topic?: string | null
+          total_questions?: number
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_plan_tasks: {
+        Row: {
+          bloom_level: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          plan_id: string
+          priority: number
+          subject_id: string | null
+          target_xp: number
+          topic: string
+        }
+        Insert: {
+          bloom_level?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          plan_id: string
+          priority?: number
+          subject_id?: string | null
+          target_xp?: number
+          topic: string
+        }
+        Update: {
+          bloom_level?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          plan_id?: string
+          priority?: number
+          subject_id?: string | null
+          target_xp?: number
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_plan_tasks_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "learning_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_plan_tasks_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_plans: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          plan_type: string
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          plan_type?: string
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          plan_type?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           class: number
@@ -206,6 +343,59 @@ export type Database = {
           total_chapters?: number
         }
         Relationships: []
+      }
+      topic_mastery: {
+        Row: {
+          attempts: number
+          bloom_level: string
+          correct_answers: number
+          created_at: string
+          id: string
+          is_weak_topic: boolean
+          last_practiced_at: string | null
+          mastery_score: number
+          subject_id: string | null
+          topic_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          bloom_level?: string
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          is_weak_topic?: boolean
+          last_practiced_at?: string | null
+          mastery_score?: number
+          subject_id?: string | null
+          topic_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          bloom_level?: string
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          is_weak_topic?: boolean
+          last_practiced_at?: string | null
+          mastery_score?: number
+          subject_id?: string | null
+          topic_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_mastery_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
