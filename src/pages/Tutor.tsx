@@ -63,7 +63,7 @@ const Tutor = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isRecording, isProcessing, startRecording, stopRecording, cancelRecording } = useVoiceInput();
-  const { isSpeaking, speak, stop: stopSpeaking } = useTextToSpeech();
+  const { isSpeaking, speak, stop: stopSpeaking, isSupported: ttsSupported } = useTextToSpeech();
   const { startSession, endSession, addXP } = useStudySession();
 
   // Start study session when component mounts
