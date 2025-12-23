@@ -445,25 +445,39 @@ const ProgressVisualization = ({
 
             <div className="flex-1 flex items-center justify-center">
               {totalAssessments > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={bloomProgress.filter((b) => b.count > 0)}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={35}
-                      outerRadius={55}
-                      dataKey="count"
-                      nameKey="level"
-                      labelLine={false}
-                    >
-                      {bloomProgress.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <motion.div
+                  key={`pie-${animationKey}`}
+                  className="w-full h-full"
+                  initial={{ rotate: -180, opacity: 0, scale: 0.5 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  transition={{ 
+                    duration: 1,
+                    delay: 0.3,
+                    type: "spring",
+                    stiffness: 100,
+                    damping: 15
+                  }}
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={bloomProgress.filter((b) => b.count > 0)}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={35}
+                        outerRadius={55}
+                        dataKey="count"
+                        nameKey="level"
+                        labelLine={false}
+                      >
+                        {bloomProgress.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </motion.div>
               ) : (
                 <div className="text-center text-muted-foreground">
                   <Brain className="w-12 h-12 mx-auto mb-2 opacity-30" />
