@@ -1,14 +1,60 @@
 import { motion } from "framer-motion";
 
-// Floating gradient orbs with glow - more colorful
+// Floating white particles
+const FloatingParticles = () => {
+  const particles = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: 2 + Math.random() * 5,
+    duration: 15 + Math.random() * 20,
+    delay: Math.random() * 5,
+    isOrange: Math.random() > 0.6, // 40% orange, 60% white
+  }));
+
+  return (
+    <>
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="fixed rounded-full pointer-events-none"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+            background: p.isOrange 
+              ? `rgba(251, 146, 60, ${0.5 + Math.random() * 0.4})`
+              : `rgba(255, 255, 255, ${0.4 + Math.random() * 0.4})`,
+            boxShadow: p.isOrange
+              ? `0 0 ${p.size * 3}px ${p.size}px rgba(251, 146, 60, 0.3)`
+              : `0 0 ${p.size * 3}px ${p.size}px rgba(255, 255, 255, 0.3)`,
+          }}
+          animate={{
+            y: [0, -50, 0, 50, 0],
+            x: [0, 30, -30, 20, 0],
+            opacity: [0.4, 0.8, 0.5, 0.9, 0.4],
+            scale: [1, 1.5, 1, 1.3, 1],
+          }}
+          transition={{
+            duration: p.duration,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: p.delay,
+          }}
+        />
+      ))}
+    </>
+  );
+};
+
+// Glowing orbs (white and orange)
 const GlowingOrbs = () => {
   const orbs = [
-    { size: 500, color: "primary", x: "5%", y: "15%", delay: 0 },
-    { size: 450, color: "accent", x: "75%", y: "55%", delay: 1 },
-    { size: 380, color: "success", x: "55%", y: "5%", delay: 2 },
-    { size: 320, color: "warning", x: "25%", y: "65%", delay: 1.5 },
-    { size: 280, color: "primary", x: "85%", y: "20%", delay: 0.8 },
-    { size: 350, color: "accent", x: "40%", y: "85%", delay: 2.2 },
+    { size: 500, x: "-10%", y: "10%", delay: 0, isOrange: false },
+    { size: 400, x: "80%", y: "20%", delay: 1.5, isOrange: true },
+    { size: 350, x: "20%", y: "70%", delay: 3, isOrange: false },
+    { size: 300, x: "70%", y: "80%", delay: 2, isOrange: true },
   ];
 
   return (
@@ -22,17 +68,19 @@ const GlowingOrbs = () => {
             height: orb.size,
             left: orb.x,
             top: orb.y,
-            background: `radial-gradient(circle, hsl(var(--${orb.color}) / 0.2) 0%, hsl(var(--${orb.color}) / 0.08) 40%, transparent 70%)`,
-            filter: "blur(50px)",
+            background: orb.isOrange
+              ? `radial-gradient(circle, rgba(251, 146, 60, 0.15) 0%, rgba(251, 146, 60, 0.05) 50%, transparent 70%)`
+              : `radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 70%)`,
+            filter: "blur(40px)",
           }}
           animate={{
-            x: [0, 60, -40, 20, 0],
-            y: [0, -50, 40, -20, 0],
-            scale: [1, 1.15, 0.9, 1.05, 1],
-            opacity: [0.5, 0.7, 0.4, 0.6, 0.5],
+            x: [0, 40, -30, 0],
+            y: [0, -30, 40, 0],
+            scale: [1, 1.2, 0.9, 1],
+            opacity: [0.3, 0.5, 0.2, 0.3],
           }}
           transition={{
-            duration: 18 + i * 3,
+            duration: 20 + i * 5,
             repeat: Infinity,
             ease: "easeInOut",
             delay: orb.delay,
@@ -43,131 +91,51 @@ const GlowingOrbs = () => {
   );
 };
 
-// Animated grid pattern with more visible lines
-const AnimatedGrid = () => {
+// Subtle grid pattern (white)
+const GridPattern = () => {
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      <motion.div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `
-            linear-gradient(hsl(var(--primary) / 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--accent) / 0.05) 1px, transparent 1px)
-          `,
-          backgroundSize: "50px 50px",
-        }}
-        animate={{ backgroundPosition: ["0px 0px", "50px 50px"] }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-      />
-    </div>
-  );
-};
-
-// Floating particles with color variety
-const FloatingParticles = () => {
-  const particles = [
-    { color: "primary", x: "10%", y: "30%", size: 6 },
-    { color: "accent", x: "20%", y: "60%", size: 4 },
-    { color: "success", x: "35%", y: "25%", size: 5 },
-    { color: "warning", x: "50%", y: "70%", size: 4 },
-    { color: "primary", x: "65%", y: "40%", size: 6 },
-    { color: "accent", x: "80%", y: "55%", size: 5 },
-    { color: "success", x: "90%", y: "35%", size: 4 },
-    { color: "warning", x: "75%", y: "15%", size: 5 },
-    { color: "primary", x: "45%", y: "85%", size: 4 },
-    { color: "accent", x: "15%", y: "80%", size: 6 },
-  ];
-
-  return (
-    <>
-      {particles.map((p, i) => (
-        <motion.div
-          key={i}
-          className="fixed rounded-full pointer-events-none"
-          style={{
-            left: p.x,
-            top: p.y,
-            width: p.size,
-            height: p.size,
-            background: `hsl(var(--${p.color}))`,
-            boxShadow: `0 0 20px 5px hsl(var(--${p.color}) / 0.4)`,
-          }}
-          animate={{
-            y: [0, -30, 0, 30, 0],
-            x: [0, 20, -20, 10, 0],
-            opacity: [0.4, 0.8, 0.5, 0.9, 0.4],
-            scale: [1, 1.3, 1, 1.5, 1],
-          }}
-          transition={{
-            duration: 8 + i * 0.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: i * 0.3,
-          }}
-        />
-      ))}
-    </>
-  );
-};
-
-// Glowing gradient lines
-const GlowingLines = () => {
-  return (
-    <>
-      {/* Horizontal line */}
-      <motion.div
-        className="fixed h-[2px] w-1/3 pointer-events-none"
-        style={{
-          top: "30%",
-          left: "10%",
-          background: "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.4), hsl(var(--accent) / 0.4), transparent)",
-          boxShadow: "0 0 20px 3px hsl(var(--primary) / 0.3)",
-        }}
-        animate={{
-          opacity: [0.3, 0.7, 0.3],
-          scaleX: [0.8, 1, 0.8],
-        }}
-        transition={{
-          duration: 5,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-      {/* Diagonal line */}
-      <motion.div
-        className="fixed h-[2px] w-1/4 pointer-events-none"
-        style={{
-          top: "60%",
-          right: "15%",
-          background: "linear-gradient(90deg, transparent, hsl(var(--success) / 0.4), hsl(var(--warning) / 0.4), transparent)",
-          boxShadow: "0 0 20px 3px hsl(var(--success) / 0.3)",
-          transform: "rotate(-15deg)",
-        }}
-        animate={{
-          opacity: [0.3, 0.6, 0.3],
-          scaleX: [0.9, 1.1, 0.9],
-        }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1,
-        }}
-      />
-    </>
+    <div
+      className="fixed inset-0 pointer-events-none opacity-[0.04]"
+      style={{
+        backgroundImage: `
+          linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px)
+        `,
+        backgroundSize: "40px 40px",
+      }}
+    />
   );
 };
 
 const DashboardBackground = () => {
   return (
-    <div className="fixed inset-0 z-0 bg-background overflow-hidden">
-      {/* Base gradient with more color */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
-      <div className="absolute inset-0 bg-gradient-to-tl from-success/3 via-transparent to-warning/3" />
-      <AnimatedGrid />
+    <div className="fixed inset-0 z-0 overflow-hidden">
+      {/* Teal gradient background */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(135deg, 
+            hsl(174, 72%, 28%) 0%, 
+            hsl(176, 68%, 22%) 25%, 
+            hsl(178, 65%, 18%) 50%, 
+            hsl(180, 70%, 15%) 75%, 
+            hsl(182, 75%, 12%) 100%
+          )`,
+        }}
+      />
+      
+      {/* Secondary gradient overlay for depth */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(ellipse at 30% 20%, rgba(94, 234, 212, 0.15) 0%, transparent 50%),
+                       radial-gradient(ellipse at 70% 80%, rgba(251, 146, 60, 0.1) 0%, transparent 50%)`,
+        }}
+      />
+      
+      <GridPattern />
       <GlowingOrbs />
       <FloatingParticles />
-      <GlowingLines />
     </div>
   );
 };

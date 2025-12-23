@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import DashboardBackground from "@/components/dashboard/DashboardBackground";
 
 interface Question {
   question: string;
@@ -397,7 +398,8 @@ const Assessment = () => {
 
   if (loading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center relative">
+        <DashboardBackground />
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">
@@ -411,7 +413,8 @@ const Assessment = () => {
   // Show message if no tutor context
   if (noTutorContext) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen relative">
+        <DashboardBackground />
         <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -456,7 +459,8 @@ const Assessment = () => {
 
   if (showResult && results) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen relative">
+        <DashboardBackground />
         <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -603,7 +607,8 @@ const Assessment = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative">
+      <DashboardBackground />
       <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-3">
