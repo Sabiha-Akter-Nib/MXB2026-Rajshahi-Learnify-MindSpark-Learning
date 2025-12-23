@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -30,6 +30,7 @@ import {
   User,
   Loader2,
   LucideIcon,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -40,6 +41,8 @@ import { supabase } from "@/integrations/supabase/client";
 import QuickActions from "@/components/dashboard/QuickActions";
 import ProgressVisualization from "@/components/dashboard/ProgressVisualization";
 import RevisionReminders from "@/components/dashboard/RevisionReminders";
+import DashboardBackground from "@/components/dashboard/DashboardBackground";
+import AnimatedStatsCard from "@/components/dashboard/AnimatedStatsCard";
 
 interface Profile {
   full_name: string;
@@ -94,11 +97,11 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 // Color mapping
-const colorMap: Record<string, string> = {
-  'primary': 'bg-primary',
-  'accent': 'bg-accent',
-  'warning': 'bg-warning',
-  'success': 'bg-success',
+const colorClasses: Record<string, { bg: string; text: string; border: string }> = {
+  'primary': { bg: 'bg-primary', text: 'text-primary', border: 'border-primary/20' },
+  'accent': { bg: 'bg-accent', text: 'text-accent', border: 'border-accent/20' },
+  'warning': { bg: 'bg-warning', text: 'text-warning', border: 'border-warning/20' },
+  'success': { bg: 'bg-success', text: 'text-success', border: 'border-success/20' },
 };
 
 const Dashboard = () => {
@@ -151,7 +154,7 @@ const Dashboard = () => {
           setStats(statsData);
         }
 
-        // Fetch weekly stats - combine study_sessions XP with assessments XP
+        // Fetch weekly stats
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
@@ -172,7 +175,6 @@ const Dashboard = () => {
         const weeklyXP = sessionsXP + assessmentsXP;
         const weeklyMinutes = weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
         
-        // Weekly goal: aim for 500 XP per week (adjustable)
         const weeklyGoalXP = 500;
         const weeklyGoalPercent = Math.min(Math.round((weeklyXP / weeklyGoalXP) * 100), 100);
         
@@ -241,8 +243,21 @@ const Dashboard = () => {
 
   if (loading || isLoadingData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <DashboardBackground />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <Loader2 className="w-10 h-10 text-primary" />
+          </motion.div>
+          <p className="text-muted-foreground font-medium">Loading your dashboard...</p>
+        </motion.div>
       </div>
     );
   }
@@ -255,69 +270,107 @@ const Dashboard = () => {
   const classText = profile?.class ? `Class ${profile.class}` : "";
   const versionText = profile?.version === "bangla" ? "বাংলা" : "English";
 
+  const navItems = [
+    { icon: BarChart3, label: "Dashboard", active: true, href: "/dashboard" },
+    { icon: BookOpen, label: "Subjects", href: "/subjects" },
+    { icon: Brain, label: "AI Tutor", href: "/tutor" },
+    { icon: Target, label: "Practice", href: "/practice" },
+    { icon: Award, label: "Achievements", href: "/achievements" },
+    { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
+    { icon: Calendar, label: "Schedule", href: "/learning-plan" },
+  ];
+
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen flex relative">
+      <DashboardBackground />
+      
       {/* Sidebar */}
       <motion.aside
         initial={false}
         animate={{ width: sidebarOpen ? 280 : 80 }}
-        className="bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col fixed h-screen z-40"
+        className="bg-sidebar/80 backdrop-blur-xl text-sidebar-foreground border-r border-sidebar-border/50 flex flex-col fixed h-screen z-40"
       >
         {/* Logo */}
-        <div className="p-4 flex items-center gap-3 border-b border-sidebar-border">
-          <div className="w-10 h-10 bg-sidebar-primary rounded-xl flex items-center justify-center flex-shrink-0">
-            <Sparkles className="w-5 h-5 text-sidebar-primary-foreground" />
-          </div>
-          {sidebarOpen && (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="font-heading font-bold text-lg"
-            >
-              MindSpark
-            </motion.span>
-          )}
+        <div className="p-4 flex items-center gap-3 border-b border-sidebar-border/50">
+          <motion.div 
+            className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
+            whileHover={{ scale: 1.05, rotate: 5 }}
+          >
+            <Sparkles className="w-5 h-5 text-primary-foreground" />
+          </motion.div>
+          <AnimatePresence>
+            {sidebarOpen && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="font-heading font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+              >
+                MindSpark
+              </motion.span>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
-          {[
-            { icon: BarChart3, label: "Dashboard", active: true, href: "/dashboard" },
-            { icon: BookOpen, label: "Subjects", href: "/subjects" },
-            { icon: Brain, label: "AI Tutor", href: "/tutor" },
-            { icon: Target, label: "Practice", href: "/practice" },
-            { icon: Award, label: "Achievements", href: "/achievements" },
-            { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
-            { icon: Calendar, label: "Schedule", href: "/learning-plan" },
-          ].map((item) => (
-            <Link
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map((item, index) => (
+            <motion.div
               key={item.label}
-              to={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-                item.active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
-              )}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {sidebarOpen && <span className="font-medium">{item.label}</span>}
-            </Link>
+              <Link
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
+                  item.active
+                    ? "bg-primary/10 text-primary shadow-sm border border-primary/20"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                )}
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                </motion.div>
+                <AnimatePresence>
+                  {sidebarOpen && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="font-medium"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                {item.active && sidebarOpen && (
+                  <motion.div
+                    className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
+                    layoutId="activeIndicator"
+                  />
+                )}
+              </Link>
+            </motion.div>
           ))}
         </nav>
 
         {/* Bottom Actions */}
-        <div className="p-4 border-t border-sidebar-border space-y-2">
+        <div className="p-4 border-t border-sidebar-border/50 space-y-1">
           <Link
             to="/settings"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-all duration-200"
           >
             <Settings className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span className="font-medium">Settings</span>}
           </Link>
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors w-full"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 w-full"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span className="font-medium">Logout</span>}
@@ -326,38 +379,69 @@ const Dashboard = () => {
       </motion.aside>
 
       {/* Main Content */}
-      <div className={cn("flex-1 transition-all", sidebarOpen ? "ml-[280px]" : "ml-20")}>
+      <div className={cn("flex-1 transition-all duration-300", sidebarOpen ? "ml-[280px]" : "ml-20")}>
         {/* Top Bar */}
-        <header className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-30 px-6 py-4">
+        <header className="sticky top-0 bg-background/60 backdrop-blur-xl border-b border-border/50 z-30 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
+              <motion.button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 hover:bg-muted rounded-lg transition-colors"
+                className="p-2 hover:bg-muted/50 rounded-xl transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
+              </motion.button>
               <div>
-                <h1 className="font-heading font-bold text-2xl">
-                  Welcome back, {displayName}! 👋
-                </h1>
-                <p className="text-muted-foreground text-sm">
+                <motion.h1 
+                  className="font-heading font-bold text-2xl"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  Welcome back, <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{displayName}</span>! 👋
+                </motion.h1>
+                <motion.p 
+                  className="text-muted-foreground text-sm"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                >
                   {classText} • {versionText} Version
-                </p>
+                </motion.p>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Streak */}
-              <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-full">
-                <Flame className="w-5 h-5 text-accent" />
+              {/* Streak Badge */}
+              <motion.div 
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent/20 to-accent/10 rounded-full border border-accent/30 shadow-lg shadow-accent/10"
+                whileHover={{ scale: 1.05 }}
+                animate={{
+                  boxShadow: [
+                    "0 0 0 0 rgba(var(--accent), 0)",
+                    "0 0 20px 2px rgba(var(--accent), 0.2)",
+                    "0 0 0 0 rgba(var(--accent), 0)",
+                  ],
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <motion.div
+                  animate={{ rotate: [0, -10, 10, 0] }}
+                  transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
+                >
+                  <Flame className="w-5 h-5 text-accent" />
+                </motion.div>
                 <span className="font-semibold text-accent">{stats?.current_streak || 0} Day Streak</span>
-              </div>
+              </motion.div>
 
               {/* Profile */}
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+              <motion.div 
+                className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg cursor-pointer"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <User className="w-5 h-5 text-primary-foreground" />
-              </div>
+              </motion.div>
             </div>
           </div>
         </header>
@@ -368,92 +452,128 @@ const Dashboard = () => {
           <QuickActions />
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[
-              { icon: TrendingUp, label: "Weekly XP", value: weeklyStats.weekly_xp.toLocaleString(), color: "primary" },
-              { icon: Flame, label: "Day Streak", value: stats?.current_streak || 0, color: "accent" },
-              { icon: Target, label: "Weekly Goal", value: `${weeklyStats.weekly_goal_percent}%`, color: "success" },
-              { icon: Clock, label: "Study Time", value: formatStudyTime(weeklyStats.weekly_study_minutes), color: "warning" },
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-card rounded-xl p-5 border border-border shadow-sm card-hover"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div
-                    className={cn(
-                      "w-10 h-10 rounded-lg flex items-center justify-center",
-                      stat.color === "primary" && "bg-primary/10 text-primary",
-                      stat.color === "accent" && "bg-accent/10 text-accent",
-                      stat.color === "success" && "bg-success/10 text-success",
-                      stat.color === "warning" && "bg-warning/10 text-warning"
-                    )}
-                  >
-                    <stat.icon className="w-5 h-5" />
-                  </div>
-                </div>
-                <p className="text-muted-foreground text-sm">{stat.label}</p>
-                <p className="font-heading font-bold text-2xl">{stat.value}</p>
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <AnimatedStatsCard
+              icon={TrendingUp}
+              label="Weekly XP"
+              value={weeklyStats.weekly_xp}
+              color="primary"
+              index={0}
+            />
+            <AnimatedStatsCard
+              icon={Flame}
+              label="Day Streak"
+              value={stats?.current_streak || 0}
+              color="accent"
+              index={1}
+            />
+            <AnimatedStatsCard
+              icon={Target}
+              label="Weekly Goal"
+              value={weeklyStats.weekly_goal_percent}
+              suffix="%"
+              color="success"
+              index={2}
+            />
+            <AnimatedStatsCard
+              icon={Clock}
+              label="Study Time"
+              value={formatStudyTime(weeklyStats.weekly_study_minutes)}
+              color="warning"
+              index={3}
+              isAnimatedNumber={false}
+            />
           </div>
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Subjects Progress */}
-            <div className="lg:col-span-2 bg-card rounded-xl border border-border p-6 shadow-sm">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="lg:col-span-2 bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-6 shadow-xl"
+            >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-heading font-semibold text-xl">Your Subjects</h2>
-                <Link to="/subjects" className="text-primary text-sm font-medium flex items-center gap-1 hover:underline">
-                  View All <ChevronRight className="w-4 h-4" />
+                <div className="flex items-center gap-3">
+                  <motion.div
+                    className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <BookOpen className="w-5 h-5 text-primary" />
+                  </motion.div>
+                  <h2 className="font-heading font-semibold text-xl">Your Subjects</h2>
+                </div>
+                <Link to="/subjects" className="text-primary text-sm font-medium flex items-center gap-1 hover:underline group">
+                  View All <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
 
               {subjects.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <div className="text-center py-12 text-muted-foreground">
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-30" />
+                  </motion.div>
                   <p>No subjects found for your class.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {subjects.slice(0, 6).map((subject, index) => {
                     const IconComponent = subject.IconComponent;
+                    const colors = colorClasses[subject.color] || colorClasses.primary;
                     return (
                       <motion.div
                         key={subject.id}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="group bg-muted/30 rounded-xl p-4 hover:bg-muted/50 transition-colors cursor-pointer border border-transparent hover:border-border"
+                        transition={{ delay: 0.1 + index * 0.05 }}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        className={cn(
+                          "group bg-muted/30 backdrop-blur-sm rounded-xl p-4 cursor-pointer border transition-all duration-300",
+                          "hover:bg-muted/50 hover:shadow-lg",
+                          colors.border
+                        )}
                       >
                         <div className="flex items-center gap-3 mb-3">
-                          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", colorMap[subject.color] || "bg-primary")}>
+                          <motion.div 
+                            className={cn("w-11 h-11 rounded-xl flex items-center justify-center shadow-sm", colors.bg)}
+                            whileHover={{ rotate: [0, -5, 5, 0] }}
+                            transition={{ duration: 0.3 }}
+                          >
                             <IconComponent className="w-5 h-5 text-primary-foreground" />
-                          </div>
+                          </motion.div>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium truncate">{subject.name}</p>
                             <p className="text-xs text-muted-foreground">
                               NCTB Curriculum
                             </p>
                           </div>
-                          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Progress</span>
-                            <span className="font-medium">{subject.progress}%</span>
+                            <span className={cn("font-semibold", colors.text)}>{subject.progress}%</span>
                           </div>
-                          <Progress value={subject.progress} className="h-2" />
+                          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                            <motion.div
+                              className={cn("absolute inset-y-0 left-0 rounded-full", colors.bg)}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${subject.progress}%` }}
+                              transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
+                            />
+                          </div>
                         </div>
                       </motion.div>
                     );
                   })}
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Right Column */}
             <div className="space-y-6">
@@ -461,75 +581,122 @@ const Dashboard = () => {
               <RevisionReminders />
 
               {/* Continue Learning */}
-              <div className="bg-gradient-to-br from-primary to-primary-dark rounded-xl p-6 text-primary-foreground">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-primary-foreground/20 rounded-xl flex items-center justify-center">
-                    <Brain className="w-6 h-6" />
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-accent rounded-2xl p-6 text-primary-foreground shadow-xl"
+              >
+                {/* Animated background elements */}
+                <motion.div
+                  className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.3, 0.5, 0.3],
+                  }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+                <motion.div
+                  className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full blur-2xl"
+                  animate={{
+                    scale: [1.2, 1, 1.2],
+                    opacity: [0.2, 0.4, 0.2],
+                  }}
+                  transition={{ duration: 5, repeat: Infinity }}
+                />
+
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <motion.div 
+                      className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm"
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <Brain className="w-6 h-6" />
+                    </motion.div>
+                    <div>
+                      <p className="text-primary-foreground/80 text-sm">Start Learning</p>
+                      <p className="font-heading font-semibold text-lg">AI Tutor</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-primary-foreground/80 text-sm">Start Learning</p>
-                    <p className="font-heading font-semibold">AI Tutor</p>
-                  </div>
+                  <p className="text-primary-foreground/80 text-sm mb-4">
+                    Ask questions about any NCTB subject
+                  </p>
+                  <Button 
+                    className="w-full bg-white/20 hover:bg-white/30 border-white/30 text-primary-foreground backdrop-blur-sm shadow-lg" 
+                    asChild
+                  >
+                    <Link to="/tutor">
+                      <Play className="w-4 h-4 mr-2" />
+                      Start Session
+                    </Link>
+                  </Button>
                 </div>
-                <p className="text-primary-foreground/80 text-sm mb-4">
-                  Ask questions about any NCTB subject
-                </p>
-                <Button variant="glass" className="w-full bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20" asChild>
-                  <Link to="/tutor">
-                    <Play className="w-4 h-4 mr-2" />
-                    Start Session
-                  </Link>
-                </Button>
-              </div>
+              </motion.div>
             </div>
           </div>
 
           {/* Progress Visualization Section */}
-          <Tabs defaultValue="progress" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="progress">Progress Charts</TabsTrigger>
-              <TabsTrigger value="tips">Learning Tips</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="progress">
-              <ProgressVisualization />
-            </TabsContent>
-            
-            <TabsContent value="tips">
-              <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-                <h3 className="font-heading font-semibold mb-4">Quick Tips</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
-                    <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Target className="w-5 h-5 text-accent" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium">Study daily</p>
-                      <p className="text-sm text-muted-foreground">Build your streak for XP bonus</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
-                    <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Brain className="w-5 h-5 text-success" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium">Ask the AI Tutor</p>
-                      <p className="text-sm text-muted-foreground">Get help with any topic</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Award className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium">Complete chapters</p>
-                      <p className="text-sm text-muted-foreground">Earn XP and achievements</p>
-                    </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Tabs defaultValue="progress" className="space-y-4">
+              <TabsList className="bg-muted/50 backdrop-blur-sm">
+                <TabsTrigger value="progress" className="data-[state=active]:bg-card">
+                  Progress Charts
+                </TabsTrigger>
+                <TabsTrigger value="tips" className="data-[state=active]:bg-card">
+                  Learning Tips
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="progress">
+                <ProgressVisualization />
+              </TabsContent>
+              
+              <TabsContent value="tips">
+                <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-6 shadow-xl">
+                  <h3 className="font-heading font-semibold text-lg mb-4">Quick Tips</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { icon: Target, color: "accent", title: "Study daily", desc: "Build your streak for XP bonus" },
+                      { icon: Brain, color: "success", title: "Ask the AI Tutor", desc: "Get help with any topic" },
+                      { icon: Award, color: "primary", title: "Complete chapters", desc: "Earn XP and achievements" },
+                    ].map((tip, index) => (
+                      <motion.div
+                        key={tip.title}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 * index }}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        className="flex items-start gap-3 p-4 bg-muted/30 rounded-xl border border-border/50 backdrop-blur-sm"
+                      >
+                        <motion.div 
+                          className={cn(
+                            "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
+                            `bg-${tip.color}/10 text-${tip.color}`
+                          )}
+                          style={{
+                            backgroundColor: `hsl(var(--${tip.color}) / 0.1)`,
+                            color: `hsl(var(--${tip.color}))`,
+                          }}
+                          whileHover={{ rotate: [0, -10, 10, 0] }}
+                        >
+                          <tip.icon className="w-5 h-5" />
+                        </motion.div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium">{tip.title}</p>
+                          <p className="text-sm text-muted-foreground">{tip.desc}</p>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
                 </div>
-              </div>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
+          </motion.div>
         </main>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Calendar,
@@ -11,9 +11,9 @@ import {
   ChevronRight,
   Loader2,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -43,7 +43,6 @@ const RevisionReminders = () => {
   const fetchRevisions = async () => {
     setIsLoading(true);
     try {
-      // Get due today
       const dueResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/revision-scheduler`,
         {
@@ -62,7 +61,6 @@ const RevisionReminders = () => {
       const dueData = await dueResponse.json();
       setDueRevisions(dueData.revisions || []);
 
-      // Get all scheduled
       const allResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/revision-scheduler`,
         {
@@ -156,125 +154,180 @@ const RevisionReminders = () => {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-6 flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-6"
+      >
+        <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        </CardContent>
-      </Card>
+        </div>
+      </motion.div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            Revision Schedule
-          </CardTitle>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      className="relative overflow-hidden bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50"
+    >
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50" />
+      
+      <div className="relative z-10 p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Calendar className="w-5 h-5 text-primary" />
+            </motion.div>
+            <h3 className="font-heading font-semibold text-lg">Revision Schedule</h3>
+          </div>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={generateSchedule}
             disabled={isGenerating}
+            className="hover:bg-primary/10"
           >
             <RefreshCw className={cn("w-4 h-4", isGenerating && "animate-spin")} />
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Due Today */}
-        {dueRevisions.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-destructive">
-              <AlertTriangle className="w-4 h-4" />
-              Due Today ({dueRevisions.length})
-            </div>
-            {dueRevisions.map((revision) => (
+
+        <div className="space-y-4">
+          {/* Due Today */}
+          <AnimatePresence mode="popLayout">
+            {dueRevisions.length > 0 && (
               <motion.div
-                key={revision.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/20 rounded-lg"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-2"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-destructive/20 rounded-lg flex items-center justify-center">
-                    <Brain className="w-4 h-4 text-destructive" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{revision.topic_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {revision.subjects?.name || "General"}
-                    </p>
-                  </div>
+                <div className="flex items-center gap-2 text-sm font-medium text-destructive">
+                  <AlertTriangle className="w-4 h-4" />
+                  Due Today ({dueRevisions.length})
                 </div>
-                <Button size="sm" asChild>
-                  <Link to={`/assessment?topic=${encodeURIComponent(revision.topic_name)}`}>
-                    Review
-                  </Link>
-                </Button>
+                {dueRevisions.map((revision, index) => (
+                  <motion.div
+                    key={revision.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.02, x: 4 }}
+                    className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/20 rounded-xl backdrop-blur-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <motion.div 
+                        className="w-9 h-9 bg-destructive/20 rounded-lg flex items-center justify-center"
+                        animate={{ 
+                          boxShadow: ["0 0 0 0 rgba(239,68,68,0)", "0 0 0 8px rgba(239,68,68,0)"]
+                        }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        <Brain className="w-4 h-4 text-destructive" />
+                      </motion.div>
+                      <div>
+                        <p className="font-medium text-sm">{revision.topic_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {revision.subjects?.name || "General"}
+                        </p>
+                      </div>
+                    </div>
+                    <Button size="sm" className="shadow-lg" asChild>
+                      <Link to={`/assessment?topic=${encodeURIComponent(revision.topic_name)}`}>
+                        Review
+                      </Link>
+                    </Button>
+                  </motion.div>
+                ))}
               </motion.div>
-            ))}
-          </div>
-        )}
+            )}
+          </AnimatePresence>
 
-        {/* Upcoming */}
-        {upcomingRevisions.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              Upcoming
-            </div>
-            {upcomingRevisions.map((revision, i) => {
-              const daysUntil = getDaysUntil(revision.next_review_date);
-              return (
-                <motion.div
-                  key={revision.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Target className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{revision.topic_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {revision.subjects?.name || "General"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{formatDate(revision.next_review_date)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      in {daysUntil} day{daysUntil !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+          {/* Upcoming */}
+          <AnimatePresence mode="popLayout">
+            {upcomingRevisions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-2"
+              >
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Clock className="w-4 h-4" />
+                  Upcoming
+                </div>
+                {upcomingRevisions.map((revision, i) => {
+                  const daysUntil = getDaysUntil(revision.next_review_date);
+                  return (
+                    <motion.div
+                      key={revision.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      whileHover={{ scale: 1.02, x: 4 }}
+                      className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border/50 backdrop-blur-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <Target className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{revision.topic_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {revision.subjects?.name || "General"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">{formatDate(revision.next_review_date)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          in {daysUntil} day{daysUntil !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {dueRevisions.length === 0 && upcomingRevisions.length === 0 && (
-          <div className="text-center py-6">
-            <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-3 opacity-50" />
-            <p className="text-muted-foreground text-sm">
-              No revisions scheduled. Practice more topics to build your schedule!
-            </p>
-          </div>
-        )}
+          {dueRevisions.length === 0 && upcomingRevisions.length === 0 && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-8"
+            >
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <CheckCircle2 className="w-14 h-14 text-success mx-auto mb-3 opacity-60" />
+              </motion.div>
+              <p className="text-muted-foreground text-sm">
+                No revisions scheduled. Practice more topics to build your schedule!
+              </p>
+            </motion.div>
+          )}
 
-        <Button variant="outline" className="w-full" asChild>
-          <Link to="/learning-plan">
-            View Full Schedule
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+          <Button 
+            variant="outline" 
+            className="w-full group hover:bg-primary/5 hover:border-primary/30" 
+            asChild
+          >
+            <Link to="/learning-plan">
+              View Full Schedule
+              <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
