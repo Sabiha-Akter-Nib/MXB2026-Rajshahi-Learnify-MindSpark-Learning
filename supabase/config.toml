@@ -10,22 +10,22 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.track-session]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-learning-plan]
-verify_jwt = false
+verify_jwt = true
 
 [functions.run-assessment]
-verify_jwt = false
+verify_jwt = true
 
 [functions.revision-scheduler]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-achievements]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-push-notification]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-quiz]
 verify_jwt = false

@@ -45,11 +45,29 @@ serve(async (req) => {
   }
 
   try {
-    const { action, userId, revisionId, quality } = await req.json();
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Validate user from JWT token
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Authorization header required");
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = user.id;
+    const { action, revisionId, quality } = await req.json();
 
     if (action === "generate") {
       // Get weak topics that need revision scheduling
@@ -124,6 +142,7 @@ serve(async (req) => {
         .from("revision_schedule")
         .select("*")
         .eq("id", revisionId)
+        .eq("user_id", userId)
         .single();
 
       if (!revision) {

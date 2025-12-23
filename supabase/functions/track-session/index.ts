@@ -12,15 +12,29 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, subjectId, durationMinutes, xpEarned, topic, bloomLevel } = await req.json();
-
-    if (!userId) {
-      throw new Error("User ID required");
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Validate user from JWT token
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Authorization header required");
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = user.id;
+    const { subjectId, durationMinutes, xpEarned, topic, bloomLevel } = await req.json();
 
     console.log(`Recording study session for user ${userId}: ${durationMinutes} mins, ${xpEarned} XP`);
 
@@ -152,9 +166,9 @@ serve(async (req) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseKey}`,
+            Authorization: authHeader,
           },
-          body: JSON.stringify({ userId, trigger: "session" }),
+          body: JSON.stringify({ trigger: "session" }),
         }
       );
       const achievementData = await achievementResponse.json();

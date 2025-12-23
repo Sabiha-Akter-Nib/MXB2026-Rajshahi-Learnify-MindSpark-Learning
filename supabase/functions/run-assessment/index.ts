@@ -14,16 +14,35 @@ serve(async (req) => {
   }
 
   try {
-    const { action, userId, subjectId, topic, bloomLevel, answers, assessmentId, questions, tutorContext } = await req.json();
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
+    // Validate user from JWT token
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Authorization header required");
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = user.id;
+
     if (!LOVABLE_API_KEY) {
       throw new Error("AI service not configured");
     }
+
+    const { action, subjectId, topic, bloomLevel, answers, assessmentId, questions, tutorContext } = await req.json();
 
     if (action === "generate") {
       // Generate assessment questions from tutor context

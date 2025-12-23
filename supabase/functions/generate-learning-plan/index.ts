@@ -18,23 +18,38 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, chapters, bloomLevel = "remember", planType = "weekly" } = await req.json();
-
-    if (!userId) {
-      throw new Error("User ID required");
-    }
-
-    if (!chapters || chapters.length === 0) {
-      throw new Error("At least one chapter is required");
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
+    // Validate user from JWT token
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Authorization header required");
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = user.id;
+
     if (!LOVABLE_API_KEY) {
       throw new Error("AI service not configured");
+    }
+
+    const { chapters, bloomLevel = "remember", planType = "weekly" } = await req.json();
+
+    if (!chapters || chapters.length === 0) {
+      throw new Error("At least one chapter is required");
     }
 
     // Fetch student profile
