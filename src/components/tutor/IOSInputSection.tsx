@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send,
@@ -11,13 +11,17 @@ import {
   Brain,
   RefreshCw,
   Upload,
-  Camera,
   Loader2,
   X,
+  Plus,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface QuickAction {
   icon: React.ElementType;
@@ -52,6 +56,14 @@ const quickActions: QuickAction[] = [
     prompt: "Help me revise ",
     promptBn: "রিভিশন করতে সাহায্য করো ",
     color: "from-accent to-accent/80",
+  },
+  {
+    icon: Upload,
+    label: "Multimodal",
+    labelBn: "মাল্টিমিডিয়া",
+    prompt: "",
+    promptBn: "",
+    color: "from-secondary to-secondary/80",
   },
 ];
 
@@ -90,75 +102,19 @@ const IOSInputSection = ({
   showMultimodal,
   isBangla,
 }: IOSInputSectionProps) => {
-  const [focusedAction, setFocusedAction] = useState<number | null>(null);
+  const [actionsOpen, setActionsOpen] = useState(false);
+
+  const handleActionClick = (action: QuickAction) => {
+    if (action.label === "Multimodal") {
+      onToggleMultimodal();
+    } else {
+      setInput(isBangla ? action.promptBn : action.prompt);
+    }
+    setActionsOpen(false);
+  };
 
   return (
     <div className="space-y-2">
-      {/* Quick Actions - iOS style horizontal scroll */}
-      <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1 px-1">
-        {quickActions.map((action, index) => {
-          const Icon = action.icon;
-          const isHovered = focusedAction === index;
-          
-          return (
-            <motion.button
-              key={action.label}
-              initial={{ opacity: 0, scale: 0.9, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              whileTap={{ scale: 0.95 }}
-              onHoverStart={() => setFocusedAction(index)}
-              onHoverEnd={() => setFocusedAction(null)}
-              onClick={() => setInput(isBangla ? action.promptBn : action.prompt)}
-              className={cn(
-                "relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap",
-                "bg-card/80 backdrop-blur-sm border border-border/50",
-                "hover:border-primary/40 hover:bg-card"
-              )}
-            >
-              {/* Hover glow */}
-              <motion.div
-                className="absolute inset-0 rounded-2xl pointer-events-none"
-                animate={{
-                  boxShadow: isHovered 
-                    ? "0 8px 30px -10px hsl(var(--primary) / 0.3), inset 0 0 20px hsl(var(--primary) / 0.05)"
-                    : "none",
-                }}
-                transition={{ duration: 0.2 }}
-              />
-              
-              <motion.div
-                animate={isHovered ? { y: [0, -3, 0], scale: [1, 1.2, 1] } : {}}
-                transition={{ duration: 0.4 }}
-              >
-                <Icon className="w-4 h-4 text-primary" />
-              </motion.div>
-              
-              <span className="relative z-10">{isBangla ? action.labelBn : action.label}</span>
-            </motion.button>
-          );
-        })}
-        
-        {/* Multimodal toggle */}
-        <motion.button
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onToggleMultimodal}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap",
-            "border backdrop-blur-sm",
-            showMultimodal
-              ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-transparent shadow-lg shadow-primary/20"
-              : "bg-card/80 border-border/50 hover:border-primary/40"
-          )}
-        >
-          <Upload className="w-4 h-4" />
-          <span>{isBangla ? "মাল্টিমিডিয়া" : "Multimodal"}</span>
-        </motion.button>
-      </div>
-
       {/* Main Input Container - iOS style */}
       <motion.div
         className={cn(
@@ -206,6 +162,55 @@ const IOSInputSection = ({
           <div className="flex items-center justify-between pt-2 border-t border-border/30">
             {/* Left actions */}
             <div className="flex items-center gap-1">
+              {/* Quick Actions Popover */}
+              <Popover open={actionsOpen} onOpenChange={setActionsOpen}>
+                <PopoverTrigger asChild>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className={cn(
+                      "p-2.5 rounded-xl transition-colors",
+                      actionsOpen
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    <Plus className="w-5 h-5" />
+                  </motion.button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  side="top" 
+                  align="start" 
+                  className="w-56 p-2 bg-card/95 backdrop-blur-xl border-border/50"
+                >
+                  <div className="space-y-1">
+                    {quickActions.map((action) => {
+                      const Icon = action.icon;
+                      return (
+                        <motion.button
+                          key={action.label}
+                          whileHover={{ x: 4 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleActionClick(action)}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                            "hover:bg-primary/10 text-foreground"
+                          )}
+                        >
+                          <div className={cn(
+                            "p-1.5 rounded-lg bg-gradient-to-br",
+                            action.color
+                          )}>
+                            <Icon className="w-4 h-4 text-white" />
+                          </div>
+                          <span>{isBangla ? action.labelBn : action.label}</span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
+
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
