@@ -532,8 +532,8 @@ const Assessment = () => {
           <div className="space-y-4 mb-8">
             {results.results.map((result, i) => (
               <Card key={i} className={cn(
-                "border-2",
-                result.isCorrect ? "border-success/30 bg-success/5" : "border-muted/30 bg-muted/5"
+                "border-2 bg-white/95 backdrop-blur-sm",
+                result.isCorrect ? "border-success/30" : "border-white/30"
               )}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
@@ -649,7 +649,7 @@ const Assessment = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <Card className="mb-6">
+              <Card className="mb-6 bg-white/95 backdrop-blur-sm border-white/30">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-3 mb-6">
                     <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center flex-shrink-0">

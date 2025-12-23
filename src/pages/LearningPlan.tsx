@@ -321,7 +321,7 @@ const LearningPlanPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Card className="mb-6">
+            <Card className="mb-6 bg-white/95 backdrop-blur-sm border-white/30">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-primary" />
@@ -449,7 +449,7 @@ const LearningPlanPage = () => {
         ) : (
           <>
             {/* Progress Overview */}
-            <Card className="mb-6">
+            <Card className="mb-6 bg-white/95 backdrop-blur-sm border-white/30">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -499,8 +499,8 @@ const LearningPlanPage = () => {
                 >
                   <Card
                     className={cn(
-                      "transition-all",
-                      task.is_completed && "bg-success/5 border-success/30"
+                      "transition-all bg-white/95 backdrop-blur-sm",
+                      task.is_completed ? "border-success/30" : "border-white/30"
                     )}
                   >
                     <CardContent className="p-4">
