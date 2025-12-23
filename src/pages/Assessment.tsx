@@ -221,7 +221,6 @@ const Assessment = () => {
       const { data, error } = await supabase.functions.invoke("run-assessment", {
         body: {
           action: "generate",
-          userId: user?.id,
           subjectId,
           topic,
           bloomLevel,
@@ -275,7 +274,6 @@ const Assessment = () => {
       const { data, error } = await supabase.functions.invoke("run-assessment", {
         body: {
           action: "submit",
-          userId: user?.id,
           subjectId,
           topic,
           bloomLevel,
@@ -362,7 +360,6 @@ const Assessment = () => {
       const { data, error } = await supabase.functions.invoke("run-assessment", {
         body: {
           action: "generate",
-          userId: user?.id,
           subjectId,
           topic,
           bloomLevel: level,

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UseVoiceInputReturn {
   isRecording: boolean;
@@ -61,26 +62,17 @@ export const useVoiceInput = (): UseVoiceInputReturn => {
           reader.onloadend = async () => {
             const base64Audio = (reader.result as string).split(",")[1];
             
-            // Send to edge function for transcription
-            const response = await fetch(
-              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-to-text`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-                },
-                body: JSON.stringify({ audio: base64Audio }),
-              }
-            );
+            // Use supabase.functions.invoke (voice-to-text has verify_jwt = false, so anon key works)
+            const { data, error } = await supabase.functions.invoke("voice-to-text", {
+              body: { audio: base64Audio },
+            });
 
-            if (!response.ok) {
+            if (error) {
               throw new Error("Failed to transcribe audio");
             }
 
-            const { text } = await response.json();
             setIsProcessing(false);
-            resolve(text || null);
+            resolve(data?.text || null);
           };
           reader.readAsDataURL(audioBlob);
         } catch (error) {

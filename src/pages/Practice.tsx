@@ -123,6 +123,7 @@ const Practice = () => {
     setAnsweredQuestions(new Set());
     setSessionStartTime(new Date());
     try {
+      // generate-practice has verify_jwt = false, so we can use fetch with anon key
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-practice`, {
         method: "POST",
         headers: {
@@ -159,21 +160,15 @@ const Practice = () => {
     const xpEarned = score * 5 + (score === questions.length ? 10 : 0); // Bonus for perfect
 
     try {
-      // Track study session
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/track-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
-        },
-        body: JSON.stringify({
-          userId: user.id,
+      // Track study session using supabase.functions.invoke (includes user's session token)
+      await supabase.functions.invoke("track-session", {
+        body: {
           subjectId: selectedSubjectId || null,
           durationMinutes,
           xpEarned,
           topic,
           bloomLevel: questions[0]?.bloomLevel || "understand"
-        })
+        }
       });
 
       // Update topic mastery

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Revision {
   id: string;
@@ -43,45 +44,31 @@ const RevisionReminders = () => {
   const fetchRevisions = async () => {
     setIsLoading(true);
     try {
-      const dueResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/revision-scheduler`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            action: "getDueToday",
-            userId: user?.id,
-          }),
-        }
-      );
+      // Get due today revisions
+      const { data: dueData, error: dueError } = await supabase.functions.invoke("revision-scheduler", {
+        body: { action: "getDueToday" },
+      });
 
-      const dueData = await dueResponse.json();
-      setDueRevisions(dueData.revisions || []);
+      if (dueError) {
+        console.error("Error fetching due revisions:", dueError);
+      } else {
+        setDueRevisions(dueData?.revisions || []);
+      }
 
-      const allResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/revision-scheduler`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            action: "generate",
-            userId: user?.id,
-          }),
-        }
-      );
+      // Generate and get all revisions
+      const { data: allData, error: allError } = await supabase.functions.invoke("revision-scheduler", {
+        body: { action: "generate" },
+      });
 
-      const allData = await allResponse.json();
-      const today = new Date().toISOString().split("T")[0];
-      const upcoming = (allData.revisions || []).filter(
-        (r: Revision) => r.next_review_date > today
-      );
-      setUpcomingRevisions(upcoming.slice(0, 5));
+      if (allError) {
+        console.error("Error fetching all revisions:", allError);
+      } else {
+        const today = new Date().toISOString().split("T")[0];
+        const upcoming = (allData?.revisions || []).filter(
+          (r: Revision) => r.next_review_date > today
+        );
+        setUpcomingRevisions(upcoming.slice(0, 5));
+      }
     } catch (error) {
       console.error("Error fetching revisions:", error);
     } finally {
@@ -92,23 +79,13 @@ const RevisionReminders = () => {
   const generateSchedule = async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/revision-scheduler`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            action: "generate",
-            userId: user?.id,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke("revision-scheduler", {
+        body: { action: "generate" },
+      });
 
-      const data = await response.json();
-      if (data.newCount > 0) {
+      if (error) throw error;
+
+      if (data?.newCount > 0) {
         toast({
           title: "Revisions Scheduled!",
           description: `${data.newCount} new revision${data.newCount > 1 ? "s" : ""} added to your schedule.`,
