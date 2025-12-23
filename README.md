@@ -4,7 +4,7 @@ An AI-powered personalized learning tutor for Bangladeshi students (Grades 1–1
 
 ## Project Summary
 
-MindSpark Learning is a study-only, curriculum-locked, multimodal AI tutor delivered as a Progressive Web App (PWA). It provides individualized learning plans, adaptive practice modules, and student progress tracking with a zero-hallucination policy.
+**MindSpark Learning** is a curriculum-locked, AI-powered personalized learning platform built to deliver accurate, ethical, and adaptive education at national scale, even in low-bandwidth and offline environments. Designed as a study-only system, it provides individualized learning plans, adaptive practice modules, and a skill-based progress dashboard that evolve continuously based on each learner’s profile, past performance, learning pace, and interaction patterns, while also allowing learners to create their own learning plans and take assessments aligned to those plans. The platform enforces a strict zero-hallucination policy—refusing to guess when certainty is incomplete and instead requesting clarification or source material—ensuring trust, safety, and academic integrity. Learning is delivered through a mandatory Bloom’s Taxonomy framework, with the AI providing clear, step-by-step explanations and assessments that test exactly what the learner has studied, followed by detailed explanations of each answer to reinforce understanding. Learners can practice any topic on demand for exam preparation, track mastery through a structured assessment system, and stay motivated through built-in rewards and leaderboards that recognize progress, consistency, and improvement rather than rote scores. Powered by a multi-model AI architecture with retrieval-augmented generation and authoritative datasets, MindSpark Learning is implemented as a high-performance progressive web app with offline-first design, premium motion-driven UI, and PersonaShift modes that adapt teaching style without ever compromising accuracy. Built for feasibility, scalability, and responsible AI use, MindSpark Learning is not just an EdTech application—it is a deployable foundation for trustworthy, personalized education at scale.
 
 ### Key Features
 
@@ -15,17 +15,6 @@ MindSpark Learning is a study-only, curriculum-locked, multimodal AI tutor deliv
 - **Offline Support** - PWA with offline lesson packs for low-bandwidth users
 - **Progress Tracking** - XP system, streaks, achievements, and leaderboards
 - **Revision Scheduling** - Spaced repetition for optimal retention
-
-### Supported Subjects
-
-- Bangla 1st & 2nd Paper
-- English 1st & 2nd Paper
-- Mathematics / Higher Mathematics
-- General Science / Physics / Chemistry / Biology
-- ICT
-- Bangladesh & Global Studies (BGS)
-
-> ❌ Religion subject is explicitly excluded
 
 ## Setup and Run Instructions
 
@@ -59,10 +48,12 @@ The app will be available at `http://localhost:5173`
 ### Environment Variables
 
 The project uses Supabase for backend services. The following are configured:
+
 - Supabase Project URL
 - Supabase Anon Key
 
 For AI features, ensure the following secrets are configured in Supabase Edge Functions:
+
 - `OPENAI_API_KEY` - For GPT-based tutoring
 - `GEMINI_API_KEY` - For multimodal understanding
 
@@ -70,27 +61,27 @@ For AI features, ensure the following secrets are configured in Supabase Edge Fu
 
 ### Frontend
 
-| Technology | Purpose |
-|------------|---------|
-| **React 18** | UI library |
-| **TypeScript** | Type safety |
-| **Vite** | Build tool & dev server |
-| **Tailwind CSS** | Utility-first styling |
-| **shadcn/ui** | Component library |
-| **Framer Motion** | Animations |
-| **React Router** | Client-side routing |
-| **React Query** | Server state management |
-| **Recharts** | Data visualization |
+| Technology        | Purpose                 |
+| ----------------- | ----------------------- |
+| **React 18**      | UI library              |
+| **TypeScript**    | Type safety             |
+| **Vite**          | Build tool & dev server |
+| **Tailwind CSS**  | Utility-first styling   |
+| **shadcn/ui**     | Component library       |
+| **Framer Motion** | Animations              |
+| **React Router**  | Client-side routing     |
+| **React Query**   | Server state management |
+| **Recharts**      | Data visualization      |
 
 ### Backend (Supabase)
 
-| Service | Purpose |
-|---------|---------|
-| **PostgreSQL** | Database |
+| Service            | Purpose                  |
+| ------------------ | ------------------------ |
+| **PostgreSQL**     | Database                 |
 | **Edge Functions** | Serverless API endpoints |
-| **Auth** | User authentication |
-| **Storage** | File uploads |
-| **Realtime** | Live updates |
+| **Auth**           | User authentication      |
+| **Storage**        | File uploads             |
+| **Realtime**       | Live updates             |
 
 ### Key Dependencies
 
@@ -182,6 +173,7 @@ canvas-confetti
 ### Bloom's Taxonomy Enforcement
 
 All content follows Bloom's levels in order:
+
 1. Remember → 2. Understand → 3. Apply → 4. Analyze → 5. Evaluate → 6. Create
 
 Students cannot skip levels unless mastery is proven through assessments.
