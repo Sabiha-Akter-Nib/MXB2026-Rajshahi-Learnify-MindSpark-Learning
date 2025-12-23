@@ -373,6 +373,42 @@ const ProgressVisualization = () => {
               </motion.div>
               <h3 className="font-semibold text-lg">Bloom Levels</h3>
             </div>
+            
+            {/* Animated Bloom Level Badges */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {bloomProgress.map((bloom, index) => (
+                <motion.div
+                  key={bloom.level}
+                  initial={{ opacity: 0, scale: 0, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ 
+                    delay: 0.3 + index * 0.1,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 15
+                  }}
+                  whileHover={{ 
+                    scale: 1.1, 
+                    y: -3,
+                    boxShadow: `0 8px 25px -5px ${bloom.color}40`
+                  }}
+                  className="px-2.5 py-1 rounded-full text-xs font-medium text-white cursor-default"
+                  style={{ 
+                    backgroundColor: bloom.color,
+                    boxShadow: `0 2px 10px -2px ${bloom.color}50`
+                  }}
+                >
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                  >
+                    {bloom.level}: {bloom.count}
+                  </motion.span>
+                </motion.div>
+              ))}
+            </div>
+
             <div className="flex-1 flex items-center justify-center">
               {totalAssessments > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -381,11 +417,10 @@ const ProgressVisualization = () => {
                       data={bloomProgress.filter((b) => b.count > 0)}
                       cx="50%"
                       cy="50%"
-                      innerRadius={45}
-                      outerRadius={70}
+                      innerRadius={35}
+                      outerRadius={55}
                       dataKey="count"
                       nameKey="level"
-                      label={({ level }) => level}
                       labelLine={false}
                     >
                       {bloomProgress.map((entry, index) => (
@@ -418,36 +453,61 @@ const ProgressVisualization = () => {
               </motion.div>
               <h3 className="font-semibold text-lg">Mastery</h3>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 overflow-y-auto">
               {topicMastery.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={topicMastery.slice(0, 5)} layout="vertical">
-                    <defs>
-                      <linearGradient id="masteryGradient" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="hsl(var(--success))" stopOpacity={0.8} />
-                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis type="number" domain={[0, 100]} stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                    <YAxis
-                      type="category"
-                      dataKey="topic"
-                      width={80}
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={10}
-                      tickFormatter={(value) => value.length > 10 ? value.slice(0, 10) + "..." : value}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "12px",
+                <div className="space-y-3">
+                  {topicMastery.slice(0, 5).map((topic, index) => (
+                    <motion.div
+                      key={topic.topic}
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ 
+                        delay: 0.4 + index * 0.12,
+                        type: "spring",
+                        stiffness: 200
                       }}
-                    />
-                    <Bar dataKey="mastery" fill="url(#masteryGradient)" radius={[0, 6, 6, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                      className="space-y-1"
+                    >
+                      <div className="flex justify-between items-center text-sm">
+                        <motion.span 
+                          className="font-medium truncate max-w-[140px]"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.5 + index * 0.12 }}
+                        >
+                          {topic.topic}
+                        </motion.span>
+                        <motion.span 
+                          className="text-success font-bold"
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ 
+                            delay: 0.7 + index * 0.12,
+                            type: "spring",
+                            stiffness: 300
+                          }}
+                        >
+                          {topic.mastery}%
+                        </motion.span>
+                      </div>
+                      <div className="h-2.5 bg-muted/50 rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{
+                            background: `linear-gradient(90deg, hsl(var(--success)), hsl(var(--primary)))`
+                          }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${topic.mastery}%` }}
+                          transition={{ 
+                            delay: 0.5 + index * 0.12,
+                            duration: 0.8,
+                            ease: "easeOut"
+                          }}
+                        />
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
