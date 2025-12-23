@@ -22,21 +22,54 @@ serve(async (req) => {
   }
 
   try {
-    const payload: PushPayload = await req.json();
-    console.log("Push notification request:", JSON.stringify(payload));
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get push subscriptions
-    let query = supabase.from("push_subscriptions").select("*");
-    
-    if (payload.userId) {
-      query = query.eq("user_id", payload.userId);
+    // Authenticate the request
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Authorization required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const { data: subscriptions, error } = await query;
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("Authentication failed:", authError?.message);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Authenticated user:", user.id);
+
+    const payload: PushPayload = await req.json();
+    console.log("Push notification request:", JSON.stringify(payload));
+
+    // Security: Users can only send notifications to themselves
+    // If userId is provided and doesn't match authenticated user, reject
+    if (payload.userId && payload.userId !== user.id) {
+      console.error("User attempted to send notification to another user");
+      return new Response(
+        JSON.stringify({ error: "You can only send notifications to yourself" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Default to sending to the authenticated user
+    const targetUserId = payload.userId || user.id;
+
+    // Get push subscriptions for the target user
+    const { data: subscriptions, error } = await supabase
+      .from("push_subscriptions")
+      .select("*")
+      .eq("user_id", targetUserId);
 
     if (error) {
       console.error("Error fetching subscriptions:", error);
@@ -44,14 +77,14 @@ serve(async (req) => {
     }
 
     if (!subscriptions || subscriptions.length === 0) {
-      console.log("No subscriptions found");
+      console.log("No subscriptions found for user:", targetUserId);
       return new Response(
         JSON.stringify({ success: true, sent: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`Found ${subscriptions.length} subscription(s)`);
+    console.log(`Found ${subscriptions.length} subscription(s) for user ${targetUserId}`);
 
     // Web Push requires VAPID keys for authentication
     // For now, we'll return success and note that full web push requires additional setup
