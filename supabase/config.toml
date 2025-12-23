@@ -1,13 +1,13 @@
 project_id = "vprrgfzwaueklfnfpfrh"
 
 [functions.ai-tutor]
-verify_jwt = false
+verify_jwt = true
 
 [functions.voice-to-text]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-practice]
-verify_jwt = false
+verify_jwt = true
 
 [functions.track-session]
 verify_jwt = true
@@ -28,4 +28,4 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.generate-quiz]
-verify_jwt = false
+verify_jwt = true

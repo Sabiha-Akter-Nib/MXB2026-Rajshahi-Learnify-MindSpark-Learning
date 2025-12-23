@@ -123,25 +123,20 @@ const Practice = () => {
     setAnsweredQuestions(new Set());
     setSessionStartTime(new Date());
     try {
-      // generate-practice has verify_jwt = false, so we can use fetch with anon key
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-practice`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
-        },
-        body: JSON.stringify({
+      // Use supabase.functions.invoke for authenticated request
+      const { data, error: invokeError } = await supabase.functions.invoke("generate-practice", {
+        body: {
           topic,
           studentClass: profile?.class || 5,
           version: profile?.version || "bangla",
           count: 5,
           bloomLevel: selectedBloomLevel !== "all" ? selectedBloomLevel : undefined
-        })
+        }
       });
-      if (!response.ok) {
-        throw new Error("Failed to generate questions");
+
+      if (invokeError) {
+        throw new Error(invokeError.message || "Failed to generate questions");
       }
-      const data = await response.json();
       setQuestions(data.questions || []);
     } catch (error) {
       console.error("Error generating questions:", error);
