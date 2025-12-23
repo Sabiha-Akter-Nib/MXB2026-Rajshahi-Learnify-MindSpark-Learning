@@ -12,7 +12,34 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, chapterName, subjectName, bloomLevel, subjectId } = await req.json();
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Authenticate the request
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Authorization required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("Authentication failed:", authError?.message);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Authenticated user:", user.id);
+
+    const { chapterName, subjectName, bloomLevel, subjectId } = await req.json();
 
     console.log(`Generating quiz for chapter: ${chapterName}, subject: ${subjectName}, level: ${bloomLevel}`);
 
@@ -20,30 +47,25 @@ serve(async (req) => {
       throw new Error("Missing required fields: chapterName and bloomLevel");
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("AI service not configured");
     }
 
-    // Get user profile for class and version
+    // Get user profile for class and version using authenticated user
     let studentClass = 5;
     let version = "bangla";
     
-    if (userId) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("class, version")
-        .eq("user_id", userId)
-        .single();
-      
-      if (profile) {
-        studentClass = profile.class || 5;
-        version = profile.version || "bangla";
-      }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("class, version")
+      .eq("user_id", user.id)
+      .single();
+    
+    if (profile) {
+      studentClass = profile.class || 5;
+      version = profile.version || "bangla";
     }
 
     const isBangla = version === "bangla";

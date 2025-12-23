@@ -50,7 +50,7 @@ interface StudentInfo {
   version: string;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-tutor`;
+const CHAT_URL = `https://vprrgfzwaueklfnfpfrh.supabase.co/functions/v1/ai-tutor`;
 
 // Format text by removing asterisks, hashtags and applying proper styling
 const formatMessageContent = (content: string): React.ReactNode[] => {
@@ -331,11 +331,17 @@ What would you like to learn today?`,
   };
 
   const streamChat = async (userMessages: Array<{ role: string; content: string }>) => {
+    // Get session token for authenticated request
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error("Please log in to use the AI tutor");
+    }
+
     const resp = await fetch(CHAT_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ 
         messages: userMessages,

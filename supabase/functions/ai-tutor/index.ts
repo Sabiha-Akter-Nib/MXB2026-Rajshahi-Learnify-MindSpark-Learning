@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -47,7 +48,7 @@ async function searchWeb(query: string, apiKey: string): Promise<string> {
   }
 }
 
-// Parse chapter requests like "1st chapter", "Chapter 2", "অধ্যায় ৩" and (optionally) detect subject
+// Parse chapter requests like "1st chapter", "Chapter 2", "অধ্যায় ৩" and (optionally) detect subject
 function parseChapterRequest(message: string): {
   chapterNumber?: number;
   subjectHint?: string;
@@ -57,9 +58,9 @@ function parseChapterRequest(message: string): {
 
   const subjectHints: Array<{ re: RegExp; label: string }> = [
     { re: /bangla\s*1(st)?\s*paper|বাংলা\s*১ম\s*পত্র|বাংলা\s*1ম\s*পত্র/i, label: "Bangla 1st Paper" },
-    { re: /bangla\s*2(nd)?\s*paper|বাংলা\s*২য়\s*পত্র|বাংলা\s*2য়\s*পত্র/i, label: "Bangla 2nd Paper" },
+    { re: /bangla\s*2(nd)?\s*paper|বাংলা\s*২য়\s*পত্র|বাংলা\s*2য়\s*পত্র/i, label: "Bangla 2nd Paper" },
     { re: /english\s*1(st)?\s*paper|ইংরেজি\s*১ম\s*পত্র/i, label: "English 1st Paper" },
-    { re: /english\s*2(nd)?\s*paper|ইংরেজি\s*২য়\s*পত্র/i, label: "English 2nd Paper" },
+    { re: /english\s*2(nd)?\s*paper|ইংরেজি\s*২য়\s*পত্র/i, label: "English 2nd Paper" },
     { re: /mathematics|math|গণিত/i, label: "Mathematics" },
     { re: /general\s*science|সাধারণ\s*বিজ্ঞান/i, label: "General Science" },
     { re: /bangladesh\s*&\s*global\s*studies|bgs|বাংলাদেশ\s*ও\s*বিশ্বপরিচয়/i, label: "Bangladesh & Global Studies" },
@@ -75,17 +76,17 @@ function parseChapterRequest(message: string): {
   // Detect chapter number in EN + BN
   const chapterMatch = message.match(/\bchapter\s*(\d{1,2})\b/i)
     || message.match(/\b(\d{1,2})\s*(?:st|nd|rd|th)\s*chapter\b/i)
-    || message.match(/অধ্যা(?:য়|য়)\s*(\d{1,2})/i);
+    || message.match(/অধ্যা(?:য়|য়)\s*(\d{1,2})/i);
 
   const chapterNumber = chapterMatch?.[1] ? Number(chapterMatch[1]) : undefined;
 
   // If the message includes a quoted title or anything beyond just "chapter N", treat as explicit
-  // Examples: "Chapter 2: লোকহার একুশে", "অধ্যায় ৩ — অণু পরমাণু"
+  // Examples: "Chapter 2: লোকহার একুশে", "অধ্যায় ৩ — অণু পরমাণু"
   const hasExplicitChapterTitle =
     /chapter\s*\d{1,2}\s*[:–-]/i.test(message) ||
-    /অধ্যা(?:য়|য়)\s*\d{1,2}\s*[:–-]/i.test(message) ||
+    /অধ্যা(?:য়|য়)\s*\d{1,2}\s*[:–-]/i.test(message) ||
     /chapter\s*\d{1,2}\s+\S+/i.test(message) ||
-    /অধ্যা(?:য়|য়)\s*\d{1,2}\s+\S+/i.test(message);
+    /অধ্যা(?:য়|য়)\s*\d{1,2}\s+\S+/i.test(message);
 
   return { chapterNumber: Number.isFinite(chapterNumber) ? chapterNumber : undefined, subjectHint, hasExplicitChapterTitle };
 }
@@ -105,7 +106,7 @@ function extractSearchQuery(message: string, studentClass: number): string {
     /explain\s+(?:the\s+)?(?:chapter\s+)?(?:on\s+)?["']?([^"'\n]+)["']?/i,
     /(?:what\s+is|tell\s+me\s+about|describe)\s+["']?([^"'\n?]+)["']?\??/i,
     /chapter\s+(?:\d+[\s:-]*)?["']?([^"'\n]+)["']?/i,
-    /(?:অধ্যায়|অধ্যায়|বিষয়)\s*[:–-]?\s*["']?([^"'\n]+)["']?/i,
+    /(?:অধ্যায়|অধ্যায়|বিষয়)\s*[:–-]?\s*["']?([^"'\n]+)["']?/i,
     /^([^?]+)\s+(?:explain|বুঝিয়ে\s+দাও|ব্যাখ্যা\s+করো)/i,
   ];
 
@@ -316,7 +317,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Minimal SSE helper for “ask for clarification” responses
+  // Minimal SSE helper for "ask for clarification" responses
   const sseText = (text: string) => {
     const payload = {
       id: `clarify-${Date.now()}`,
@@ -332,6 +333,33 @@ serve(async (req) => {
   };
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Authenticate the request
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Authorization required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("Authentication failed:", authError?.message);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Authenticated user:", user.id);
+
     const { messages, studentInfo, persona } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
@@ -349,12 +377,12 @@ serve(async (req) => {
     const chapterReq = latestMessage?.content ? parseChapterRequest(String(latestMessage.content)) : { hasExplicitChapterTitle: true };
 
     if (latestMessage?.content && chapterReq?.chapterNumber && !chapterReq?.hasExplicitChapterTitle) {
-      // Without a subject, we cannot safely map “chapter 2” to a real chapter.
+      // Without a subject, we cannot safely map "chapter 2" to a real chapter.
       if (!chapterReq.subjectHint) {
         return sseText(
           studentInfo?.version === "english"
             ? "I cannot be 100% sure which book you mean from only a chapter number. Please tell me: (1) Subject/book (e.g., Bangla 1st Paper / Mathematics), and (2) the chapter title (or upload a photo of the chapter list/table of contents)."
-            : "শুধু ‘অধ্যায় ২/৩’ বললে আমি কোন বই/বিষয় বুঝবো নিশ্চিত হতে পারি না। দয়া করে বলো: (১) বিষয়/বই (যেমন বাংলা ১ম পত্র/গণিত), এবং (২) অধ্যায়ের নাম। অথবা বইয়ের সূচিপত্র/অধ্যায়ের তালিকার ছবি আপলোড করো।"
+            : "শুধু 'অধ্যায় ২/৩' বললে আমি কোন বই/বিষয় বুঝবো নিশ্চিত হতে পারি না। দয়া করে বলো: (১) বিষয়/বই (যেমন বাংলা ১ম পত্র/গণিত), এবং (২) অধ্যায়ের নাম। অথবা বইয়ের সূচিপত্র/অধ্যায়ের তালিকার ছবি আপলোড করো।"
         );
       }
 
@@ -412,32 +440,31 @@ serve(async (req) => {
       
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
+          JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
+          JSON.stringify({ error: "AI credits exhausted. Please contact support." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       
-      return new Response(
-        JSON.stringify({ error: "AI service temporarily unavailable" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      throw new Error("AI service unavailable");
     }
 
     console.log("Streaming response from AI gateway...");
-    
+
+    // Return SSE stream
     return new Response(response.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
+
   } catch (error) {
     console.error("AI tutor error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error occurred" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
