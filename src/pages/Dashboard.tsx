@@ -642,60 +642,7 @@ const Dashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Tabs defaultValue="progress" className="space-y-4">
-              <TabsList className="bg-muted/50 backdrop-blur-sm">
-                <TabsTrigger value="progress" className="data-[state=active]:bg-card">
-                  Progress Charts
-                </TabsTrigger>
-                <TabsTrigger value="tips" className="data-[state=active]:bg-card">
-                  Learning Tips
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="progress">
-                <ProgressVisualization />
-              </TabsContent>
-              
-              <TabsContent value="tips">
-                <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-6 shadow-xl">
-                  <h3 className="font-heading font-semibold text-lg mb-4">Quick Tips</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[
-                      { icon: Target, color: "accent", title: "Study daily", desc: "Build your streak for XP bonus" },
-                      { icon: Brain, color: "success", title: "Ask the AI Tutor", desc: "Get help with any topic" },
-                      { icon: Award, color: "primary", title: "Complete chapters", desc: "Earn XP and achievements" },
-                    ].map((tip, index) => (
-                      <motion.div
-                        key={tip.title}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 * index }}
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        className="flex items-start gap-3 p-4 bg-muted/30 rounded-xl border border-border/50 backdrop-blur-sm"
-                      >
-                        <motion.div 
-                          className={cn(
-                            "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
-                            `bg-${tip.color}/10 text-${tip.color}`
-                          )}
-                          style={{
-                            backgroundColor: `hsl(var(--${tip.color}) / 0.1)`,
-                            color: `hsl(var(--${tip.color}))`,
-                          }}
-                          whileHover={{ rotate: [0, -10, 10, 0] }}
-                        >
-                          <tip.icon className="w-5 h-5" />
-                        </motion.div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium">{tip.title}</p>
-                          <p className="text-sm text-muted-foreground">{tip.desc}</p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+            <ProgressVisualization />
           </motion.div>
         </main>
       </div>

@@ -15,11 +15,10 @@ import {
   Bar,
   Legend,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Target, Brain, Award } from "lucide-react";
+import { TrendingUp, Target, Brain, Award, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface BloomProgress {
   level: string;
@@ -47,6 +46,159 @@ const BLOOM_COLORS = {
   create: "#A855F7",
 };
 
+// Glowing card wrapper component
+const GlowCard = ({ 
+  children, 
+  color = "primary",
+  className = "",
+  index = 0,
+}: { 
+  children: React.ReactNode; 
+  color?: string;
+  className?: string;
+  index?: number;
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.15, duration: 0.5 }}
+      whileHover={{ y: -5, scale: 1.01 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className={cn(
+        "relative overflow-hidden rounded-2xl border backdrop-blur-sm",
+        "bg-card/70 border-border/50",
+        "shadow-xl transition-all duration-500",
+        className
+      )}
+      style={{
+        boxShadow: isHovered 
+          ? `0 25px 60px -15px hsl(var(--${color}) / 0.3), 0 0 30px -10px hsl(var(--${color}) / 0.2)`
+          : undefined,
+      }}
+    >
+      {/* Glowing orb */}
+      <motion.div
+        className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl pointer-events-none"
+        style={{ background: `hsl(var(--${color}) / 0.1)` }}
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: isHovered ? [0.3, 0.5, 0.3] : [0.1, 0.2, 0.1],
+        }}
+        transition={{ duration: 4, repeat: Infinity }}
+      />
+      
+      {/* Shimmer effect */}
+      <motion.div
+        className="absolute inset-0 -translate-x-full pointer-events-none"
+        animate={{ translateX: isHovered ? "200%" : "-100%" }}
+        transition={{ duration: 1, ease: "easeInOut" }}
+        style={{
+          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+        }}
+      />
+      
+      {children}
+    </motion.div>
+  );
+};
+
+// Animated icon with jump and underline
+const AnimatedIcon = ({ 
+  icon: Icon, 
+  color,
+  isHovered,
+}: { 
+  icon: React.ElementType;
+  color: string;
+  isHovered: boolean;
+}) => {
+  return (
+    <div className="relative">
+      <motion.div
+        className={cn(
+          "w-12 h-12 rounded-xl flex items-center justify-center",
+          `bg-${color}/10`
+        )}
+        style={{
+          backgroundColor: `hsl(var(--${color}) / 0.1)`,
+          color: `hsl(var(--${color}))`,
+        }}
+        animate={isHovered ? { y: [0, -10, 0], scale: [1, 1.1, 1] } : {}}
+        transition={{ duration: 0.5 }}
+      >
+        <Icon className="w-6 h-6" />
+        <motion.div
+          className="absolute inset-0 rounded-xl"
+          animate={{ 
+            boxShadow: isHovered 
+              ? `0 0 20px 3px hsl(var(--${color}) / 0.4)` 
+              : "0 0 0 0 transparent" 
+          }}
+        />
+      </motion.div>
+      <motion.div
+        className="absolute -bottom-2 left-0 h-1 rounded-full"
+        style={{ background: `hsl(var(--${color}))` }}
+        initial={{ width: 0 }}
+        animate={{ width: isHovered ? "100%" : 0 }}
+        transition={{ duration: 0.3 }}
+      />
+    </div>
+  );
+};
+
+// Stats mini card with animations
+const StatsMiniCard = ({
+  icon,
+  label,
+  value,
+  color,
+  index,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  color: string;
+  index: number;
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.1 }}
+      whileHover={{ scale: 1.03, y: -3 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className={cn(
+        "relative overflow-hidden rounded-xl p-4 border backdrop-blur-sm",
+        "bg-card/60 border-border/40",
+        "transition-all duration-300"
+      )}
+      style={{
+        boxShadow: isHovered 
+          ? `0 15px 40px -10px hsl(var(--${color}) / 0.25)` 
+          : undefined,
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <AnimatedIcon icon={icon} color={color} isHovered={isHovered} />
+        <div>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="text-2xl font-bold" style={{ color: `hsl(var(--${color}))` }}>
+            {value}
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 const ProgressVisualization = () => {
   const [bloomProgress, setBloomProgress] = useState<BloomProgress[]>([]);
   const [xpHistory, setXpHistory] = useState<XPHistory[]>([]);
@@ -63,14 +215,12 @@ const ProgressVisualization = () => {
   const fetchProgressData = async () => {
     setIsLoading(true);
     try {
-      // Fetch assessments for Bloom level progress
       const { data: assessments } = await supabase
         .from("assessments")
         .select("bloom_level, xp_earned, completed_at")
         .eq("user_id", user?.id)
         .order("completed_at", { ascending: true });
 
-      // Calculate Bloom level distribution
       const bloomCounts: Record<string, number> = {
         remember: 0,
         understand: 0,
@@ -94,7 +244,6 @@ const ProgressVisualization = () => {
         }))
       );
 
-      // Calculate XP history by day (last 7 days)
       const xpByDay: Record<string, number> = {};
       const last7Days = [];
       for (let i = 6; i >= 0; i--) {
@@ -119,7 +268,6 @@ const ProgressVisualization = () => {
         }))
       );
 
-      // Fetch topic mastery
       const { data: mastery } = await supabase
         .from("topic_mastery")
         .select("topic_name, mastery_score, subjects(name)")
@@ -143,9 +291,10 @@ const ProgressVisualization = () => {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-64 bg-muted rounded-xl" />
-        <div className="h-64 bg-muted rounded-xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="animate-pulse h-80 bg-muted/50 rounded-2xl" />
+        ))}
       </div>
     );
   }
@@ -157,186 +306,160 @@ const ProgressVisualization = () => {
     <div className="space-y-6">
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Weekly XP</p>
-                <p className="text-xl font-bold">{totalXP}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
-                <Target className="w-5 h-5 text-success" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Assessments</p>
-                <p className="text-xl font-bold">{totalAssessments}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                <Brain className="w-5 h-5 text-accent" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Topics Tracked</p>
-                <p className="text-xl font-bold">{topicMastery.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
-                <Award className="w-5 h-5 text-warning" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Avg Mastery</p>
-                <p className="text-xl font-bold">
-                  {topicMastery.length > 0
-                    ? Math.round(topicMastery.reduce((s, t) => s + t.mastery, 0) / topicMastery.length)
-                    : 0}%
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsMiniCard icon={TrendingUp} label="Weekly XP" value={totalXP} color="primary" index={0} />
+        <StatsMiniCard icon={Target} label="Assessments" value={totalAssessments} color="success" index={1} />
+        <StatsMiniCard icon={Brain} label="Topics Tracked" value={topicMastery.length} color="accent" index={2} />
+        <StatsMiniCard icon={Award} label="Avg Mastery" value={`${topicMastery.length > 0 ? Math.round(topicMastery.reduce((s, t) => s + t.mastery, 0) / topicMastery.length) : 0}%`} color="warning" index={3} />
       </div>
 
-      <Tabs defaultValue="xp" className="space-y-4">
-        <TabsList className="grid grid-cols-3 w-full max-w-md">
-          <TabsTrigger value="xp">XP History</TabsTrigger>
-          <TabsTrigger value="bloom">Bloom Levels</TabsTrigger>
-          <TabsTrigger value="mastery">Mastery</TabsTrigger>
-        </TabsList>
+      {/* All 3 charts displayed at once in a grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* XP History Chart */}
+        <GlowCard color="primary" index={0} className="h-80">
+          <div className="p-5 h-full flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+              <motion.div
+                className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.5 }}
+              >
+                <TrendingUp className="w-4 h-4" />
+              </motion.div>
+              <h3 className="font-semibold text-lg">XP History</h3>
+            </div>
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={xpHistory}>
+                  <defs>
+                    <linearGradient id="xpGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "12px",
+                      boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="xp"
+                    stroke="hsl(var(--primary))"
+                    fill="url(#xpGradient)"
+                    strokeWidth={3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </GlowCard>
 
-        <TabsContent value="xp">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">XP Earned This Week</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
+        {/* Bloom Levels Chart */}
+        <GlowCard color="accent" index={1} className="h-80">
+          <div className="p-5 h-full flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+              <motion.div
+                className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Sparkles className="w-4 h-4" />
+              </motion.div>
+              <h3 className="font-semibold text-lg">Bloom Levels</h3>
+            </div>
+            <div className="flex-1 flex items-center justify-center">
+              {totalAssessments > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={xpHistory}>
+                  <PieChart>
+                    <Pie
+                      data={bloomProgress.filter((b) => b.count > 0)}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={70}
+                      dataKey="count"
+                      nameKey="level"
+                      label={({ level }) => level}
+                      labelLine={false}
+                    >
+                      {bloomProgress.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  <Brain className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">Complete assessments to see progress</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </GlowCard>
+
+        {/* Topic Mastery Chart */}
+        <GlowCard color="success" index={2} className="h-80">
+          <div className="p-5 h-full flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+              <motion.div
+                className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center text-success"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Target className="w-4 h-4" />
+              </motion.div>
+              <h3 className="font-semibold text-lg">Mastery</h3>
+            </div>
+            <div className="flex-1">
+              {topicMastery.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={topicMastery.slice(0, 5)} layout="vertical">
                     <defs>
-                      <linearGradient id="xpGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      <linearGradient id="masteryGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="hsl(var(--success))" stopOpacity={0.8} />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis type="number" domain={[0, 100]} stroke="hsl(var(--muted-foreground))" fontSize={10} />
+                    <YAxis
+                      type="category"
+                      dataKey="topic"
+                      width={80}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={10}
+                      tickFormatter={(value) => value.length > 10 ? value.slice(0, 10) + "..." : value}
+                    />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
+                        borderRadius: "12px",
                       }}
                     />
-                    <Area
-                      type="monotone"
-                      dataKey="xp"
-                      stroke="hsl(var(--primary))"
-                      fill="url(#xpGradient)"
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
+                    <Bar dataKey="mastery" fill="url(#masteryGradient)" radius={[0, 6, 6, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="bloom">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Bloom's Taxonomy Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 flex items-center justify-center">
-                {totalAssessments > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={bloomProgress.filter((b) => b.count > 0)}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        dataKey="count"
-                        nameKey="level"
-                        label={({ level, count }) => `${level}: ${count}`}
-                      >
-                        {bloomProgress.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <p className="text-muted-foreground">Complete assessments to see your Bloom level progress</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="mastery">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Topic Mastery Scores</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                {topicMastery.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={topicMastery.slice(0, 6)} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis type="number" domain={[0, 100]} stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                      <YAxis
-                        type="category"
-                        dataKey="topic"
-                        width={120}
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={11}
-                        tickFormatter={(value) => value.length > 15 ? value.slice(0, 15) + "..." : value}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "8px",
-                        }}
-                      />
-                      <Bar dataKey="mastery" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <p className="text-muted-foreground">Practice topics to see mastery scores</p>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <Award className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">Practice to see mastery scores</p>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                </div>
+              )}
+            </div>
+          </div>
+        </GlowCard>
+      </div>
     </div>
   );
 };

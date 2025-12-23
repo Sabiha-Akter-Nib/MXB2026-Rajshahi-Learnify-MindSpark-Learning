@@ -11,18 +11,15 @@ interface AnimatedStatsCardProps {
   color: "primary" | "accent" | "success" | "warning";
   index: number;
   isAnimatedNumber?: boolean;
-  previousValue?: number;
 }
 
-// Animated counter that counts up
+// Animated counter
 const AnimatedCounter = ({ 
   value, 
   suffix = "",
-  shouldAnimate = true 
 }: { 
   value: number;
   suffix?: string;
-  shouldAnimate?: boolean;
 }) => {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
@@ -30,15 +27,14 @@ const AnimatedCounter = ({
   const springValue = useSpring(motionValue, {
     stiffness: 50,
     damping: 20,
-    duration: 2,
   });
   const [displayValue, setDisplayValue] = useState(0);
 
   useEffect(() => {
-    if (isInView && shouldAnimate) {
+    if (isInView) {
       motionValue.set(value);
     }
-  }, [isInView, value, motionValue, shouldAnimate]);
+  }, [isInView, value, motionValue]);
 
   useEffect(() => {
     const unsubscribe = springValue.on("change", (latest) => {
@@ -49,41 +45,41 @@ const AnimatedCounter = ({
 
   return (
     <span ref={ref}>
-      {shouldAnimate ? displayValue.toLocaleString() : value.toLocaleString()}
+      {displayValue.toLocaleString()}
       {suffix}
     </span>
   );
 };
 
-// Streak fire animation
+// Streak fire animation with particles
 const StreakAnimation = ({ streak }: { streak: number }) => {
   const [showBurst, setShowBurst] = useState(false);
   
   useEffect(() => {
-    // Show burst animation on mount (simulating streak update)
     setShowBurst(true);
     const timer = setTimeout(() => setShowBurst(false), 1500);
     return () => clearTimeout(timer);
   }, [streak]);
 
   return (
-    <div className="relative">
+    <div className="relative inline-flex items-center">
       <motion.span
         className="inline-block"
         animate={showBurst ? {
-          scale: [1, 1.3, 1],
-          rotate: [0, -5, 5, 0],
+          scale: [1, 1.4, 1],
+          rotate: [0, -8, 8, 0],
         } : {}}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6 }}
       >
         {streak}
       </motion.span>
       {showBurst && (
         <>
-          {[...Array(6)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <motion.span
               key={i}
-              className="absolute text-accent text-xs"
+              className="absolute text-accent"
+              style={{ fontSize: "0.7em" }}
               initial={{ 
                 opacity: 1, 
                 scale: 0,
@@ -93,10 +89,10 @@ const StreakAnimation = ({ streak }: { streak: number }) => {
               animate={{ 
                 opacity: 0, 
                 scale: 1.5,
-                x: Math.cos((i / 6) * Math.PI * 2) * 30,
-                y: Math.sin((i / 6) * Math.PI * 2) * 30,
+                x: Math.cos((i / 8) * Math.PI * 2) * 40,
+                y: Math.sin((i / 8) * Math.PI * 2) * 40,
               }}
-              transition={{ duration: 0.6, delay: i * 0.05 }}
+              transition={{ duration: 0.8, delay: i * 0.03 }}
             >
               🔥
             </motion.span>
@@ -115,109 +111,157 @@ const AnimatedStatsCard = ({
   color,
   index,
   isAnimatedNumber = true,
-  previousValue,
 }: AnimatedStatsCardProps) => {
-  const colorClasses = {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const colorConfig = {
     primary: {
       bg: "bg-primary/10",
       text: "text-primary",
-      glow: "shadow-primary/20",
-      border: "border-primary/20",
-      gradient: "from-primary/5 via-transparent to-transparent",
+      border: "border-primary/30",
+      glow: "shadow-primary/30",
+      underline: "bg-gradient-to-r from-primary via-primary/80 to-primary",
     },
     accent: {
       bg: "bg-accent/10",
       text: "text-accent",
-      glow: "shadow-accent/20",
-      border: "border-accent/20",
-      gradient: "from-accent/5 via-transparent to-transparent",
+      border: "border-accent/30",
+      glow: "shadow-accent/30",
+      underline: "bg-gradient-to-r from-accent via-accent/80 to-accent",
     },
     success: {
       bg: "bg-success/10",
       text: "text-success",
-      glow: "shadow-success/20",
-      border: "border-success/20",
-      gradient: "from-success/5 via-transparent to-transparent",
+      border: "border-success/30",
+      glow: "shadow-success/30",
+      underline: "bg-gradient-to-r from-success via-success/80 to-success",
     },
     warning: {
       bg: "bg-warning/10",
       text: "text-warning",
-      glow: "shadow-warning/20",
-      border: "border-warning/20",
-      gradient: "from-warning/5 via-transparent to-transparent",
+      border: "border-warning/30",
+      glow: "shadow-warning/30",
+      underline: "bg-gradient-to-r from-warning via-warning/80 to-warning",
     },
   };
 
-  const colors = colorClasses[color];
+  const config = colorConfig[color];
   const isStreak = label === "Day Streak";
   const numericValue = typeof value === "number" ? value : parseInt(value.toString().replace(/[^0-9]/g, "")) || 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      initial={{ opacity: 0, y: 40, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ 
         delay: index * 0.1,
-        duration: 0.5,
+        duration: 0.6,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
       whileHover={{ 
-        y: -4,
-        scale: 1.02,
-        transition: { duration: 0.2 }
+        y: -8,
+        scale: 1.03,
+        transition: { duration: 0.3 }
       }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
       className={cn(
-        "relative overflow-hidden rounded-2xl p-5 border backdrop-blur-sm",
-        "bg-card/80 hover:bg-card",
-        colors.border,
-        "shadow-lg hover:shadow-xl transition-shadow duration-300"
+        "relative overflow-hidden rounded-2xl p-6 border backdrop-blur-md",
+        "bg-card/70 hover:bg-card/90",
+        config.border,
+        "shadow-xl hover:shadow-2xl transition-shadow duration-500",
+        isHovered && `shadow-2xl ${config.glow}`
       )}
+      style={{
+        boxShadow: isHovered 
+          ? `0 20px 60px -15px hsl(var(--${color}) / 0.4), 0 0 40px -10px hsl(var(--${color}) / 0.2)`
+          : undefined,
+      }}
     >
-      {/* Gradient overlay */}
-      <div className={cn(
-        "absolute inset-0 bg-gradient-to-br opacity-50",
-        colors.gradient
-      )} />
+      {/* Animated gradient overlay */}
+      <motion.div 
+        className="absolute inset-0 opacity-0"
+        animate={{ opacity: isHovered ? 0.1 : 0 }}
+        style={{
+          background: `radial-gradient(circle at 30% 30%, hsl(var(--${color})), transparent 70%)`,
+        }}
+      />
       
-      {/* Glowing orb in corner */}
+      {/* Glowing corner orb */}
       <motion.div
-        className={cn(
-          "absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl",
-          colors.bg,
-          "opacity-50"
-        )}
+        className={cn("absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl", config.bg)}
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
+          scale: [1, 1.3, 1],
+          opacity: isHovered ? [0.4, 0.7, 0.4] : [0.2, 0.4, 0.2],
         }}
         transition={{
-          duration: 4,
+          duration: 3,
           repeat: Infinity,
           ease: "easeInOut",
-          delay: index * 0.5,
+          delay: index * 0.3,
+        }}
+      />
+
+      {/* Shimmer effect on hover */}
+      <motion.div
+        className="absolute inset-0 -translate-x-full"
+        animate={{ translateX: isHovered ? "200%" : "-100%" }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
+        style={{
+          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)",
         }}
       />
 
       <div className="relative z-10">
+        {/* Icon with jump animation and underline */}
         <div className="flex items-center justify-between mb-4">
-          <motion.div
-            className={cn(
-              "w-12 h-12 rounded-xl flex items-center justify-center",
-              colors.bg,
-              colors.text
-            )}
-            whileHover={{ rotate: [0, -10, 10, 0] }}
-            transition={{ duration: 0.4 }}
-          >
-            <Icon className="w-6 h-6" />
-          </motion.div>
+          <div className="relative">
+            <motion.div
+              className={cn(
+                "w-14 h-14 rounded-xl flex items-center justify-center relative",
+                config.bg,
+                config.text
+              )}
+              animate={isHovered ? {
+                y: [0, -12, 0],
+                scale: [1, 1.15, 1],
+              } : {}}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <Icon className="w-7 h-7" />
+              
+              {/* Glow ring on hover */}
+              <motion.div
+                className="absolute inset-0 rounded-xl"
+                animate={{ 
+                  boxShadow: isHovered 
+                    ? `0 0 25px 5px hsl(var(--${color}) / 0.4)` 
+                    : "0 0 0 0 transparent" 
+                }}
+                transition={{ duration: 0.3 }}
+              />
+            </motion.div>
+            
+            {/* Colored underline that appears on hover */}
+            <motion.div
+              className={cn("absolute -bottom-2 left-0 h-1 rounded-full", config.underline)}
+              initial={{ width: 0 }}
+              animate={{ width: isHovered ? "100%" : 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            />
+          </div>
           
-          {/* Sparkle indicator */}
+          {/* Pulsing indicator */}
           <motion.div
-            className={cn("w-2 h-2 rounded-full", colors.bg)}
+            className={cn("w-3 h-3 rounded-full", config.bg)}
             animate={{
               scale: [1, 1.5, 1],
               opacity: [0.5, 1, 0.5],
+              boxShadow: [
+                `0 0 0 0 hsl(var(--${color}) / 0)`,
+                `0 0 15px 5px hsl(var(--${color}) / 0.4)`,
+                `0 0 0 0 hsl(var(--${color}) / 0)`,
+              ],
             }}
             transition={{
               duration: 2,
@@ -227,11 +271,15 @@ const AnimatedStatsCard = ({
           />
         </div>
 
-        <p className="text-muted-foreground text-sm font-medium mb-1">
+        <p className="text-muted-foreground text-sm font-medium mb-2">
           {label}
         </p>
         
-        <div className={cn("font-heading font-bold text-3xl", colors.text)}>
+        <motion.div 
+          className={cn("font-heading font-bold text-4xl", config.text)}
+          animate={isHovered ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.3 }}
+        >
           {isStreak ? (
             <StreakAnimation streak={numericValue} />
           ) : isAnimatedNumber && typeof value === "number" ? (
@@ -239,7 +287,7 @@ const AnimatedStatsCard = ({
           ) : (
             <span>{value}</span>
           )}
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );
