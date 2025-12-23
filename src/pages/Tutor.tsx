@@ -20,9 +20,9 @@ import {
   MicOff,
   Settings2,
   Trash2,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +34,8 @@ import { PersonaSelector, PersonaType, getPersonaPrompt } from "@/components/tut
 import { FileUploadModal } from "@/components/tutor/FileUploadModal";
 import { MultimodalInput } from "@/components/tutor/MultimodalInput";
 import { ChatHistory } from "@/components/tutor/ChatHistory";
+import TutorBackground from "@/components/tutor/TutorBackground";
+import IOSInputSection from "@/components/tutor/IOSInputSection";
 
 interface Message {
   id: string;
@@ -52,19 +54,16 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-tutor`;
 
 // Format text by removing asterisks, hashtags and applying proper styling
 const formatMessageContent = (content: string): React.ReactNode[] => {
-  // Remove markdown asterisks and hashtags but keep the text
   let formattedContent = content
-    .replace(/\*\*\*(.+?)\*\*\*/g, '$1') // Remove ***bold italic***
-    .replace(/\*\*(.+?)\*\*/g, '$1')     // Remove **bold**
-    .replace(/\*(.+?)\*/g, '$1')         // Remove *italic*
-    .replace(/^#{1,6}\s+(.+)$/gm, '$1'); // Remove # ## ### etc. headings
+    .replace(/\*\*\*(.+?)\*\*\*/g, '$1')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/^#{1,6}\s+(.+)$/gm, '$1');
 
   return formattedContent.split("\n").map((line, i) => {
-    // Check if line is a heading (ends with colon or starts with caps)
     const isHeading = /^[A-Z][^.!?]*:$/.test(line.trim()) || 
                       /^(Step|Example|Note|Key|Important|Why|How|What|When|Where|Think|Remember|Summary|Practice|Question)/i.test(line.trim());
     
-    // Check if line is a bullet point
     const isBullet = /^[\•\-]\s/.test(line.trim()) || /^\d+[\.\)]\s/.test(line.trim());
     
     if (!line.trim()) {
@@ -114,7 +113,6 @@ const Tutor = () => {
   const { isRecording, isProcessing, startRecording, stopRecording, cancelRecording } = useVoiceInput();
   const { startSession, endSession, addXP } = useStudySession();
 
-  // Start study session when component mounts
   useEffect(() => {
     if (user) {
       const subjectParam = searchParams.get("subject");
@@ -123,7 +121,6 @@ const Tutor = () => {
     return () => {
       endSession();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
   
   useEffect(() => {
@@ -132,7 +129,6 @@ const Tutor = () => {
     }
   }, [user, loading, navigate]);
 
-  // Create initial greeting - no names, no curriculum change mention
   const createInitialGreeting = useCallback((data: { full_name: string; class: number; version: string }) => {
     const isBangla = data.version === "bangla";
     const greeting = isBangla 
@@ -147,8 +143,6 @@ const Tutor = () => {
 • হোমওয়ার্কে সাহায্য করতে
 • পরীক্ষার প্রস্তুতিতে সহায়তা করতে
 
-আমি প্রতিটি উত্তর দেওয়ার আগে ওয়েব থেকে সঠিক তথ্য যাচাই করে নিই।
-
 আজ কোন বিষয়ে পড়তে চাও?`
       : `Assalamu Alaikum!
 
@@ -161,8 +155,6 @@ Here is what I can help you with:
 • Help you with your homework and assignments
 • Assist with exam preparation
 
-I verify every answer by searching the web for the most accurate information.
-
 What would you like to study today?`;
     
     return {
@@ -173,7 +165,6 @@ What would you like to study today?`;
     };
   }, []);
 
-  // Fetch student profile and set initial greeting
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
@@ -193,7 +184,6 @@ What would you like to study today?`;
         setStudentInfo(info);
         setMessages([createInitialGreeting(data)]);
       } else {
-        // Default greeting if no profile - no names, no curriculum change mention
         setMessages([{
           id: "1",
           role: "assistant",
@@ -205,8 +195,6 @@ You can ask me to:
 • Explain any topic in detail
 • Practice with adaptive questions
 • Get homework help
-
-I verify every answer by searching the web for the most accurate information.
 
 What would you like to learn today?`,
           timestamp: new Date(),
@@ -225,7 +213,6 @@ What would you like to learn today?`,
     scrollToBottom();
   }, [messages]);
 
-  // Save messages to database
   const saveMessage = async (conversationId: string, role: "user" | "assistant", content: string) => {
     try {
       await supabase.from("chat_messages").insert({
@@ -238,13 +225,11 @@ What would you like to learn today?`,
     }
   };
 
-  // Create or get conversation
   const ensureConversation = async (firstUserMessage?: string): Promise<string> => {
     if (currentConversationId) return currentConversationId;
     
     if (!user) throw new Error("User not authenticated");
     
-    // Generate title from first message
     const title = firstUserMessage 
       ? firstUserMessage.slice(0, 50) + (firstUserMessage.length > 50 ? "..." : "")
       : "New Conversation";
@@ -264,7 +249,6 @@ What would you like to learn today?`,
     return data.id;
   };
 
-  // Load conversation messages
   const loadConversation = async (conversationId: string) => {
     try {
       const { data, error } = await supabase
@@ -316,7 +300,6 @@ What would you like to learn today?`,
     if (!window.confirm(confirmMessage)) return;
     
     try {
-      // Delete all conversations for this user
       const { error } = await supabase
         .from("chat_conversations")
         .delete()
@@ -324,7 +307,6 @@ What would you like to learn today?`,
       
       if (error) throw error;
       
-      // Reset current conversation
       setCurrentConversationId(null);
       if (studentInfo) {
         setMessages([createInitialGreeting({
@@ -381,7 +363,6 @@ What would you like to learn today?`,
     let assistantContent = "";
     const assistantId = Date.now().toString();
 
-    // Create initial assistant message
     setMessages(prev => [...prev, {
       id: assistantId,
       role: "assistant",
@@ -421,14 +402,12 @@ What would you like to learn today?`,
             );
           }
         } catch {
-          // Incomplete JSON, put it back
           textBuffer = line + "\n" + textBuffer;
           break;
         }
       }
     }
 
-    // Final flush
     if (textBuffer.trim()) {
       for (let raw of textBuffer.split("\n")) {
         if (!raw) continue;
@@ -473,26 +452,19 @@ What would you like to learn today?`,
     setIsTyping(true);
 
     try {
-      // Ensure we have a conversation
       const conversationId = await ensureConversation(currentInput);
-      
-      // Save user message
       await saveMessage(conversationId, "user", currentInput);
 
-      // Build message history for context
       const chatHistory = messages
-        .filter(m => m.id !== "1") // Skip initial greeting
+        .filter(m => m.id !== "1")
         .map(m => ({ role: m.role, content: m.content }));
       
       chatHistory.push({ role: "user", content: currentInput });
 
       const assistantContent = await streamChat(chatHistory);
       
-      // Save assistant response
       if (assistantContent) {
         await saveMessage(conversationId, "assistant", assistantContent);
-        
-        // Update conversation title and timestamp
         await supabase
           .from("chat_conversations")
           .update({ updated_at: new Date().toISOString() })
@@ -528,6 +500,7 @@ What would you like to learn today?`,
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
+        <TutorBackground />
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -537,81 +510,117 @@ What would you like to learn today?`,
     return null;
   }
 
+  const isBangla = studentInfo?.version === "bangla";
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/dashboard">
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-            </Button>
+    <div className="min-h-screen flex flex-col relative">
+      <TutorBackground />
+      
+      {/* iOS-style Header */}
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/60 border-b border-border/30">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                <Brain className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="font-heading font-semibold">AI Tutor</h1>
-                <p className="text-xs text-success flex items-center gap-1">
-                  <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                  {studentInfo ? `Class ${studentInfo.class} • ${studentInfo.version === "bangla" ? "বাংলা" : "English"}` : "Online"}
-                </p>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="ghost" size="icon" className="rounded-xl" asChild>
+                  <Link to="/dashboard">
+                    <ArrowLeft className="w-5 h-5" />
+                  </Link>
+                </Button>
+              </motion.div>
+              
+              <div className="flex items-center gap-3">
+                <motion.div 
+                  className="relative w-11 h-11 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30"
+                  animate={{
+                    boxShadow: [
+                      "0 10px 30px -10px hsl(var(--primary) / 0.4)",
+                      "0 10px 40px -10px hsl(var(--primary) / 0.6)",
+                      "0 10px 30px -10px hsl(var(--primary) / 0.4)",
+                    ],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <Brain className="w-5 h-5 text-primary-foreground" />
+                  <motion.div
+                    className="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-background"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                </motion.div>
+                
+                <div>
+                  <h1 className="font-heading font-bold text-lg">AI Tutor</h1>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
+                    {studentInfo ? `Class ${studentInfo.class} • ${isBangla ? "বাংলা" : "English"}` : "Online"}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            {user && (
-              <ChatHistory
-                userId={user.id}
-                currentConversationId={currentConversationId}
-                onSelectConversation={loadConversation}
-                onNewConversation={handleNewConversation}
-                isBangla={studentInfo?.version === "bangla"}
-              />
-            )}
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={handleDeleteAllHistory}
-              title={studentInfo?.version === "bangla" ? "সব ইতিহাস মুছুন" : "Delete all history"}
-            >
-              <Trash2 className="w-5 h-5 text-destructive" />
-            </Button>
+            <div className="flex items-center gap-2">
+              {user && (
+                <ChatHistory
+                  userId={user.id}
+                  currentConversationId={currentConversationId}
+                  onSelectConversation={loadConversation}
+                  onNewConversation={handleNewConversation}
+                  isBangla={isBangla}
+                />
+              )}
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={handleDeleteAllHistory}
+                  title={isBangla ? "সব ইতিহাস মুছুন" : "Delete all history"}
+                >
+                  <Trash2 className="w-5 h-5" />
+                </Button>
+              </motion.div>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Chat Area */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <main className="flex-1 overflow-y-auto relative z-10">
+        <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
           <AnimatePresence>
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <motion.div
                 key={message.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
                 className={cn(
                   "flex gap-3",
                   message.role === "user" ? "justify-end" : "justify-start"
                 )}
               >
                 {message.role === "assistant" && (
-                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                  <motion.div 
+                    className="w-9 h-9 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-lg shadow-primary/20"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
+                  >
                     <Sparkles className="w-4 h-4 text-primary-foreground" />
-                  </div>
+                  </motion.div>
                 )}
 
-                <div
+                <motion.div
                   className={cn(
-                    "max-w-[85%] rounded-2xl px-5 py-4",
+                    "max-w-[85%] rounded-3xl px-5 py-4 backdrop-blur-md",
                     message.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-card border border-border rounded-bl-md shadow-sm"
+                      ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-br-lg shadow-lg shadow-primary/20"
+                      : "bg-card/80 border border-border/50 rounded-bl-lg shadow-xl"
                   )}
+                  whileHover={{ scale: 1.01 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <div className={cn(
                     "prose prose-sm max-w-none",
@@ -628,31 +637,44 @@ What would you like to learn today?`,
                   </div>
 
                   {message.role === "assistant" && message.content && (
-                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 px-2 text-muted-foreground hover:text-foreground"
+                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/30">
+                      <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                         onClick={() => handleCopy(message.content)}
                       >
-                        <Copy className="w-3 h-3 mr-1" />
+                        <Copy className="w-3.5 h-3.5" />
                         Copy
-                      </Button>
+                      </motion.button>
                       <div className="flex-1" />
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-success">
-                        <ThumbsUp className="w-3 h-3" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive">
-                        <ThumbsDown className="w-3 h-3" />
-                      </Button>
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-success hover:bg-success/10 transition-colors"
+                      >
+                        <ThumbsUp className="w-3.5 h-3.5" />
+                      </motion.button>
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      >
+                        <ThumbsDown className="w-3.5 h-3.5" />
+                      </motion.button>
                     </div>
                   )}
-                </div>
+                </motion.div>
 
                 {message.role === "user" && (
-                  <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                  <motion.div 
+                    className="w-9 h-9 bg-gradient-to-br from-accent to-accent/80 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-lg shadow-accent/20"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
+                  >
                     <User className="w-4 h-4 text-accent-foreground" />
-                  </div>
+                  </motion.div>
                 )}
               </motion.div>
             ))}
@@ -665,14 +687,26 @@ What would you like to learn today?`,
               animate={{ opacity: 1, y: 0 }}
               className="flex gap-3"
             >
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
                 <Sparkles className="w-4 h-4 text-primary-foreground" />
               </div>
-              <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div className="bg-card/80 backdrop-blur-md border border-border/50 rounded-3xl rounded-bl-lg px-5 py-4 shadow-xl">
+                <div className="flex gap-1.5">
+                  <motion.span 
+                    className="w-2.5 h-2.5 bg-primary/60 rounded-full"
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                  />
+                  <motion.span 
+                    className="w-2.5 h-2.5 bg-primary/60 rounded-full"
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }}
+                  />
+                  <motion.span 
+                    className="w-2.5 h-2.5 bg-primary/60 rounded-full"
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }}
+                  />
                 </div>
               </div>
             </motion.div>
@@ -692,156 +726,91 @@ What would you like to learn today?`,
         }}
       />
 
-      {/* Input Area */}
-      <div className="sticky bottom-0 bg-background border-t border-border px-4 py-4">
+      {/* iOS-style Input Area */}
+      <div className="sticky bottom-0 z-20 backdrop-blur-xl bg-background/60 border-t border-border/30 px-4 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Persona Selector */}
-          {showPersonaSelector && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-3"
-            >
-              <PersonaSelector
-                selected={persona}
-                onSelect={(p) => {
-                  setPersona(p);
-                  setShowPersonaSelector(false);
-                }}
-                isBangla={studentInfo?.version === "bangla"}
-                compact
-              />
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {showPersonaSelector && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-4 overflow-hidden"
+              >
+                <div className="bg-card/80 backdrop-blur-md rounded-3xl border border-border/50 p-4 shadow-xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Settings2 className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      {isBangla ? "শিক্ষক মোড" : "Teaching Style"}
+                    </span>
+                  </div>
+                  <PersonaSelector
+                    selected={persona}
+                    onSelect={(p) => {
+                      setPersona(p);
+                      setShowPersonaSelector(false);
+                    }}
+                    isBangla={isBangla}
+                    compact
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           {/* Multimodal Input Section */}
-          {showMultimodal && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-3"
-            >
-              <MultimodalInput
-                onContentReady={(content, imageData) => {
-                  if (imageData) {
-                    // For now, just set the text prompt - image analysis would need backend support
-                    setInput(content);
-                  } else {
-                    setInput(content);
-                  }
-                  setShowMultimodal(false);
-                }}
-                disabled={isTyping}
-                isBangla={studentInfo?.version === "bangla"}
-              />
-            </motion.div>
-          )}
-
-          {/* Quick Actions */}
-          <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar pb-2">
-            {[
-              { icon: BookOpen, label: studentInfo?.version === "bangla" ? "টপিক ব্যাখ্যা" : "Explain Topic", prompt: studentInfo?.version === "bangla" ? "দয়া করে বিস্তারিতভাবে ব্যাখ্যা করো " : "Please explain in detail " },
-              { icon: Brain, label: studentInfo?.version === "bangla" ? "প্র্যাক্টিস প্রশ্ন" : "Practice Questions", prompt: studentInfo?.version === "bangla" ? "এই বিষয়ে MCQ, CQ এবং সংক্ষিপ্ত প্রশ্ন দাও " : "Give me MCQ, CQ and short questions for " },
-              { icon: RefreshCw, label: studentInfo?.version === "bangla" ? "রিভিশন" : "Revise Chapter", prompt: studentInfo?.version === "bangla" ? "রিভিশন করতে সাহায্য করো " : "Help me revise " },
-            ].map((action) => (
-              <button
-                key={action.label}
-                onClick={() => setInput(action.prompt)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full text-sm font-medium hover:bg-muted/80 transition-colors whitespace-nowrap"
+          <AnimatePresence>
+            {showMultimodal && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-4 overflow-hidden"
               >
-                <action.icon className="w-4 h-4" />
-                {action.label}
-              </button>
-            ))}
-            <button
-              onClick={() => setShowMultimodal(!showMultimodal)}
-              className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
-                showMultimodal 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-muted hover:bg-muted/80"
-              )}
-            >
-              <Upload className="w-4 h-4" />
-              {studentInfo?.version === "bangla" ? "মাল্টিমিডিয়া" : "Multimodal"}
-            </button>
-          </div>
+                <div className="bg-card/80 backdrop-blur-md rounded-3xl border border-border/50 p-4 shadow-xl">
+                  <MultimodalInput
+                    onContentReady={(content, imageData) => {
+                      if (imageData) {
+                        setInput(content);
+                      } else {
+                        setInput(content);
+                      }
+                      setShowMultimodal(false);
+                    }}
+                    disabled={isTyping}
+                    isBangla={isBangla}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Input */}
-          <div className="flex items-end gap-2">
-            <div className="flex-1 relative">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={studentInfo?.version === "bangla" 
-                  ? "তোমার পড়াশোনা সম্পর্কে যেকোনো প্রশ্ন করো..." 
-                  : "Ask me anything about your studies..."}
-                className="min-h-[52px] max-h-32 pr-24 resize-none"
-                rows={1}
-                disabled={isTyping}
-              />
-              <div className="absolute right-2 bottom-2 flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  onClick={() => setShowUploadModal(true)}
-                >
-                  <Image className="w-4 h-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  onClick={() => setShowPersonaSelector(!showPersonaSelector)}
-                >
-                  <Settings2 className="w-4 h-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className={cn(
-                    "h-8 w-8",
-                    isRecording ? "text-destructive animate-pulse" : "text-muted-foreground hover:text-foreground"
-                  )}
-                  onClick={async () => {
-                    if (isRecording) {
-                      const text = await stopRecording();
-                      if (text) setInput(prev => prev + " " + text);
-                    } else {
-                      await startRecording();
-                    }
-                  }}
-                  disabled={isProcessing}
-                >
-                  {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                </Button>
-              </div>
-            </div>
-            <Button
-              variant="hero"
-              size="icon"
-              onClick={handleSend}
-              disabled={!input.trim() || isTyping}
-              className="h-[52px] w-[52px]"
-            >
-              {isTyping ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
+          {/* Main iOS Input */}
+          <IOSInputSection
+            input={input}
+            setInput={setInput}
+            onSend={handleSend}
+            onKeyDown={handleKeyDown}
+            isTyping={isTyping}
+            isRecording={isRecording}
+            isProcessing={isProcessing}
+            onStartRecording={startRecording}
+            onStopRecording={stopRecording}
+            onTogglePersona={() => setShowPersonaSelector(!showPersonaSelector)}
+            onToggleMultimodal={() => setShowMultimodal(!showMultimodal)}
+            onOpenUpload={() => setShowUploadModal(true)}
+            showPersonaSelector={showPersonaSelector}
+            showMultimodal={showMultimodal}
+            isBangla={isBangla}
+          />
 
-          <p className="text-center text-xs text-muted-foreground mt-3">
-            {studentInfo?.version === "bangla" 
+          <p className="text-center text-xs text-muted-foreground mt-4">
+            {isBangla 
               ? "MindSpark AI শুধুমাত্র পড়াশোনা সংক্রান্ত প্রশ্নের জন্য তৈরি।"
               : "MindSpark AI is designed for study-related questions only."}
             <Link to="/" className="text-primary hover:underline ml-1">
-              {studentInfo?.version === "bangla" ? "আরো জানুন" : "Learn more"}
+              {isBangla ? "আরো জানুন" : "Learn more"}
             </Link>
           </p>
         </div>
