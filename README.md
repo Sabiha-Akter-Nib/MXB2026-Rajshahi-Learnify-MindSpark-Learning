@@ -182,4 +182,4 @@ Students cannot skip levels unless mastery is proven through assessments.
 
 ## License
 
-This project is proprietary. All rights reserved.
+Check LICENSE.md file for MIT License
