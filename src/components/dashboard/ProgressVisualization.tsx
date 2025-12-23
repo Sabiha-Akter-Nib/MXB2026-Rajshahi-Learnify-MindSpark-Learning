@@ -199,11 +199,12 @@ const StatsMiniCard = ({
   );
 };
 
-const ProgressVisualization = () => {
+const ProgressVisualization = ({ refreshKey = 0 }: { refreshKey?: number }) => {
   const [bloomProgress, setBloomProgress] = useState<BloomProgress[]>([]);
   const [xpHistory, setXpHistory] = useState<XPHistory[]>([]);
   const [topicMastery, setTopicMastery] = useState<TopicMastery[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [animationKey, setAnimationKey] = useState(0);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -211,6 +212,13 @@ const ProgressVisualization = () => {
       fetchProgressData();
     }
   }, [user]);
+
+  // Re-trigger animations when refreshKey changes
+  useEffect(() => {
+    if (refreshKey > 0) {
+      setAnimationKey(prev => prev + 1);
+    }
+  }, [refreshKey]);
 
   const fetchProgressData = async () => {
     setIsLoading(true);
@@ -378,7 +386,7 @@ const ProgressVisualization = () => {
             <div className="flex flex-wrap gap-2 mb-3">
               {bloomProgress.map((bloom, index) => (
                 <motion.div
-                  key={bloom.level}
+                  key={`${bloom.level}-${animationKey}`}
                   initial={{ opacity: 0, scale: 0, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ 
@@ -458,7 +466,7 @@ const ProgressVisualization = () => {
                 <div className="space-y-3">
                   {topicMastery.slice(0, 5).map((topic, index) => (
                     <motion.div
-                      key={topic.topic}
+                      key={`${topic.topic}-${animationKey}`}
                       initial={{ opacity: 0, x: -30 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ 
@@ -492,6 +500,7 @@ const ProgressVisualization = () => {
                       </div>
                       <div className="h-2.5 bg-muted/50 rounded-full overflow-hidden">
                         <motion.div
+                          key={`bar-${topic.topic}-${animationKey}`}
                           className="h-full rounded-full"
                           style={{
                             background: `linear-gradient(90deg, hsl(var(--success)), hsl(var(--primary)))`
