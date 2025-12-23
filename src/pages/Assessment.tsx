@@ -693,7 +693,7 @@ const Assessment = () => {
 
               <Button
                 size="lg"
-                className="w-full"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white"
                 onClick={handleNext}
                 disabled={selectedAnswer === null || isSubmitting}
               >
