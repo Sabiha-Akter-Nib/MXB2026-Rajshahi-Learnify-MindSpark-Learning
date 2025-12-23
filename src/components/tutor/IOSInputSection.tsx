@@ -93,9 +93,9 @@ const IOSInputSection = ({
   const [focusedAction, setFocusedAction] = useState<number | null>(null);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Quick Actions - iOS style horizontal scroll */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-1">
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1 px-1">
         {quickActions.map((action, index) => {
           const Icon = action.icon;
           const isHovered = focusedAction === index;
@@ -183,7 +183,7 @@ const IOSInputSection = ({
           transition={{ duration: 0.3 }}
         />
 
-        <div className="p-3">
+        <div className="p-2">
           {/* Textarea */}
           <Textarea
             value={input}
@@ -193,16 +193,16 @@ const IOSInputSection = ({
               ? "তোমার পড়াশোনা সম্পর্কে যেকোনো প্রশ্ন করো..." 
               : "Ask me anything about your studies..."}
             className={cn(
-              "min-h-[56px] max-h-40 resize-none border-0 bg-transparent",
+              "min-h-[44px] max-h-32 resize-none border-0 bg-transparent",
               "focus-visible:ring-0 focus-visible:ring-offset-0",
               "text-base placeholder:text-muted-foreground/60",
-              "px-2 py-2"
+              "px-2 py-1"
             )}
             rows={1}
             disabled={isTyping}
           />
 
-          {/* Bottom toolbar */}
+          {/* Bottom toolbar - compact */}
           <div className="flex items-center justify-between pt-2 border-t border-border/30">
             {/* Left actions */}
             <div className="flex items-center gap-1">
