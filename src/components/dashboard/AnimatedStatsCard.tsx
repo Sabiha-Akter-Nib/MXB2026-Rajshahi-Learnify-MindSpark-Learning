@@ -251,24 +251,6 @@ const AnimatedStatsCard = ({
             />
           </div>
           
-          {/* Pulsing indicator */}
-          <motion.div
-            className={cn("w-3 h-3 rounded-full", config.bg)}
-            animate={{
-              scale: [1, 1.5, 1],
-              opacity: [0.5, 1, 0.5],
-              boxShadow: [
-                `0 0 0 0 hsl(var(--${color}) / 0)`,
-                `0 0 15px 5px hsl(var(--${color}) / 0.4)`,
-                `0 0 0 0 hsl(var(--${color}) / 0)`,
-              ],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              delay: index * 0.3,
-            }}
-          />
         </div>
 
         <p className="text-muted-foreground text-sm font-medium mb-2">
