@@ -27,6 +27,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import DashboardBackground from "@/components/dashboard/DashboardBackground";
 import { useToast } from "@/hooks/use-toast";
 
 interface Question {
@@ -285,8 +286,9 @@ const Practice = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center relative">
+        <DashboardBackground />
+        <Loader2 className="w-8 h-8 animate-spin text-primary relative z-10" />
       </div>
     );
   }
@@ -296,7 +298,8 @@ const Practice = () => {
   const isComplete = answeredQuestions.size === questions.length && questions.length > 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative">
+      <DashboardBackground />
       {/* Header */}
       <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center justify-between">

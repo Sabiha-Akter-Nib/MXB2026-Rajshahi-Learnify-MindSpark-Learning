@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import DashboardBackground from "@/components/dashboard/DashboardBackground";
 
 interface PlanTask {
   id: string;
@@ -283,14 +284,16 @@ const LearningPlanPage = () => {
 
   if (loading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center relative">
+        <DashboardBackground />
+        <Loader2 className="w-8 h-8 animate-spin text-primary relative z-10" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative">
+      <DashboardBackground />
       <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
