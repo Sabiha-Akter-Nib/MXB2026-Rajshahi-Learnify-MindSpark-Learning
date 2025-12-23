@@ -1,73 +1,193 @@
-# Welcome to your Lovable project
+# MindSpark Learning
 
-## Project info
+An AI-powered personalized learning tutor for Bangladeshi students (Grades 1–10), strictly aligned with the NCTB curriculum.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Project Summary
 
-## How can I edit this code?
+MindSpark Learning is a study-only, curriculum-locked, multimodal AI tutor delivered as a Progressive Web App (PWA). It provides individualized learning plans, adaptive practice modules, and student progress tracking with a zero-hallucination policy.
 
-There are several ways of editing your application.
+### Key Features
 
-**Use Lovable**
+- **Personalized Learning Plans** - AI-generated daily/weekly study plans based on student performance
+- **Adaptive Practice** - Bloom's Taxonomy-based progression through learning levels
+- **Multimodal Input** - Support for text, voice, and image/PDF uploads
+- **PersonaShift Mode** - Adjustable teaching personas (Strict Teacher, Friendly Mentor, etc.)
+- **Offline Support** - PWA with offline lesson packs for low-bandwidth users
+- **Progress Tracking** - XP system, streaks, achievements, and leaderboards
+- **Revision Scheduling** - Spaced repetition for optimal retention
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Supported Subjects
 
-Changes made via Lovable will be committed automatically to this repo.
+- Bangla 1st & 2nd Paper
+- English 1st & 2nd Paper
+- Mathematics / Higher Mathematics
+- General Science / Physics / Chemistry / Biology
+- ICT
+- Bangladesh & Global Studies (BGS)
 
-**Use your preferred IDE**
+> ❌ Religion subject is explicitly excluded
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Setup and Run Instructions
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
 
-Follow these steps:
+- Node.js (v18 or higher)
+- npm or bun package manager
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### Installation
+
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project directory
+cd mindspark-learning
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
+# or
+bun install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
+# or
+bun dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Environment Variables
 
-**Use GitHub Codespaces**
+The project uses Supabase for backend services. The following are configured:
+- Supabase Project URL
+- Supabase Anon Key
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+For AI features, ensure the following secrets are configured in Supabase Edge Functions:
+- `OPENAI_API_KEY` - For GPT-based tutoring
+- `GEMINI_API_KEY` - For multimodal understanding
 
-## What technologies are used for this project?
+## Tech Stack and Dependencies
 
-This project is built with:
+### Frontend
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+| Technology | Purpose |
+|------------|---------|
+| **React 18** | UI library |
+| **TypeScript** | Type safety |
+| **Vite** | Build tool & dev server |
+| **Tailwind CSS** | Utility-first styling |
+| **shadcn/ui** | Component library |
+| **Framer Motion** | Animations |
+| **React Router** | Client-side routing |
+| **React Query** | Server state management |
+| **Recharts** | Data visualization |
 
-## How can I deploy this project?
+### Backend (Supabase)
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+| Service | Purpose |
+|---------|---------|
+| **PostgreSQL** | Database |
+| **Edge Functions** | Serverless API endpoints |
+| **Auth** | User authentication |
+| **Storage** | File uploads |
+| **Realtime** | Live updates |
 
-## Can I connect a custom domain to my Lovable project?
+### Key Dependencies
 
-Yes, you can!
+```
+react, react-dom, react-router-dom
+@tanstack/react-query
+@supabase/supabase-js
+framer-motion
+recharts
+lucide-react
+zod, react-hook-form
+date-fns
+canvas-confetti
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Architecture Overview
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Client (PWA)                             │
+├─────────────────────────────────────────────────────────────────┤
+│  src/                                                           │
+│  ├── pages/           # Route components                        │
+│  │   ├── Index.tsx    # Landing page                            │
+│  │   ├── Dashboard.tsx # Student dashboard                      │
+│  │   ├── Tutor.tsx    # AI tutor interface                      │
+│  │   ├── Practice.tsx # Practice sessions                       │
+│  │   ├── Assessment.tsx # Assessments                           │
+│  │   └── ...                                                    │
+│  ├── components/      # Reusable UI components                  │
+│  │   ├── ui/          # shadcn/ui components                    │
+│  │   ├── dashboard/   # Dashboard-specific                      │
+│  │   ├── tutor/       # AI tutor components                     │
+│  │   └── landing/     # Landing page sections                   │
+│  ├── hooks/           # Custom React hooks                      │
+│  │   ├── useStudySession.ts                                     │
+│  │   ├── useStreakTracker.ts                                    │
+│  │   ├── useVoiceInput.ts                                       │
+│  │   └── ...                                                    │
+│  ├── contexts/        # React contexts                          │
+│  │   └── AuthContext.tsx                                        │
+│  └── integrations/    # External service clients                │
+│      └── supabase/                                              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     Supabase Backend                            │
+├─────────────────────────────────────────────────────────────────┤
+│  supabase/functions/  # Edge Functions                          │
+│  ├── ai-tutor/        # AI tutoring logic                       │
+│  ├── generate-practice/ # Practice question generation          │
+│  ├── generate-quiz/   # Quiz generation                         │
+│  ├── run-assessment/  # Assessment execution                    │
+│  ├── generate-learning-plan/ # AI learning plans                │
+│  ├── revision-scheduler/ # Spaced repetition                    │
+│  ├── check-achievements/ # Achievement tracking                 │
+│  ├── track-session/   # Study session tracking                  │
+│  ├── voice-to-text/   # Voice input processing                  │
+│  └── send-push-notification/ # Push notifications               │
+├─────────────────────────────────────────────────────────────────┤
+│  Database Tables                                                │
+│  ├── profiles         # User profiles                           │
+│  ├── subjects         # NCTB subjects                           │
+│  ├── student_progress # Per-subject progress                    │
+│  ├── student_stats    # XP, streaks, study time                 │
+│  ├── topic_mastery    # Bloom level per topic                   │
+│  ├── assessments      # Assessment results                      │
+│  ├── study_sessions   # Session tracking                        │
+│  ├── learning_plans   # Generated study plans                   │
+│  ├── revision_schedule # Spaced repetition                      │
+│  ├── achievements     # Available achievements                  │
+│  ├── user_achievements # Earned achievements                    │
+│  ├── chat_conversations # AI tutor conversations                │
+│  ├── chat_messages    # Conversation messages                   │
+│  ├── offline_lessons  # Downloadable lessons                    │
+│  └── leaderboard_entries # Public leaderboard                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Data Flow
+
+1. **Authentication**: Users sign up with email, password, school, class, and version (Bangla/English)
+2. **Personalization**: System generates learning plans based on profile and performance
+3. **Learning Loop**: Study → Practice → Assess → Track → Revise
+4. **AI Integration**: Edge functions orchestrate LLM calls for tutoring, quiz generation, and feedback
+5. **Progress Sync**: All activity syncs to Supabase with offline-first support
+
+### Bloom's Taxonomy Enforcement
+
+All content follows Bloom's levels in order:
+1. Remember → 2. Understand → 3. Apply → 4. Analyze → 5. Evaluate → 6. Create
+
+Students cannot skip levels unless mastery is proven through assessments.
+
+---
+
+## License
+
+This project is proprietary. All rights reserved.
