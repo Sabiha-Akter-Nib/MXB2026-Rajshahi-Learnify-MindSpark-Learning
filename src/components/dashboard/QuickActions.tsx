@@ -62,7 +62,7 @@ const colorClasses = {
     border: "border-primary/30",
     hoverBorder: "hover:border-primary/60",
     glow: "shadow-primary/25",
-    underline: "bg-gradient-to-r from-primary via-accent to-primary",
+    underline: "bg-primary",
   },
   success: {
     bg: "bg-success/15",
@@ -70,7 +70,7 @@ const colorClasses = {
     border: "border-success/30",
     hoverBorder: "hover:border-success/60",
     glow: "shadow-success/25",
-    underline: "bg-gradient-to-r from-success via-primary to-success",
+    underline: "bg-success",
   },
   accent: {
     bg: "bg-accent/15",
@@ -78,7 +78,7 @@ const colorClasses = {
     border: "border-accent/30",
     hoverBorder: "hover:border-accent/60",
     glow: "shadow-accent/25",
-    underline: "bg-gradient-to-r from-accent via-warning to-accent",
+    underline: "bg-accent",
   },
   warning: {
     bg: "bg-warning/15",
@@ -86,7 +86,7 @@ const colorClasses = {
     border: "border-warning/30",
     hoverBorder: "hover:border-warning/60",
     glow: "shadow-warning/25",
-    underline: "bg-gradient-to-r from-warning via-success to-warning",
+    underline: "bg-warning",
   },
 };
 
@@ -247,30 +247,6 @@ const QuickActionCard = ({ action, index }: { action: QuickAction; index: number
               </p>
             </div>
 
-            {/* Bottom glow line */}
-            <motion.div
-              className="absolute bottom-0 left-0 right-0 h-[3px] rounded-full"
-              style={{
-                background: `linear-gradient(to right, transparent, hsl(var(--${action.color})), transparent)`,
-              }}
-              initial={{ scaleX: 0, opacity: 0 }}
-              animate={{ 
-                scaleX: isHovered ? 1 : 0,
-                opacity: isHovered ? 1 : 0,
-              }}
-              transition={{ duration: 0.4 }}
-            />
-            
-            {/* Glow effect under the line */}
-            <motion.div
-              className="absolute -bottom-2 left-1/4 right-1/4 h-4 blur-md"
-              style={{
-                background: `hsl(var(--${action.color}) / 0.5)`,
-              }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isHovered ? 0.6 : 0 }}
-              transition={{ duration: 0.4 }}
-            />
           </div>
         </motion.div>
       </Link>
