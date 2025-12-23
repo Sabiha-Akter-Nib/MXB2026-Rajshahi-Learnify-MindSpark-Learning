@@ -110,16 +110,16 @@ const GridPattern = () => {
 const DashboardBackground = () => {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
-      {/* Teal gradient background - lighter */}
+      {/* Eye-soothing light teal gradient background */}
       <div 
         className="absolute inset-0"
         style={{
           background: `linear-gradient(135deg, 
-            hsl(174, 60%, 42%) 0%, 
-            hsl(176, 55%, 38%) 25%, 
-            hsl(178, 52%, 34%) 50%, 
-            hsl(180, 58%, 30%) 75%, 
-            hsl(182, 62%, 26%) 100%
+            hsl(174, 45%, 72%) 0%, 
+            hsl(176, 42%, 68%) 25%, 
+            hsl(178, 40%, 64%) 50%, 
+            hsl(180, 45%, 60%) 75%, 
+            hsl(182, 48%, 56%) 100%
           )`,
         }}
       />
