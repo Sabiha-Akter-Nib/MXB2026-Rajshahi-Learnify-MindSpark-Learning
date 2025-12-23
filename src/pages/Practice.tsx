@@ -479,7 +479,7 @@ const Practice = () => {
             </div>
 
             {/* Question */}
-            <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="bg-white/95 backdrop-blur-sm border border-white/30 rounded-2xl p-6">
               <h3 className="font-heading font-semibold text-lg mb-6">
                 {currentQuestion.question}
               </h3>
