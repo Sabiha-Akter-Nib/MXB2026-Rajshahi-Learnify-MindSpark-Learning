@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface StreakData {
@@ -15,14 +15,15 @@ export const useStreakTracker = (userId: string | undefined) => {
     streakIncreased: false,
     previousStreak: 0,
   });
-  const hasCheckedRef = useRef(false);
+  const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
-    if (!userId || hasCheckedRef.current) return;
-    hasCheckedRef.current = true;
+    if (!userId || hasChecked) return;
 
     const checkAndUpdateStreak = async () => {
       try {
+        setHasChecked(true);
+        
         // Get current stats
         const { data: stats } = await supabase
           .from("student_stats")
@@ -66,7 +67,7 @@ export const useStreakTracker = (userId: string | undefined) => {
         const calculatedStreak = await calculateActualStreak(userId, todayStr);
         
         const previousStreak = stats.current_streak;
-        const streakIncreased = calculatedStreak !== previousStreak;
+        const increased = calculatedStreak > previousStreak;
 
         // Update the database with correct streak
         await supabase
@@ -80,8 +81,8 @@ export const useStreakTracker = (userId: string | undefined) => {
 
         setStreakData({
           currentStreak: calculatedStreak,
-          showStreakAnimation: streakIncreased && calculatedStreak > previousStreak,
-          streakIncreased: calculatedStreak > previousStreak,
+          showStreakAnimation: increased,
+          streakIncreased: increased,
           previousStreak,
         });
       } catch (error) {
@@ -90,7 +91,7 @@ export const useStreakTracker = (userId: string | undefined) => {
     };
 
     checkAndUpdateStreak();
-  }, [userId]);
+  }, [userId, hasChecked]);
 
   const dismissAnimation = () => {
     setStreakData(prev => ({ ...prev, showStreakAnimation: false }));
@@ -157,7 +158,6 @@ async function calculateActualStreak(userId: string, todayStr: string): Promise<
         // Gap found, streak is broken
         break;
       }
-      // If activityDate > expectedDate, skip (future date somehow)
     }
 
     return Math.max(streak, 1);
