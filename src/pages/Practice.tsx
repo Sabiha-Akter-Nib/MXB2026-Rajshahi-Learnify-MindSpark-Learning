@@ -301,7 +301,7 @@ const Practice = () => {
     <div className="min-h-screen relative">
       <DashboardBackground />
       {/* Header */}
-      <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
+      <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3 relative">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -330,7 +330,7 @@ const Practice = () => {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="max-w-3xl mx-auto px-4 py-6 relative z-10">
         {/* Topic Input */}
         {questions.length === 0 && !generating && (
           <motion.div
