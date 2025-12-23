@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import AssessmentBackground from "@/components/assessment/AssessmentBackground";
 interface Question {
   id: number;
   question: string;
@@ -244,9 +245,10 @@ const Practice = () => {
   const isBangla = profile?.version === "bangla";
   const currentQuestion = questions[currentIndex];
   const isComplete = answeredQuestions.size === questions.length && questions.length > 0;
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen relative">
+      <AssessmentBackground />
       {/* Header */}
-      <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
+      <header className="sticky top-0 bg-white/90 backdrop-blur-md border-b border-border z-30 px-4 py-3 relative">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -273,7 +275,7 @@ const Practice = () => {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="max-w-3xl mx-auto px-4 py-6 relative z-10">
         {/* Topic Input */}
         {questions.length === 0 && !generating && <motion.div initial={{
         opacity: 0,
@@ -311,7 +313,7 @@ const Practice = () => {
                 </Select>}
 
               {/* Topic Input */}
-              <input type="text" value={topic} onChange={e => setTopic(e.target.value)} placeholder={isBangla ? "যেমন: গণিত অধ্যায় ১, সাধারণ বিজ্ঞান..." : "e.g., Math Chapter 1, General Science..."} className="w-full px-4 py-3 rounded-xl border border-border bg-card focus:ring-2 focus:ring-primary focus:border-primary outline-none" />
+              <input type="text" value={topic} onChange={e => setTopic(e.target.value)} placeholder={isBangla ? "যেমন: গণিত অধ্যায় ১, সাধারণ বিজ্ঞান..." : "e.g., Math Chapter 1, General Science..."} className="w-full px-4 py-3 rounded-xl border border-border bg-white/95 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none" />
 
               {/* Bloom Level Filter */}
               <Select value={selectedBloomLevel} onValueChange={setSelectedBloomLevel}>
@@ -382,7 +384,7 @@ const Practice = () => {
             </div>
 
             {/* Question */}
-            <div className="bg-card border border-border rounded-2xl p-6">
+            <div className="bg-white/95 backdrop-blur-sm border border-border rounded-2xl p-6">
               <h3 className="font-heading font-semibold text-lg mb-6">
                 {currentQuestion.question}
               </h3>
