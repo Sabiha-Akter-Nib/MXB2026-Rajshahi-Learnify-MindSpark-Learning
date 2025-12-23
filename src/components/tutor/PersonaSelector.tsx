@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
-import { GraduationCap, Heart, Beaker, Zap, ListOrdered } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { GraduationCap, Heart, Beaker, Zap, ListOrdered, Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type PersonaType = 
@@ -15,7 +16,10 @@ interface Persona {
   nameBn: string;
   icon: React.ElementType;
   description: string;
-  color: string;
+  descriptionBn: string;
+  gradient: string;
+  shadowColor: string;
+  accentColor: string;
 }
 
 const personas: Persona[] = [
@@ -24,40 +28,55 @@ const personas: Persona[] = [
     name: "Strict Teacher",
     nameBn: "কঠোর শিক্ষক",
     icon: GraduationCap,
-    description: "Formal, focused, academic approach",
-    color: "bg-destructive/10 text-destructive border-destructive/30",
+    description: "Formal & rigorous",
+    descriptionBn: "আনুষ্ঠানিক এবং কঠোর",
+    gradient: "from-rose-500 to-red-600",
+    shadowColor: "shadow-rose-500/30",
+    accentColor: "rose",
   },
   {
     id: "friendly",
     name: "Friendly Mentor",
     nameBn: "বন্ধু মেন্টর",
     icon: Heart,
-    description: "Warm, encouraging, supportive",
-    color: "bg-success/10 text-success border-success/30",
+    description: "Warm & supportive",
+    descriptionBn: "উষ্ণ এবং সহায়ক",
+    gradient: "from-emerald-500 to-green-600",
+    shadowColor: "shadow-emerald-500/30",
+    accentColor: "emerald",
   },
   {
     id: "scientist",
     name: "Concept Scientist",
     nameBn: "বিজ্ঞানী",
     icon: Beaker,
-    description: "Curious, experimental, deep dive",
-    color: "bg-primary/10 text-primary border-primary/30",
+    description: "Curious & deep",
+    descriptionBn: "কৌতূহলী এবং গভীর",
+    gradient: "from-cyan-500 to-teal-600",
+    shadowColor: "shadow-cyan-500/30",
+    accentColor: "cyan",
   },
   {
     id: "revision",
     name: "Fast Revision",
     nameBn: "দ্রুত রিভিশন",
     icon: Zap,
-    description: "Quick points, key facts only",
-    color: "bg-accent/10 text-accent border-accent/30",
+    description: "Quick key points",
+    descriptionBn: "দ্রুত মূল পয়েন্ট",
+    gradient: "from-amber-500 to-orange-600",
+    shadowColor: "shadow-amber-500/30",
+    accentColor: "amber",
   },
   {
     id: "stepbystep",
     name: "Step-by-Step",
     nameBn: "ধাপে ধাপে",
     icon: ListOrdered,
-    description: "Detailed, patient, thorough",
-    color: "bg-secondary text-secondary-foreground border-secondary-foreground/30",
+    description: "Patient & thorough",
+    descriptionBn: "ধৈর্যশীল এবং পুঙ্খানুপুঙ্খ",
+    gradient: "from-violet-500 to-purple-600",
+    shadowColor: "shadow-violet-500/30",
+    accentColor: "violet",
   },
 ];
 
@@ -74,27 +93,72 @@ export const PersonaSelector = ({
   isBangla = false,
   compact = false,
 }: PersonaSelectorProps) => {
+  const [hoveredId, setHoveredId] = useState<PersonaType | null>(null);
+
   if (compact) {
     return (
-      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-        {personas.map((persona) => {
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1">
+        {personas.map((persona, index) => {
           const Icon = persona.icon;
           const isSelected = selected === persona.id;
+          const isHovered = hoveredId === persona.id;
+          
           return (
             <motion.button
               key={persona.id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.3 }}
+              whileTap={{ scale: 0.95 }}
+              onHoverStart={() => setHoveredId(persona.id)}
+              onHoverEnd={() => setHoveredId(null)}
               onClick={() => onSelect(persona.id)}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-all whitespace-nowrap",
+                "relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap",
+                "border backdrop-blur-sm",
                 isSelected
-                  ? persona.color
-                  : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted"
+                  ? `bg-gradient-to-r ${persona.gradient} text-white border-transparent shadow-lg ${persona.shadowColor}`
+                  : "bg-card/80 text-foreground border-border/50 hover:border-primary/30 hover:bg-card"
               )}
             >
-              <Icon className="w-3.5 h-3.5" />
-              {isBangla ? persona.nameBn : persona.name}
+              {/* Glow effect on hover */}
+              {(isHovered || isSelected) && (
+                <motion.div
+                  layoutId="persona-glow"
+                  className={cn(
+                    "absolute inset-0 rounded-2xl -z-10",
+                    isSelected ? "opacity-0" : "opacity-100"
+                  )}
+                  style={{
+                    background: `linear-gradient(135deg, hsl(var(--primary) / 0.1), transparent)`,
+                    boxShadow: isHovered && !isSelected ? "0 0 20px hsl(var(--primary) / 0.2)" : "none",
+                  }}
+                  initial={false}
+                  transition={{ duration: 0.2 }}
+                />
+              )}
+              
+              <motion.div
+                animate={isSelected ? { 
+                  rotate: [0, -10, 10, 0],
+                  scale: [1, 1.2, 1],
+                } : {}}
+                transition={{ duration: 0.4 }}
+              >
+                <Icon className={cn("w-4 h-4", isSelected ? "text-white" : "")} />
+              </motion.div>
+              
+              <span>{isBangla ? persona.nameBn : persona.name}</span>
+              
+              {isSelected && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="ml-1"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                </motion.div>
+              )}
             </motion.button>
           );
         })}
@@ -102,40 +166,121 @@ export const PersonaSelector = ({
     );
   }
 
+  // Full persona selector - iOS style cards
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-      {personas.map((persona) => {
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 p-1">
+      {personas.map((persona, index) => {
         const Icon = persona.icon;
         const isSelected = selected === persona.id;
+        const isHovered = hoveredId === persona.id;
+        
         return (
           <motion.button
             key={persona.id}
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: index * 0.08, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+            whileTap={{ scale: 0.95 }}
+            onHoverStart={() => setHoveredId(persona.id)}
+            onHoverEnd={() => setHoveredId(null)}
             onClick={() => onSelect(persona.id)}
             className={cn(
-              "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
+              "relative flex flex-col items-center gap-3 p-5 rounded-3xl transition-all overflow-hidden",
+              "border backdrop-blur-md",
               isSelected
-                ? `${persona.color} border-current shadow-md`
-                : "bg-card border-border hover:border-muted-foreground/30"
+                ? "border-transparent shadow-2xl"
+                : "bg-card/60 border-border/30 hover:bg-card/80 hover:border-primary/20"
             )}
           >
-            <div
+            {/* Selected background gradient */}
+            {isSelected && (
+              <motion.div
+                layoutId="selected-bg"
+                className={cn("absolute inset-0 bg-gradient-to-br", persona.gradient)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+            )}
+            
+            {/* Hover glow */}
+            <motion.div
+              className="absolute inset-0 rounded-3xl pointer-events-none"
+              animate={{
+                boxShadow: isHovered && !isSelected 
+                  ? "inset 0 0 30px hsl(var(--primary) / 0.1), 0 10px 40px hsl(var(--primary) / 0.15)"
+                  : isSelected
+                  ? `0 20px 60px -15px ${persona.accentColor === 'rose' ? 'rgb(244 63 94 / 0.4)' : 
+                     persona.accentColor === 'emerald' ? 'rgb(16 185 129 / 0.4)' :
+                     persona.accentColor === 'cyan' ? 'rgb(6 182 212 / 0.4)' :
+                     persona.accentColor === 'amber' ? 'rgb(245 158 11 / 0.4)' :
+                     'rgb(139 92 246 / 0.4)'}`
+                  : "0 0 0 transparent",
+              }}
+              transition={{ duration: 0.3 }}
+            />
+            
+            {/* Icon container */}
+            <motion.div
               className={cn(
-                "w-10 h-10 rounded-lg flex items-center justify-center",
-                isSelected ? "bg-current/10" : "bg-muted"
+                "relative w-14 h-14 rounded-2xl flex items-center justify-center z-10",
+                isSelected 
+                  ? "bg-white/20 backdrop-blur-sm" 
+                  : "bg-gradient-to-br from-muted to-muted/50"
               )}
+              animate={isSelected || isHovered ? {
+                y: [0, -5, 0],
+                scale: [1, 1.1, 1],
+              } : {}}
+              transition={{ duration: 0.5 }}
             >
-              <Icon className={cn("w-5 h-5", isSelected ? "" : "text-muted-foreground")} />
-            </div>
-            <div className="text-center">
-              <p className="font-medium text-sm">
+              <Icon className={cn(
+                "w-7 h-7 transition-colors",
+                isSelected ? "text-white" : "text-muted-foreground"
+              )} />
+              
+              {/* Sparkle effect on selected */}
+              {isSelected && (
+                <motion.div
+                  className="absolute -top-1 -right-1"
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.2, type: "spring" }}
+                >
+                  <Sparkles className="w-4 h-4 text-white/80" />
+                </motion.div>
+              )}
+            </motion.div>
+            
+            {/* Text content */}
+            <div className={cn(
+              "relative z-10 text-center",
+              isSelected ? "text-white" : ""
+            )}>
+              <p className="font-semibold text-sm mb-0.5">
                 {isBangla ? persona.nameBn : persona.name}
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                {persona.description}
+              <p className={cn(
+                "text-xs transition-colors",
+                isSelected ? "text-white/80" : "text-muted-foreground"
+              )}>
+                {isBangla ? persona.descriptionBn : persona.description}
               </p>
             </div>
+            
+            {/* Selected checkmark */}
+            <AnimatePresence>
+              {isSelected && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  className="absolute top-3 right-3 w-6 h-6 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center"
+                >
+                  <Check className="w-4 h-4 text-white" />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.button>
         );
       })}
