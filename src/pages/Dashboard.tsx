@@ -489,89 +489,38 @@ const Dashboard = () => {
           {/* Quick Actions */}
           <QuickActions />
 
-          {/* Stats Cards - New asymmetric layout */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-            {/* Weekly XP - Featured larger card */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="col-span-2 lg:col-span-1 lg:row-span-1"
-            >
-              <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 border border-primary/20 backdrop-blur-sm h-full">
-                <motion.div 
-                  className="absolute -top-8 -right-8 w-24 h-24 bg-primary/20 rounded-full blur-2xl"
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                />
-                <div className="relative z-10 flex items-center gap-4">
-                  <div className="w-14 h-14 bg-primary/20 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="w-7 h-7 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Weekly XP</p>
-                    <p className="text-3xl font-bold text-primary">{weeklyStats.weekly_xp}</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Day Streak */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-            >
-              <div className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-accent/15 via-accent/8 to-transparent border border-accent/20 backdrop-blur-sm h-full">
-                <div className="flex flex-col h-full justify-between">
-                  <div className="w-10 h-10 bg-accent/20 rounded-lg flex items-center justify-center mb-2">
-                    <Flame className="w-5 h-5 text-accent" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Streak</p>
-                    <p className="text-2xl font-bold text-accent">{currentStreak || stats?.current_streak || 0}</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Weekly Goal */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-success/15 via-success/8 to-transparent border border-success/20 backdrop-blur-sm h-full">
-                <div className="flex flex-col h-full justify-between">
-                  <div className="w-10 h-10 bg-success/20 rounded-lg flex items-center justify-center mb-2">
-                    <Target className="w-5 h-5 text-success" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Weekly Goal</p>
-                    <p className="text-2xl font-bold text-success">{weeklyStats.weekly_goal_percent}%</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Today's Study */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-            >
-              <div className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-warning/15 via-warning/8 to-transparent border border-warning/20 backdrop-blur-sm h-full">
-                <div className="flex flex-col h-full justify-between">
-                  <div className="w-10 h-10 bg-warning/20 rounded-lg flex items-center justify-center mb-2">
-                    <Clock className="w-5 h-5 text-warning" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Today</p>
-                    <p className="text-2xl font-bold text-warning">{formatStudyTime(weeklyStats.today_study_minutes)}</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <AnimatedStatsCard
+              icon={TrendingUp}
+              label="Weekly XP"
+              value={weeklyStats.weekly_xp}
+              color="primary"
+              index={0}
+            />
+            <AnimatedStatsCard
+              icon={Flame}
+              label="Day Streak"
+              value={currentStreak || stats?.current_streak || 0}
+              color="accent"
+              index={1}
+            />
+            <AnimatedStatsCard
+              icon={Target}
+              label="Weekly Goal"
+              value={weeklyStats.weekly_goal_percent}
+              suffix="%"
+              color="success"
+              index={2}
+            />
+            <AnimatedStatsCard
+              icon={Clock}
+              label="Today's Study"
+              value={formatStudyTime(weeklyStats.today_study_minutes)}
+              color="warning"
+              index={3}
+              isAnimatedNumber={false}
+            />
           </div>
 
           {/* Main Grid */}
@@ -731,29 +680,15 @@ const Dashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            {/* Section Header with Refresh Button */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-semibold text-xl text-foreground">Progress Overview</h2>
-              <motion.button
-                onClick={() => {
-                  setIsRefreshing(true);
-                  setProgressRefreshKey(prev => prev + 1);
-                  setTimeout(() => setIsRefreshing(false), 1000);
-                }}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card/60 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-card/80 transition-all"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <motion.div
-                  animate={isRefreshing ? { rotate: 360 } : {}}
-                  transition={{ duration: 0.8, ease: "linear", repeat: isRefreshing ? Infinity : 0 }}
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </motion.div>
-                <span className="text-sm font-medium">Refresh</span>
-              </motion.button>
-            </div>
-            <ProgressVisualization refreshKey={progressRefreshKey} />
+            <ProgressVisualization 
+              refreshKey={progressRefreshKey} 
+              onRefresh={() => {
+                setIsRefreshing(true);
+                setProgressRefreshKey(prev => prev + 1);
+                setTimeout(() => setIsRefreshing(false), 1000);
+              }}
+              isRefreshing={isRefreshing}
+            />
           </motion.div>
         </main>
       </div>

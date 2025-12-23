@@ -15,7 +15,7 @@ import {
   Bar,
   Legend,
 } from "recharts";
-import { TrendingUp, Target, Brain, Award, Sparkles } from "lucide-react";
+import { TrendingUp, Target, Brain, Award, Sparkles, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -199,7 +199,15 @@ const StatsMiniCard = ({
   );
 };
 
-const ProgressVisualization = ({ refreshKey = 0 }: { refreshKey?: number }) => {
+const ProgressVisualization = ({ 
+  refreshKey = 0, 
+  onRefresh,
+  isRefreshing = false 
+}: { 
+  refreshKey?: number;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+}) => {
   const [bloomProgress, setBloomProgress] = useState<BloomProgress[]>([]);
   const [xpHistory, setXpHistory] = useState<XPHistory[]>([]);
   const [topicMastery, setTopicMastery] = useState<TopicMastery[]>([]);
@@ -371,15 +379,33 @@ const ProgressVisualization = ({ refreshKey = 0 }: { refreshKey?: number }) => {
         {/* Bloom Levels Chart */}
         <GlowCard color="accent" index={1} className="h-80">
           <div className="p-5 h-full flex flex-col">
-            <div className="flex items-center gap-2 mb-4">
-              <motion.div
-                className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Sparkles className="w-4 h-4" />
-              </motion.div>
-              <h3 className="font-semibold text-lg">Bloom Levels</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <motion.div
+                  className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent"
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Sparkles className="w-4 h-4" />
+                </motion.div>
+                <h3 className="font-semibold text-lg">Bloom Levels</h3>
+              </div>
+              {onRefresh && (
+                <motion.button
+                  onClick={onRefresh}
+                  className="p-2 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  title="Refresh animations"
+                >
+                  <motion.div
+                    animate={isRefreshing ? { rotate: 360 } : {}}
+                    transition={{ duration: 0.8, ease: "linear", repeat: isRefreshing ? Infinity : 0 }}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </motion.div>
+                </motion.button>
+              )}
             </div>
             
             {/* Animated Bloom Level Badges */}
@@ -451,15 +477,33 @@ const ProgressVisualization = ({ refreshKey = 0 }: { refreshKey?: number }) => {
         {/* Topic Mastery Chart */}
         <GlowCard color="success" index={2} className="h-80">
           <div className="p-5 h-full flex flex-col">
-            <div className="flex items-center gap-2 mb-4">
-              <motion.div
-                className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center text-success"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Target className="w-4 h-4" />
-              </motion.div>
-              <h3 className="font-semibold text-lg">Mastery</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <motion.div
+                  className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center text-success"
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Target className="w-4 h-4" />
+                </motion.div>
+                <h3 className="font-semibold text-lg">Mastery</h3>
+              </div>
+              {onRefresh && (
+                <motion.button
+                  onClick={onRefresh}
+                  className="p-2 rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  title="Refresh animations"
+                >
+                  <motion.div
+                    animate={isRefreshing ? { rotate: 360 } : {}}
+                    transition={{ duration: 0.8, ease: "linear", repeat: isRefreshing ? Infinity : 0 }}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </motion.div>
+                </motion.button>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto">
               {topicMastery.length > 0 ? (
