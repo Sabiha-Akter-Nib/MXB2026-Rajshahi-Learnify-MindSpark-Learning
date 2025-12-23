@@ -62,6 +62,7 @@ interface WeeklyStats {
   weekly_xp: number;
   weekly_study_minutes: number;
   weekly_goal_percent: number;
+  today_study_minutes: number;
 }
 
 interface Subject {
@@ -114,6 +115,7 @@ const Dashboard = () => {
     weekly_xp: 0,
     weekly_study_minutes: 0,
     weekly_goal_percent: 0,
+    today_study_minutes: 0,
   });
   const [subjects, setSubjects] = useState<SubjectWithProgress[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -169,9 +171,13 @@ const Dashboard = () => {
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
+        // Get today's start (midnight)
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        
         const { data: weeklySessionsData } = await supabase
           .from("study_sessions")
-          .select("xp_earned, duration_minutes")
+          .select("xp_earned, duration_minutes, created_at")
           .eq("user_id", user.id)
           .gte("created_at", oneWeekAgo.toISOString());
 
@@ -186,6 +192,15 @@ const Dashboard = () => {
         const weeklyXP = sessionsXP + assessmentsXP;
         const weeklyMinutes = weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
         
+        // Calculate today's study minutes
+        const todayMinutes = weeklySessionsData?.reduce((sum, s) => {
+          const sessionDate = new Date(s.created_at);
+          if (sessionDate >= todayStart) {
+            return sum + (s.duration_minutes || 0);
+          }
+          return sum;
+        }, 0) || 0;
+        
         const weeklyGoalXP = 500;
         const weeklyGoalPercent = Math.min(Math.round((weeklyXP / weeklyGoalXP) * 100), 100);
         
@@ -193,6 +208,7 @@ const Dashboard = () => {
           weekly_xp: weeklyXP,
           weekly_study_minutes: weeklyMinutes,
           weekly_goal_percent: weeklyGoalPercent,
+          today_study_minutes: todayMinutes,
         });
 
         // Fetch subjects based on student class
@@ -496,8 +512,8 @@ const Dashboard = () => {
             />
             <AnimatedStatsCard
               icon={Clock}
-              label="Study Time"
-              value={formatStudyTime(weeklyStats.weekly_study_minutes)}
+              label="Today's Study"
+              value={formatStudyTime(weeklyStats.today_study_minutes)}
               color="warning"
               index={3}
               isAnimatedNumber={false}
