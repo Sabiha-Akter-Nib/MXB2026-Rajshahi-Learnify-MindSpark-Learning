@@ -294,7 +294,7 @@ const LearningPlanPage = () => {
   return (
     <div className="min-h-screen relative">
       <DashboardBackground />
-      <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
+      <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3 relative">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link to="/dashboard">
@@ -315,7 +315,7 @@ const LearningPlanPage = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className="max-w-4xl mx-auto px-4 py-6 relative z-10">
         {!activePlan ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
