@@ -448,14 +448,18 @@ const ProgressVisualization = ({
                 <motion.div
                   key={`pie-${animationKey}`}
                   className="w-full h-full"
-                  initial={{ rotate: -180, opacity: 0, scale: 0.5 }}
-                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  initial={{ rotate: -360, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
                   transition={{ 
-                    duration: 1,
-                    delay: 0.3,
-                    type: "spring",
-                    stiffness: 100,
-                    damping: 15
+                    rotate: {
+                      duration: 1.2,
+                      delay: 0.2,
+                      ease: [0.25, 0.46, 0.45, 0.94]
+                    },
+                    opacity: {
+                      duration: 0.3,
+                      delay: 0.2
+                    }
                   }}
                 >
                   <ResponsiveContainer width="100%" height="100%">
@@ -469,9 +473,16 @@ const ProgressVisualization = ({
                         dataKey="count"
                         nameKey="level"
                         labelLine={false}
+                        isAnimationActive={true}
+                        animationBegin={800}
+                        animationDuration={600}
+                        animationEasing="ease-out"
                       >
-                        {bloomProgress.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        {bloomProgress.filter((b) => b.count > 0).map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}-${animationKey}`} 
+                            fill={entry.color}
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
