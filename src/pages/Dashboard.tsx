@@ -43,6 +43,8 @@ import ProgressVisualization from "@/components/dashboard/ProgressVisualization"
 import RevisionReminders from "@/components/dashboard/RevisionReminders";
 import DashboardBackground from "@/components/dashboard/DashboardBackground";
 import AnimatedStatsCard from "@/components/dashboard/AnimatedStatsCard";
+import StreakCelebration from "@/components/dashboard/StreakCelebration";
+import useStreakTracker from "@/hooks/useStreakTracker";
 
 interface Profile {
   full_name: string;
@@ -117,6 +119,15 @@ const Dashboard = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  
+  // Streak tracker with animation
+  const { 
+    currentStreak, 
+    showStreakAnimation, 
+    streakIncreased, 
+    previousStreak, 
+    dismissAnimation 
+  } = useStreakTracker(user?.id);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -284,6 +295,14 @@ const Dashboard = () => {
     <div className="min-h-screen flex relative">
       <DashboardBackground />
       
+      {/* Streak Celebration Modal */}
+      <StreakCelebration
+        show={showStreakAnimation}
+        newStreak={currentStreak}
+        previousStreak={previousStreak}
+        onDismiss={dismissAnimation}
+      />
+      
       {/* Sidebar */}
       <motion.aside
         initial={false}
@@ -431,7 +450,7 @@ const Dashboard = () => {
                 >
                   <Flame className="w-5 h-5 text-accent" />
                 </motion.div>
-                <span className="font-semibold text-accent">{stats?.current_streak || 0} Day Streak</span>
+                <span className="font-semibold text-accent">{currentStreak || stats?.current_streak || 0} Day Streak</span>
               </motion.div>
 
               {/* Profile */}
@@ -463,7 +482,7 @@ const Dashboard = () => {
             <AnimatedStatsCard
               icon={Flame}
               label="Day Streak"
-              value={stats?.current_streak || 0}
+              value={currentStreak || stats?.current_streak || 0}
               color="accent"
               index={1}
             />
