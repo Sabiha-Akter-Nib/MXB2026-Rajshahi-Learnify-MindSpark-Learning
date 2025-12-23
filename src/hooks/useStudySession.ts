@@ -42,7 +42,6 @@ export const useStudySession = () => {
     try {
       await supabase.functions.invoke("track-session", {
         body: {
-          userId: user.id,
           subjectId: sessionDataRef.current.subjectId,
           durationMinutes,
           xpEarned: totalXP,

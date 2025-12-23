@@ -197,7 +197,6 @@ const LearningPlanPage = () => {
 
       const { data, error } = await supabase.functions.invoke("generate-learning-plan", {
         body: {
-          userId: user?.id,
           chapters: validChapters.map((ch) => ({
             subjectId: ch.subjectId,
             subjectName: subjects.find((s) => s.id === ch.subjectId)?.name || "",
