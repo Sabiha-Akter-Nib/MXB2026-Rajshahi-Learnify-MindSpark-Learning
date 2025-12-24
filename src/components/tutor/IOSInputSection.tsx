@@ -149,10 +149,10 @@ const IOSInputSection = ({
               ? "তোমার পড়াশোনা সম্পর্কে যেকোনো প্রশ্ন করো..." 
               : "Ask me anything about your studies..."}
             className={cn(
-              "min-h-[44px] max-h-32 resize-none border-0 bg-transparent",
+              "min-h-[36px] max-h-24 resize-none border-0 bg-transparent",
               "focus-visible:ring-0 focus-visible:ring-offset-0",
-              "text-base placeholder:text-muted-foreground/60",
-              "px-2 py-1"
+              "text-sm placeholder:text-muted-foreground/60",
+              "px-2 py-0.5"
             )}
             rows={1}
             disabled={isTyping}
