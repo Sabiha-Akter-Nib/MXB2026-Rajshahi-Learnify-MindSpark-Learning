@@ -304,12 +304,31 @@ const Dashboard = () => {
     <div className="min-h-screen flex relative">
       <DashboardBackground />
       
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
       
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: sidebarOpen ? 280 : 80 }}
-        className="bg-sidebar/80 backdrop-blur-xl text-sidebar-foreground border-r border-sidebar-border/50 flex flex-col fixed h-screen z-40"
+        animate={{ 
+          width: sidebarOpen ? 280 : 80,
+          x: sidebarOpen ? 0 : -80
+        }}
+        className={cn(
+          "bg-sidebar/95 backdrop-blur-xl text-sidebar-foreground border-r border-sidebar-border/50 flex flex-col fixed h-screen z-40",
+          "lg:translate-x-0",
+          !sidebarOpen && "max-lg:-translate-x-full"
+        )}
       >
         {/* Logo */}
         <div className="p-4 flex items-center gap-3 border-b border-sidebar-border/50">
@@ -400,11 +419,11 @@ const Dashboard = () => {
       </motion.aside>
 
       {/* Main Content */}
-      <div className={cn("flex-1 transition-all duration-300", sidebarOpen ? "ml-[280px]" : "ml-20")}>
+      <div className={cn("flex-1 transition-all duration-300 w-full", sidebarOpen ? "lg:ml-[280px]" : "lg:ml-20")}>
         {/* Top Bar */}
-        <header className="sticky top-0 bg-background/60 backdrop-blur-xl border-b border-border/50 z-30 px-6 py-4">
+        <header className="sticky top-0 bg-background/60 backdrop-blur-xl border-b border-border/50 z-30 px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <motion.button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="p-2 hover:bg-muted/50 rounded-xl transition-colors"
@@ -415,14 +434,14 @@ const Dashboard = () => {
               </motion.button>
               <div>
                 <motion.h1 
-                  className="font-heading font-bold text-2xl"
+                  className="font-heading font-bold text-lg sm:text-2xl"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  Welcome back, <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{displayName}</span>! 👋
+                  <span className="hidden sm:inline">Welcome back, </span><span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{displayName}</span><span className="hidden sm:inline">! 👋</span>
                 </motion.h1>
                 <motion.p 
-                  className="text-muted-foreground text-sm"
+                  className="text-muted-foreground text-xs sm:text-sm hidden sm:block"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.1 }}
@@ -432,10 +451,10 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {/* Streak Badge */}
               <motion.div 
-                className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-full border border-amber-200 shadow-md"
+                className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-50 rounded-full border border-amber-200 shadow-md"
                 whileHover={{ scale: 1.05 }}
                 animate={{
                   boxShadow: [
@@ -450,9 +469,17 @@ const Dashboard = () => {
                   animate={{ rotate: [0, -10, 10, 0] }}
                   transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
                 >
-                  <Flame className="w-5 h-5 text-accent" />
+                  <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                 </motion.div>
-                <span className="font-semibold text-accent">{stats?.current_streak || 0} Day Streak</span>
+                <span className="font-semibold text-accent text-sm sm:text-base">{stats?.current_streak || 0} Day Streak</span>
+              </motion.div>
+
+              {/* Mobile Streak */}
+              <motion.div 
+                className="flex sm:hidden items-center gap-1 px-2 py-1 bg-amber-50 rounded-full border border-amber-200"
+              >
+                <Flame className="w-4 h-4 text-accent" />
+                <span className="font-semibold text-accent text-xs">{stats?.current_streak || 0}</span>
               </motion.div>
 
               {/* Profile */}
@@ -468,7 +495,7 @@ const Dashboard = () => {
         </header>
 
         {/* Dashboard Content */}
-        <main className="p-6 space-y-6">
+        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6">
           {/* Quick Actions */}
           <QuickActions />
 
