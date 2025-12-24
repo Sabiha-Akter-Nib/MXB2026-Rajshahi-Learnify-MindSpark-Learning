@@ -118,8 +118,8 @@ const IOSInputSection = ({
       {/* Main Input Container - iOS style */}
       <motion.div
         className={cn(
-          "relative rounded-3xl backdrop-blur-md transition-all duration-300",
-          "bg-card/80 border border-border/50",
+          "relative rounded-3xl transition-all duration-300",
+          "bg-card border border-border/50",
           "shadow-xl shadow-primary/5"
         )}
         animate={{
