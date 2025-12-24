@@ -321,8 +321,7 @@ const Dashboard = () => {
       <motion.aside
         initial={false}
         animate={{ 
-          width: sidebarOpen ? 280 : 80,
-          x: sidebarOpen ? 0 : -80
+          width: sidebarOpen ? 280 : 80
         }}
         className={cn(
           "bg-sidebar/95 backdrop-blur-xl text-sidebar-foreground border-r border-sidebar-border/50 flex flex-col fixed h-screen z-40",
