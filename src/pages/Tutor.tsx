@@ -733,7 +733,7 @@ What would you like to learn today?`,
       />
 
       {/* iOS-style Input Area */}
-      <div className="sticky bottom-0 z-20 backdrop-blur-xl bg-background/60 border-t border-border/30 px-4 py-4">
+      <div className="sticky bottom-0 z-20 bg-background border-t border-border/30 px-4 py-2">
         <div className="max-w-4xl mx-auto">
           {/* Persona Selector */}
           <AnimatePresence>
@@ -811,14 +811,6 @@ What would you like to learn today?`,
             isBangla={isBangla}
           />
 
-          <p className="text-center text-xs text-muted-foreground mt-4">
-            {isBangla 
-              ? "MindSpark AI শুধুমাত্র পড়াশোনা সংক্রান্ত প্রশ্নের জন্য তৈরি।"
-              : "MindSpark AI is designed for study-related questions only."}
-            <Link to="/" className="text-primary hover:underline ml-1">
-              {isBangla ? "আরো জানুন" : "Learn more"}
-            </Link>
-          </p>
         </div>
       </div>
     </div>
