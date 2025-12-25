@@ -120,7 +120,7 @@ async function calculateActualStreak(userId: string, todayStr: string): Promise<
     // Collect all unique activity dates
     const activityDates = new Set<string>();
     
-    // Add today as an activity date (user is visiting today)
+    // Add today as an activity date (user is visiting/active today)
     activityDates.add(todayStr);
 
     // Add dates from study sessions
@@ -135,27 +135,29 @@ async function calculateActualStreak(userId: string, todayStr: string): Promise<
       activityDates.add(date);
     });
 
-    // Convert to sorted array (newest first)
-    const sortedDates = Array.from(activityDates).sort().reverse();
+    // Convert to sorted array (oldest first for easier iteration)
+    const sortedDates = Array.from(activityDates).sort();
     
     if (sortedDates.length === 0) {
       return 1; // First day
     }
 
-    // Count consecutive days starting from today
-    let streak = 0;
-    let expectedDate = new Date(todayStr);
+    // Find the longest consecutive streak ending today
+    let streak = 1;
+    const today = new Date(todayStr);
     
-    for (const dateStr of sortedDates) {
-      const activityDate = new Date(dateStr);
-      const expectedDateStr = expectedDate.toISOString().split("T")[0];
+    // Start from today and work backwards
+    let checkDate = new Date(today);
+    checkDate.setDate(checkDate.getDate() - 1); // Start checking from yesterday
+    
+    while (true) {
+      const checkDateStr = checkDate.toISOString().split("T")[0];
       
-      if (dateStr === expectedDateStr) {
+      if (activityDates.has(checkDateStr)) {
         streak++;
-        // Move to previous day
-        expectedDate.setDate(expectedDate.getDate() - 1);
-      } else if (activityDate < expectedDate) {
-        // Gap found, streak is broken
+        checkDate.setDate(checkDate.getDate() - 1); // Move to previous day
+      } else {
+        // Gap found, streak ends
         break;
       }
     }
