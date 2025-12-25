@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+const toLocalDateString = (date: Date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
 interface StreakData {
   currentStreak: number;
   showStreakAnimation: boolean;
@@ -32,7 +39,7 @@ export const useStreakTracker = (userId: string | undefined) => {
           .maybeSingle();
 
         const today = new Date();
-        const todayStr = today.toISOString().split("T")[0];
+        const todayStr = toLocalDateString(today);
 
         if (!stats) {
           // Create initial stats if not exists - first day = streak of 1
@@ -125,13 +132,13 @@ async function calculateActualStreak(userId: string, todayStr: string): Promise<
 
     // Add dates from study sessions
     sessionsResult.data?.forEach(session => {
-      const date = new Date(session.created_at).toISOString().split("T")[0];
+      const date = toLocalDateString(new Date(session.created_at));
       activityDates.add(date);
     });
 
     // Add dates from assessments
     assessmentsResult.data?.forEach(assessment => {
-      const date = new Date(assessment.completed_at).toISOString().split("T")[0];
+      const date = toLocalDateString(new Date(assessment.completed_at));
       activityDates.add(date);
     });
 
@@ -144,14 +151,13 @@ async function calculateActualStreak(userId: string, todayStr: string): Promise<
 
     // Find the longest consecutive streak ending today
     let streak = 1;
-    const today = new Date(todayStr);
-    
+
     // Start from today and work backwards
-    let checkDate = new Date(today);
+    let checkDate = new Date(todayStr);
     checkDate.setDate(checkDate.getDate() - 1); // Start checking from yesterday
-    
+
     while (true) {
-      const checkDateStr = checkDate.toISOString().split("T")[0];
+      const checkDateStr = toLocalDateString(checkDate);
       
       if (activityDates.has(checkDateStr)) {
         streak++;
