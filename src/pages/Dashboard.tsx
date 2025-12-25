@@ -44,6 +44,7 @@ import ProgressVisualization from "@/components/dashboard/ProgressVisualization"
 import RevisionReminders from "@/components/dashboard/RevisionReminders";
 import DashboardBackground from "@/components/dashboard/DashboardBackground";
 import AnimatedStatsCard from "@/components/dashboard/AnimatedStatsCard";
+import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 
 interface Profile {
   full_name: string;
@@ -624,6 +625,9 @@ const Dashboard = () => {
 
             {/* Right Column */}
             <div className="space-y-6">
+              {/* Future You Snapshot */}
+              <FutureYouSnapshot />
+
               {/* Revision Reminders */}
               <RevisionReminders />
 
