@@ -369,7 +369,9 @@ const FutureYouSnapshot = () => {
             <Sparkles className="w-4 h-4 text-primary" />
             {isBangla ? 'সম্ভাব্য ভবিষ্যত' : 'Possible Futures'}
           </p>
-          <div className="grid grid-cols-3 gap-2">
+
+          {/* Single wide “tab” row across all devices */}
+          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {snapshotData.scenarios.map((scenario) => (
               <motion.button
                 key={scenario.id}
@@ -377,27 +379,32 @@ const FutureYouSnapshot = () => {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveScenario(scenario.id)}
                 className={cn(
-                  "relative p-3 rounded-xl border transition-all duration-300 text-left",
+                  "relative flex-shrink-0 w-[220px] p-3 rounded-xl border transition-all duration-300 text-left",
                   activeScenario === scenario.id
                     ? "bg-card border-primary/50 shadow-lg shadow-primary/10"
                     : "bg-card/30 border-border/30 hover:border-border"
                 )}
               >
-                <div className={cn(
-                  "w-8 h-8 rounded-lg flex items-center justify-center mb-2",
-                  scenario.icon === 'better' && "bg-emerald-500/10 text-emerald-500",
-                  scenario.icon === 'worse' && "bg-rose-500/10 text-rose-500",
-                  scenario.icon === 'current' && (
-                    scenario.color === 'emerald' ? "bg-emerald-500/10 text-emerald-500" :
-                    scenario.color === 'amber' ? "bg-amber-500/10 text-amber-500" :
-                    "bg-rose-500/10 text-rose-500"
+                <div
+                  className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center mb-2",
+                    scenario.icon === 'better' && "bg-emerald-500/10 text-emerald-500",
+                    scenario.icon === 'worse' && "bg-rose-500/10 text-rose-500",
+                    scenario.icon === 'current' &&
+                      (scenario.color === 'emerald'
+                        ? "bg-emerald-500/10 text-emerald-500"
+                        : scenario.color === 'amber'
+                          ? "bg-amber-500/10 text-amber-500"
+                          : "bg-rose-500/10 text-rose-500")
                   )
-                )}>
+                }
+                >
                   {getScenarioIcon(scenario.icon)}
                 </div>
-                <p className="text-xs font-medium truncate">
+                <p className="text-xs font-medium leading-snug">
                   {isBangla ? scenario.titleBn : scenario.title}
                 </p>
+
                 {activeScenario === scenario.id && (
                   <motion.div
                     layoutId="activeScenario"

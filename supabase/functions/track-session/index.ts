@@ -56,8 +56,17 @@ serve(async (req) => {
     }
 
     // 2. Update student stats
-    const today = new Date().toISOString().split("T")[0];
-    
+    // Use Bangladesh time (Asia/Dhaka) for streak day boundaries
+    const dhakaDate = (d: Date) =>
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Dhaka",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(d);
+
+    const today = dhakaDate(new Date());
+
     // Get current stats
     const { data: currentStats } = await supabase
       .from("student_stats")
@@ -69,7 +78,7 @@ serve(async (req) => {
       const lastActivity = currentStats.last_activity_date;
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
+      const yesterdayStr = dhakaDate(yesterday);
 
       let newStreak = currentStats.current_streak;
       

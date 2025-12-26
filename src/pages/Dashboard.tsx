@@ -45,6 +45,8 @@ import RevisionReminders from "@/components/dashboard/RevisionReminders";
 import DashboardBackground from "@/components/dashboard/DashboardBackground";
 import AnimatedStatsCard from "@/components/dashboard/AnimatedStatsCard";
 import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
+import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
+import { useStreakTracker } from "@/hooks/useStreakTracker";
 
 interface Profile {
   full_name: string;
@@ -123,14 +125,25 @@ const Dashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  
 
+  // Ensure streak is updated for “daily visit” (not only after a study session)
+  const streak = useStreakTracker(user?.id);
   // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
       navigate("/login");
     }
   }, [user, loading, navigate]);
+
+  // Reflect hook-updated streak into local stats state (so all UI uses the same number)
+  useEffect(() => {
+    if (!user) return;
+    setStats((prev) => {
+      if (!prev) return prev;
+      if (prev.current_streak === streak.currentStreak) return prev;
+      return { ...prev, current_streak: streak.currentStreak };
+    });
+  }, [user, streak.currentStreak]);
 
   // Fetch all dashboard data
   useEffect(() => {
@@ -158,17 +171,21 @@ const Dashboard = () => {
           .maybeSingle();
 
         if (statsData) {
-          setStats(statsData);
+          // Prefer the streak computed/updated by the hook (daily-visit aware)
+          setStats({
+            ...statsData,
+            current_streak: streak.currentStreak || statsData.current_streak,
+          });
         }
 
         // Fetch weekly stats
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        
+
         // Get today's start (midnight)
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
-        
+
         const { data: weeklySessionsData } = await supabase
           .from("study_sessions")
           .select("xp_earned, duration_minutes, created_at")
@@ -181,23 +198,30 @@ const Dashboard = () => {
           .eq("user_id", user.id)
           .gte("created_at", oneWeekAgo.toISOString());
 
-        const sessionsXP = weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
-        const assessmentsXP = weeklyAssessmentsData?.reduce((sum, a) => sum + (a.xp_earned || 0), 0) || 0;
+        const sessionsXP =
+          weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
+        const assessmentsXP =
+          weeklyAssessmentsData?.reduce((sum, a) => sum + (a.xp_earned || 0), 0) || 0;
         const weeklyXP = sessionsXP + assessmentsXP;
-        const weeklyMinutes = weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
-        
+        const weeklyMinutes =
+          weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
+
         // Calculate today's study minutes
-        const todayMinutes = weeklySessionsData?.reduce((sum, s) => {
-          const sessionDate = new Date(s.created_at);
-          if (sessionDate >= todayStart) {
-            return sum + (s.duration_minutes || 0);
-          }
-          return sum;
-        }, 0) || 0;
-        
+        const todayMinutes =
+          weeklySessionsData?.reduce((sum, s) => {
+            const sessionDate = new Date(s.created_at);
+            if (sessionDate >= todayStart) {
+              return sum + (s.duration_minutes || 0);
+            }
+            return sum;
+          }, 0) || 0;
+
         const weeklyGoalXP = 500;
-        const weeklyGoalPercent = Math.min(Math.round((weeklyXP / weeklyGoalXP) * 100), 100);
-        
+        const weeklyGoalPercent = Math.min(
+          Math.round((weeklyXP / weeklyGoalXP) * 100),
+          100
+        );
+
         setWeeklyStats({
           weekly_xp: weeklyXP,
           weekly_study_minutes: weeklyMinutes,
@@ -222,21 +246,25 @@ const Dashboard = () => {
         // Combine subjects with progress
         if (subjectsData) {
           const progressMap = new Map(
-            (progressData || []).map(p => [p.subject_id, p])
+            (progressData || []).map((p) => [p.subject_id, p])
           );
 
-          const subjectsWithProgress: SubjectWithProgress[] = subjectsData.map(subject => {
-            const progress = progressMap.get(subject.id);
-            const completed = progress?.chapters_completed || 0;
-            const percentage = Math.round((completed / subject.total_chapters) * 100);
-            
-            return {
-              ...subject,
-              progress: percentage,
-              completed,
-              IconComponent: iconMap[subject.icon] || BookOpen,
-            };
-          });
+          const subjectsWithProgress: SubjectWithProgress[] = subjectsData.map(
+            (subject) => {
+              const progress = progressMap.get(subject.id);
+              const completed = progress?.chapters_completed || 0;
+              const percentage = Math.round(
+                (completed / subject.total_chapters) * 100
+              );
+
+              return {
+                ...subject,
+                progress: percentage,
+                completed,
+                IconComponent: iconMap[subject.icon] || BookOpen,
+              };
+            }
+          );
 
           setSubjects(subjectsWithProgress);
         }
@@ -248,7 +276,7 @@ const Dashboard = () => {
     };
 
     fetchDashboardData();
-  }, [user]);
+  }, [user, streak.currentStreak]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -471,7 +499,7 @@ const Dashboard = () => {
                 >
                   <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                 </motion.div>
-                <span className="font-semibold text-accent text-sm sm:text-base">{stats?.current_streak || 0} Day Streak</span>
+                <span className="font-semibold text-accent text-sm sm:text-base">{streak.currentStreak || stats?.current_streak || 0} Day Streak</span>
               </motion.div>
 
               {/* Mobile Streak */}
@@ -479,7 +507,7 @@ const Dashboard = () => {
                 className="flex sm:hidden items-center gap-1 px-2 py-1 bg-amber-50 rounded-full border border-amber-200"
               >
                 <Flame className="w-4 h-4 text-accent" />
-                <span className="font-semibold text-accent text-xs">{stats?.current_streak || 0}</span>
+                <span className="font-semibold text-accent text-xs">{streak.currentStreak || stats?.current_streak || 0}</span>
               </motion.div>
 
               {/* Profile */}
@@ -511,7 +539,7 @@ const Dashboard = () => {
             <AnimatedStatsCard
               icon={Flame}
               label="Day Streak"
-              value={stats?.current_streak || 0}
+              value={streak.currentStreak || stats?.current_streak || 0}
               color="accent"
               index={1}
             />
@@ -532,6 +560,9 @@ const Dashboard = () => {
               isAnimatedNumber={false}
             />
           </div>
+
+          {/* Future You Snapshot (single wide layout across all devices) */}
+          <FutureYouSnapshot />
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -625,8 +656,7 @@ const Dashboard = () => {
 
             {/* Right Column */}
             <div className="space-y-6">
-              {/* Future You Snapshot */}
-              <FutureYouSnapshot />
+              <BlindSpotMirror />
 
               {/* Revision Reminders */}
               <RevisionReminders />
