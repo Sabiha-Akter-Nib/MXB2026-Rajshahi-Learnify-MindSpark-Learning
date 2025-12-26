@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const toLocalDateString = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  // Streak is Bangladesh-specific; use Asia/Dhaka day boundaries to avoid UTC/local mismatches
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Dhaka",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
 };
 
 interface StreakData {
@@ -34,7 +37,7 @@ export const useStreakTracker = (userId: string | undefined) => {
         // Get current stats
         const { data: stats } = await supabase
           .from("student_stats")
-          .select("current_streak, last_activity_date")
+          .select("current_streak, last_activity_date, longest_streak")
           .eq("user_id", userId)
           .maybeSingle();
 
@@ -46,6 +49,7 @@ export const useStreakTracker = (userId: string | undefined) => {
           await supabase.from("student_stats").insert({
             user_id: userId,
             current_streak: 1,
+            longest_streak: 1,
             last_activity_date: todayStr,
           });
           setStreakData({
@@ -58,36 +62,47 @@ export const useStreakTracker = (userId: string | undefined) => {
         }
 
         const lastActivityStr = stats.last_activity_date;
+        const previousStreak = stats.current_streak;
 
         // If already visited today, just return current streak (no animation)
         if (todayStr === lastActivityStr) {
           setStreakData({
-            currentStreak: stats.current_streak,
+            currentStreak: previousStreak,
             showStreakAnimation: false,
             streakIncreased: false,
-            previousStreak: stats.current_streak,
+            previousStreak,
           });
           return;
         }
 
-        // Calculate the actual streak based on consecutive activity days
-        const calculatedStreak = await calculateActualStreak(userId, todayStr);
-        
-        const previousStreak = stats.current_streak;
-        const increased = calculatedStreak > previousStreak;
+        // Daily-visit streak logic (same rule as track-session, but triggered by opening Dashboard)
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = toLocalDateString(yesterday);
+
+        let newStreak = 1;
+        if (!lastActivityStr) {
+          newStreak = 1;
+        } else if (lastActivityStr === yesterdayStr) {
+          newStreak = Math.max(previousStreak + 1, 1);
+        } else {
+          newStreak = 1;
+        }
+
+        const increased = newStreak > previousStreak;
 
         // Update the database with correct streak
         await supabase
           .from("student_stats")
           .update({
-            current_streak: calculatedStreak,
+            current_streak: newStreak,
             last_activity_date: todayStr,
-            longest_streak: Math.max(calculatedStreak, stats.current_streak || 0),
+            longest_streak: Math.max(stats.longest_streak || 0, newStreak),
           })
           .eq("user_id", userId);
 
         setStreakData({
-          currentStreak: calculatedStreak,
+          currentStreak: newStreak,
           showStreakAnimation: increased,
           streakIncreased: increased,
           previousStreak,
