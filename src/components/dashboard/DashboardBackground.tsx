@@ -9,7 +9,7 @@ const FloatingParticles = () => {
     size: 2 + Math.random() * 5,
     duration: 15 + Math.random() * 20,
     delay: Math.random() * 5,
-    isOrange: Math.random() > 0.6, // 40% orange, 60% white
+    isPurple: Math.random() > 0.6, // 40% purple, 60% white
   }));
 
   return (
@@ -23,11 +23,11 @@ const FloatingParticles = () => {
             top: `${p.y}%`,
             width: p.size,
             height: p.size,
-            background: p.isOrange 
-              ? `rgba(251, 146, 60, ${0.5 + Math.random() * 0.4})`
+            background: p.isPurple 
+              ? `rgba(147, 112, 219, ${0.5 + Math.random() * 0.4})`
               : `rgba(255, 255, 255, ${0.4 + Math.random() * 0.4})`,
-            boxShadow: p.isOrange
-              ? `0 0 ${p.size * 3}px ${p.size}px rgba(251, 146, 60, 0.3)`
+            boxShadow: p.isPurple
+              ? `0 0 ${p.size * 3}px ${p.size}px rgba(147, 112, 219, 0.3)`
               : `0 0 ${p.size * 3}px ${p.size}px rgba(255, 255, 255, 0.3)`,
           }}
           animate={{
@@ -48,13 +48,13 @@ const FloatingParticles = () => {
   );
 };
 
-// Glowing orbs (white and orange)
+// Glowing orbs (white and purple)
 const GlowingOrbs = () => {
   const orbs = [
-    { size: 500, x: "-10%", y: "10%", delay: 0, isOrange: false },
-    { size: 400, x: "80%", y: "20%", delay: 1.5, isOrange: true },
-    { size: 350, x: "20%", y: "70%", delay: 3, isOrange: false },
-    { size: 300, x: "70%", y: "80%", delay: 2, isOrange: true },
+    { size: 500, x: "-10%", y: "10%", delay: 0, isPurple: false },
+    { size: 400, x: "80%", y: "20%", delay: 1.5, isPurple: true },
+    { size: 350, x: "20%", y: "70%", delay: 3, isPurple: false },
+    { size: 300, x: "70%", y: "80%", delay: 2, isPurple: true },
   ];
 
   return (
@@ -68,8 +68,8 @@ const GlowingOrbs = () => {
             height: orb.size,
             left: orb.x,
             top: orb.y,
-            background: orb.isOrange
-              ? `radial-gradient(circle, rgba(251, 146, 60, 0.15) 0%, rgba(251, 146, 60, 0.05) 50%, transparent 70%)`
+            background: orb.isPurple
+              ? `radial-gradient(circle, rgba(147, 112, 219, 0.15) 0%, rgba(147, 112, 219, 0.05) 50%, transparent 70%)`
               : `radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 70%)`,
             filter: "blur(40px)",
           }}
@@ -110,16 +110,16 @@ const GridPattern = () => {
 const DashboardBackground = () => {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
-      {/* Eye-soothing light teal gradient background */}
+      {/* Lavender to navy gradient background */}
       <div 
         className="absolute inset-0"
         style={{
           background: `linear-gradient(135deg, 
-            hsl(174, 45%, 72%) 0%, 
-            hsl(176, 42%, 68%) 25%, 
-            hsl(178, 40%, 64%) 50%, 
-            hsl(180, 45%, 60%) 75%, 
-            hsl(182, 48%, 56%) 100%
+            hsl(270, 40%, 85%) 0%, 
+            hsl(260, 45%, 80%) 25%, 
+            hsl(250, 50%, 75%) 50%, 
+            hsl(240, 55%, 70%) 75%, 
+            hsl(230, 60%, 65%) 100%
           )`,
         }}
       />
@@ -128,8 +128,8 @@ const DashboardBackground = () => {
       <div 
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse at 30% 20%, rgba(94, 234, 212, 0.15) 0%, transparent 50%),
-                       radial-gradient(ellipse at 70% 80%, rgba(251, 146, 60, 0.1) 0%, transparent 50%)`,
+          background: `radial-gradient(ellipse at 30% 20%, rgba(147, 112, 219, 0.15) 0%, transparent 50%),
+                       radial-gradient(ellipse at 70% 80%, rgba(100, 149, 237, 0.1) 0%, transparent 50%)`,
         }}
       />
       

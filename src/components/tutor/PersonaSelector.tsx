@@ -30,9 +30,9 @@ const personas: Persona[] = [
     icon: GraduationCap,
     description: "Formal & rigorous",
     descriptionBn: "আনুষ্ঠানিক এবং কঠোর",
-    gradient: "from-rose-500 to-red-600",
-    shadowColor: "shadow-rose-500/30",
-    accentColor: "rose",
+    gradient: "from-destructive to-destructive/80",
+    shadowColor: "shadow-destructive/30",
+    accentColor: "destructive",
   },
   {
     id: "friendly",
@@ -41,9 +41,9 @@ const personas: Persona[] = [
     icon: Heart,
     description: "Warm & supportive",
     descriptionBn: "উষ্ণ এবং সহায়ক",
-    gradient: "from-emerald-500 to-green-600",
-    shadowColor: "shadow-emerald-500/30",
-    accentColor: "emerald",
+    gradient: "from-primary to-primary-dark",
+    shadowColor: "shadow-primary/30",
+    accentColor: "primary",
   },
   {
     id: "scientist",
@@ -52,9 +52,9 @@ const personas: Persona[] = [
     icon: Beaker,
     description: "Curious & deep",
     descriptionBn: "কৌতূহলী এবং গভীর",
-    gradient: "from-cyan-500 to-teal-600",
-    shadowColor: "shadow-cyan-500/30",
-    accentColor: "cyan",
+    gradient: "from-accent to-accent-light",
+    shadowColor: "shadow-accent/30",
+    accentColor: "accent",
   },
   {
     id: "revision",
@@ -63,9 +63,9 @@ const personas: Persona[] = [
     icon: Zap,
     description: "Quick key points",
     descriptionBn: "দ্রুত মূল পয়েন্ট",
-    gradient: "from-amber-500 to-orange-600",
-    shadowColor: "shadow-amber-500/30",
-    accentColor: "amber",
+    gradient: "from-warning to-warning/80",
+    shadowColor: "shadow-warning/30",
+    accentColor: "warning",
   },
   {
     id: "stepbystep",
@@ -74,9 +74,9 @@ const personas: Persona[] = [
     icon: ListOrdered,
     description: "Patient & thorough",
     descriptionBn: "ধৈর্যশীল এবং পুঙ্খানুপুঙ্খ",
-    gradient: "from-violet-500 to-purple-600",
-    shadowColor: "shadow-violet-500/30",
-    accentColor: "violet",
+    gradient: "from-primary-light to-primary",
+    shadowColor: "shadow-primary-light/30",
+    accentColor: "primary-light",
   },
 ];
 
@@ -210,11 +210,11 @@ export const PersonaSelector = ({
                 boxShadow: isHovered && !isSelected 
                   ? "inset 0 0 30px hsl(var(--primary) / 0.1), 0 10px 40px hsl(var(--primary) / 0.15)"
                   : isSelected
-                  ? `0 20px 60px -15px ${persona.accentColor === 'rose' ? 'rgb(244 63 94 / 0.4)' : 
-                     persona.accentColor === 'emerald' ? 'rgb(16 185 129 / 0.4)' :
-                     persona.accentColor === 'cyan' ? 'rgb(6 182 212 / 0.4)' :
-                     persona.accentColor === 'amber' ? 'rgb(245 158 11 / 0.4)' :
-                     'rgb(139 92 246 / 0.4)'}`
+                  ? `0 20px 60px -15px ${persona.accentColor === 'destructive' ? 'hsl(var(--destructive) / 0.4)' : 
+                     persona.accentColor === 'primary' ? 'hsl(var(--primary) / 0.4)' :
+                     persona.accentColor === 'accent' ? 'hsl(var(--accent) / 0.4)' :
+                     persona.accentColor === 'warning' ? 'hsl(var(--warning) / 0.4)' :
+                     'hsl(var(--primary-light) / 0.4)'}`
                   : "0 0 0 transparent",
               }}
               transition={{ duration: 0.3 }}

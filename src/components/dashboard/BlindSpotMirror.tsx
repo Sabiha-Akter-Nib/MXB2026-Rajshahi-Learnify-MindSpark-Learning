@@ -21,11 +21,11 @@ const riskOrder: Record<RiskLabel, number> = { high: 0, medium: 1, low: 2 };
 function getRiskColor(risk: RiskLabel) {
   switch (risk) {
     case "high":
-      return "bg-rose-500/10 text-rose-500 border-rose-500/20";
+      return "bg-destructive/10 text-destructive border-destructive/20";
     case "medium":
-      return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+      return "bg-accent/10 text-accent border-accent/20";
     default:
-      return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+      return "bg-primary/10 text-primary border-primary/20";
   }
 }
 
@@ -200,7 +200,7 @@ const BlindSpotMirror = () => {
               key={i}
               className={cn(
                 "h-2 rounded-full",
-                i % 7 === 0 ? "bg-rose-500/25" : i % 5 === 0 ? "bg-amber-500/25" : "bg-muted/50"
+                i % 7 === 0 ? "bg-destructive/25" : i % 5 === 0 ? "bg-accent/25" : "bg-muted/50"
               )}
             />
           ))}

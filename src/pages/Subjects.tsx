@@ -74,14 +74,14 @@ const iconMap: Record<string, React.ElementType> = {
 
 const colorMap: Record<string, string> = {
   primary: "from-primary to-primary-dark",
-  accent: "from-accent to-warning",
-  success: "from-success to-emerald-600",
-  destructive: "from-destructive to-red-700",
+  accent: "from-accent to-accent-light",
+  success: "from-success to-success/80",
+  destructive: "from-destructive to-destructive/80",
   blue: "from-blue-500 to-blue-700",
   purple: "from-purple-500 to-purple-700",
-  teal: "from-teal-500 to-teal-700",
-  orange: "from-orange-500 to-orange-700",
-  warning: "from-warning to-orange-600",
+  teal: "from-primary-light to-primary",
+  orange: "from-accent to-primary",
+  warning: "from-warning to-warning/80",
 };
 
 const Subjects = () => {

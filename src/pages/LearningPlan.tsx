@@ -77,12 +77,12 @@ const PLAN_TYPES = [
 ];
 
 const BLOOM_COLORS: Record<string, string> = {
-  remember: "bg-blue-500",
-  understand: "bg-green-500",
-  apply: "bg-yellow-500",
-  analyze: "bg-orange-500",
-  evaluate: "bg-red-500",
-  create: "bg-purple-500",
+  remember: "bg-accent",
+  understand: "bg-primary-light",
+  apply: "bg-primary",
+  analyze: "bg-primary-dark",
+  evaluate: "bg-destructive",
+  create: "bg-secondary",
 };
 
 const LearningPlanPage = () => {

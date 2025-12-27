@@ -103,16 +103,16 @@ const GridPattern = () => {
 const TutorBackground = () => {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
-      {/* Teal gradient background */}
+      {/* Deep purple gradient background */}
       <div 
         className="absolute inset-0"
         style={{
           background: `linear-gradient(135deg, 
-            hsl(174, 72%, 28%) 0%, 
-            hsl(176, 68%, 22%) 25%, 
-            hsl(178, 65%, 18%) 50%, 
-            hsl(180, 70%, 15%) 75%, 
-            hsl(182, 75%, 12%) 100%
+            hsl(270, 60%, 28%) 0%, 
+            hsl(265, 55%, 22%) 25%, 
+            hsl(260, 50%, 18%) 50%, 
+            hsl(255, 55%, 15%) 75%, 
+            hsl(250, 60%, 12%) 100%
           )`,
         }}
       />
@@ -121,8 +121,8 @@ const TutorBackground = () => {
       <div 
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse at 30% 20%, rgba(94, 234, 212, 0.15) 0%, transparent 50%),
-                       radial-gradient(ellipse at 70% 80%, rgba(45, 212, 191, 0.1) 0%, transparent 50%)`,
+          background: `radial-gradient(ellipse at 30% 20%, rgba(147, 112, 219, 0.15) 0%, transparent 50%),
+                       radial-gradient(ellipse at 70% 80%, rgba(100, 149, 237, 0.1) 0%, transparent 50%)`,
         }}
       />
       
