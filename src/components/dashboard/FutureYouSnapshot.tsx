@@ -174,7 +174,7 @@ const FutureYouSnapshot = () => {
         daysUntilDecay: Math.round(avgRetentionDays),
         confidenceLevel: masteryTrend === 'rising' ? 'high' : masteryTrend === 'stable' ? 'medium' : 'low',
         icon: 'current',
-        color: masteryTrend === 'rising' ? 'emerald' : masteryTrend === 'stable' ? 'amber' : 'rose'
+        color: masteryTrend === 'rising' ? 'primary' : masteryTrend === 'stable' ? 'accent' : 'destructive'
       },
       {
         id: 'better',
@@ -222,9 +222,9 @@ const FutureYouSnapshot = () => {
 
   const getConfidenceColor = (level: string) => {
     switch (level) {
-      case 'high': return 'text-emerald-500';
-      case 'medium': return 'text-amber-500';
-      case 'low': return 'text-rose-500';
+      case 'high': return 'text-primary';
+      case 'medium': return 'text-accent';
+      case 'low': return 'text-destructive';
       default: return 'text-muted-foreground';
     }
   };
@@ -304,9 +304,9 @@ const FutureYouSnapshot = () => {
             whileHover={{ scale: 1.05 }}
             className={cn(
               "px-3 py-1 rounded-full text-xs font-medium",
-              snapshotData.masteryTrend === 'rising' && "bg-emerald-500/10 text-emerald-500",
-              snapshotData.masteryTrend === 'stable' && "bg-amber-500/10 text-amber-500",
-              snapshotData.masteryTrend === 'declining' && "bg-rose-500/10 text-rose-500"
+              snapshotData.masteryTrend === 'rising' && "bg-primary/10 text-primary",
+              snapshotData.masteryTrend === 'stable' && "bg-accent/10 text-accent",
+              snapshotData.masteryTrend === 'declining' && "bg-destructive/10 text-destructive"
             )}
           >
             {snapshotData.masteryTrend === 'rising' && (isBangla ? '📈 উন্নতি হচ্ছে' : '📈 Rising')}
@@ -324,8 +324,8 @@ const FutureYouSnapshot = () => {
             </span>
             <span className={cn(
               "text-2xl font-bold",
-              snapshotData.overallConfidence >= 70 ? "text-emerald-500" :
-              snapshotData.overallConfidence >= 40 ? "text-amber-500" : "text-rose-500"
+              snapshotData.overallConfidence >= 70 ? "text-primary" :
+              snapshotData.overallConfidence >= 40 ? "text-accent" : "text-destructive"
             )}>
               {snapshotData.overallConfidence}%
             </span>
@@ -337,9 +337,9 @@ const FutureYouSnapshot = () => {
               transition={{ duration: 1, ease: "easeOut" }}
               className={cn(
                 "absolute inset-y-0 left-0 rounded-full",
-                snapshotData.overallConfidence >= 70 ? "bg-gradient-to-r from-emerald-500 to-emerald-400" :
-                snapshotData.overallConfidence >= 40 ? "bg-gradient-to-r from-amber-500 to-amber-400" : 
-                "bg-gradient-to-r from-rose-500 to-rose-400"
+                snapshotData.overallConfidence >= 70 ? "bg-gradient-to-r from-primary to-primary-light" :
+                snapshotData.overallConfidence >= 40 ? "bg-gradient-to-r from-accent to-accent-light" : 
+                "bg-gradient-to-r from-destructive to-destructive/80"
               )}
             />
             {/* Glow effect */}
@@ -350,8 +350,8 @@ const FutureYouSnapshot = () => {
               style={{ width: `${snapshotData.overallConfidence}%` }}
               className={cn(
                 "absolute inset-y-0 left-0 rounded-full blur-sm",
-                snapshotData.overallConfidence >= 70 ? "bg-emerald-500/50" :
-                snapshotData.overallConfidence >= 40 ? "bg-amber-500/50" : "bg-rose-500/50"
+                snapshotData.overallConfidence >= 70 ? "bg-primary/50" :
+                snapshotData.overallConfidence >= 40 ? "bg-accent/50" : "bg-destructive/50"
               )}
             />
           </div>
@@ -388,14 +388,14 @@ const FutureYouSnapshot = () => {
                 <div
                   className={cn(
                     "w-8 h-8 rounded-lg flex items-center justify-center mb-2",
-                    scenario.icon === 'better' && "bg-emerald-500/10 text-emerald-500",
-                    scenario.icon === 'worse' && "bg-rose-500/10 text-rose-500",
+                    scenario.icon === 'better' && "bg-primary/10 text-primary",
+                    scenario.icon === 'worse' && "bg-destructive/10 text-destructive",
                     scenario.icon === 'current' &&
-                      (scenario.color === 'emerald'
-                        ? "bg-emerald-500/10 text-emerald-500"
-                        : scenario.color === 'amber'
-                          ? "bg-amber-500/10 text-amber-500"
-                          : "bg-rose-500/10 text-rose-500")
+                      (scenario.color === 'primary'
+                        ? "bg-primary/10 text-primary"
+                        : scenario.color === 'accent'
+                          ? "bg-accent/10 text-accent"
+                          : "bg-destructive/10 text-destructive")
                   )
                 }
                 >
@@ -430,9 +430,9 @@ const FutureYouSnapshot = () => {
               <div className="flex items-start gap-3 mb-4">
                 <div className={cn(
                   "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                  activeScenarioData.confidenceLevel === 'high' && "bg-emerald-500/10 text-emerald-500",
-                  activeScenarioData.confidenceLevel === 'medium' && "bg-amber-500/10 text-amber-500",
-                  activeScenarioData.confidenceLevel === 'low' && "bg-rose-500/10 text-rose-500"
+                  activeScenarioData.confidenceLevel === 'high' && "bg-primary/10 text-primary",
+                  activeScenarioData.confidenceLevel === 'medium' && "bg-accent/10 text-accent",
+                  activeScenarioData.confidenceLevel === 'low' && "bg-destructive/10 text-destructive"
                 )}>
                   {activeScenarioData.confidenceLevel === 'high' && <CheckCircle2 className="w-5 h-5" />}
                   {activeScenarioData.confidenceLevel === 'medium' && <AlertTriangle className="w-5 h-5" />}

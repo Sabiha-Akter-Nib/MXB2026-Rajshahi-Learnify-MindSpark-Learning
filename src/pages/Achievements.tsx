@@ -76,10 +76,10 @@ const categoryColors: Record<string, string> = {
   assessment: "bg-accent/10 text-accent border-accent/20",
   achievement: "bg-warning/10 text-warning border-warning/20",
   streak: "bg-destructive/10 text-destructive border-destructive/20",
-  xp: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-  exploration: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-  mastery: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  bloom: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  xp: "bg-primary-light/10 text-primary-light border-primary-light/20",
+  exploration: "bg-accent/10 text-accent border-accent/20",
+  mastery: "bg-primary/10 text-primary border-primary/20",
+  bloom: "bg-success/10 text-success border-success/20",
 };
 
 const Achievements = () => {

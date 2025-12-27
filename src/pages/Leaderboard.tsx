@@ -288,11 +288,11 @@ const Leaderboard = () => {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Crown className="w-6 h-6 text-yellow-400 drop-shadow-lg" />;
+        return <Crown className="w-6 h-6 text-accent drop-shadow-lg" />;
       case 2:
         return <Medal className="w-5 h-5 text-slate-300" />;
       case 3:
-        return <Medal className="w-5 h-5 text-amber-500" />;
+        return <Medal className="w-5 h-5 text-primary-light" />;
       default:
         return <span className="font-bold text-muted-foreground">#{rank}</span>;
     }
@@ -301,11 +301,11 @@ const Leaderboard = () => {
   const getRankBadgeClass = (rank: number) => {
     switch (rank) {
       case 1:
-        return "bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-500 text-yellow-900 shadow-xl shadow-yellow-500/40 ring-2 ring-yellow-300/50";
+        return "bg-gradient-to-br from-accent via-accent-light to-primary text-accent-foreground shadow-xl shadow-accent/40 ring-2 ring-accent/50";
       case 2:
         return "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 text-slate-800 shadow-xl shadow-slate-400/40 ring-2 ring-slate-200/50";
       case 3:
-        return "bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-amber-900 shadow-xl shadow-orange-500/40 ring-2 ring-amber-300/50";
+        return "bg-gradient-to-br from-primary-light via-primary to-primary-dark text-primary-foreground shadow-xl shadow-primary/40 ring-2 ring-primary-light/50";
       default:
         return "bg-gradient-to-br from-muted to-muted/80 text-muted-foreground";
     }
@@ -333,7 +333,7 @@ const Leaderboard = () => {
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-3xl p-8 shadow-2xl shadow-amber-500/50"
+            className="bg-gradient-to-br from-accent via-primary to-primary-dark rounded-3xl p-8 shadow-2xl shadow-primary/50"
           >
             <div className="flex items-center gap-4 text-white">
               <PartyPopper className="w-12 h-12" />
@@ -369,10 +369,10 @@ const Leaderboard = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 className="relative"
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-xl shadow-amber-500/30 ring-2 ring-yellow-300/30">
+                <div className="w-14 h-14 bg-gradient-to-br from-accent via-primary to-primary-dark rounded-2xl flex items-center justify-center shadow-xl shadow-primary/30 ring-2 ring-accent/30">
                   <Trophy className="w-7 h-7 text-white drop-shadow-lg" />
                 </div>
-                <Sparkles className="w-4 h-4 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
+                <Sparkles className="w-4 h-4 text-accent absolute -top-1 -right-1 animate-pulse" />
               </motion.div>
               <div>
                 <h1 className="font-heading font-bold text-2xl bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">Leaderboard</h1>
@@ -408,7 +408,7 @@ const Leaderboard = () => {
                     animate={{ rotate: [0, 10, -10, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    <PartyPopper className="w-6 h-6 text-yellow-500" />
+                    <PartyPopper className="w-6 h-6 text-accent" />
                   </motion.div>
                 </div>
               )}
@@ -443,7 +443,7 @@ const Leaderboard = () => {
                         #{userRank.rank} <span className="text-lg font-normal text-muted-foreground">of {entries.length}</span>
                       </p>
                       <p className="text-xl font-bold text-primary flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-yellow-500" />
+                        <Zap className="w-5 h-5 text-accent" />
                         {userRank.totalXp.toLocaleString()} XP
                       </p>
                     </div>

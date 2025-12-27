@@ -40,12 +40,12 @@ interface AssessmentResult {
 }
 
 const BLOOM_LEVELS = [
-  { id: "remember", label: "Remember", labelBn: "মনে রাখা", color: "bg-blue-500" },
-  { id: "understand", label: "Understand", labelBn: "বোঝা", color: "bg-green-500" },
-  { id: "apply", label: "Apply", labelBn: "প্রয়োগ", color: "bg-yellow-500" },
-  { id: "analyze", label: "Analyze", labelBn: "বিশ্লেষণ", color: "bg-orange-500" },
-  { id: "evaluate", label: "Evaluate", labelBn: "মূল্যায়ন", color: "bg-red-500" },
-  { id: "create", label: "Create", labelBn: "সৃষ্টি", color: "bg-purple-500" },
+  { id: "remember", label: "Remember", labelBn: "মনে রাখা", color: "bg-accent" },
+  { id: "understand", label: "Understand", labelBn: "বোঝা", color: "bg-primary-light" },
+  { id: "apply", label: "Apply", labelBn: "প্রয়োগ", color: "bg-primary" },
+  { id: "analyze", label: "Analyze", labelBn: "বিশ্লেষণ", color: "bg-primary-dark" },
+  { id: "evaluate", label: "Evaluate", labelBn: "মূল্যায়ন", color: "bg-destructive" },
+  { id: "create", label: "Create", labelBn: "সৃষ্টি", color: "bg-secondary" },
 ];
 
 const Assessment = () => {

@@ -31,27 +31,27 @@ interface Subject {
 const bloomLevels = [{
   id: "remember",
   name: "Remember",
-  color: "bg-blue-500"
+  color: "bg-accent"
 }, {
   id: "understand",
   name: "Understand",
-  color: "bg-green-500"
+  color: "bg-primary-light"
 }, {
   id: "apply",
   name: "Apply",
-  color: "bg-yellow-500"
+  color: "bg-primary"
 }, {
   id: "analyze",
   name: "Analyze",
-  color: "bg-orange-500"
+  color: "bg-primary-dark"
 }, {
   id: "evaluate",
   name: "Evaluate",
-  color: "bg-red-500"
+  color: "bg-destructive"
 }, {
   id: "create",
   name: "Create",
-  color: "bg-purple-500"
+  color: "bg-secondary"
 }];
 const Practice = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
