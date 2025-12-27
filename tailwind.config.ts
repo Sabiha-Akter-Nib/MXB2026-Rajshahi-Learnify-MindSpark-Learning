@@ -117,8 +117,8 @@ export default {
           "50%": { opacity: "0.7" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px hsl(174 62% 45% / 0.4)" },
-          "50%": { boxShadow: "0 0 40px hsl(174 62% 45% / 0.6), 0 0 60px hsl(174 62% 45% / 0.3)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsl(270 55% 55% / 0.4)" },
+          "50%": { boxShadow: "0 0 40px hsl(270 55% 55% / 0.6), 0 0 60px hsl(270 55% 55% / 0.3)" },
         },
         "slide-up": {
           "0%": { transform: "translateY(20px)", opacity: "0" },
@@ -163,8 +163,8 @@ export default {
           "100%": { transform: "translateZ(200px) scale(2)", opacity: "0" },
         },
         "border-glow": {
-          "0%, 100%": { borderColor: "hsl(174 62% 45% / 0.3)" },
-          "50%": { borderColor: "hsl(174 62% 45% / 0.6)" },
+          "0%, 100%": { borderColor: "hsl(270 55% 55% / 0.3)" },
+          "50%": { borderColor: "hsl(270 55% 55% / 0.6)" },
         },
         "tilt-left": {
           "0%, 100%": { transform: "translateX(-8px) rotate(-1deg)" },
