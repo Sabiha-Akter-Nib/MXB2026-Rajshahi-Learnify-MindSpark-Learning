@@ -47,6 +47,7 @@ import AnimatedStatsCard from "@/components/dashboard/AnimatedStatsCard";
 import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
 import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
+import WeeklyAchievements from "@/components/dashboard/WeeklyAchievements";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 
 interface Profile {
@@ -570,6 +571,9 @@ const Dashboard = () => {
 
           {/* Knowledge Autopsy - Full Width */}
           <KnowledgeAutopsy />
+
+          {/* Weekly Achievements - Full Width */}
+          <WeeklyAchievements />
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
