@@ -691,6 +691,57 @@ export type Database = {
           },
         ]
       }
+      weekly_achievements: {
+        Row: {
+          achievement_description: string
+          achievement_name: string
+          achievement_type: string
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          icon: string
+          id: string
+          is_completed: boolean
+          target_value: number
+          updated_at: string
+          user_id: string
+          week_start: string
+          xp_reward: number
+        }
+        Insert: {
+          achievement_description: string
+          achievement_name: string
+          achievement_type: string
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          icon?: string
+          id?: string
+          is_completed?: boolean
+          target_value?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+          xp_reward?: number
+        }
+        Update: {
+          achievement_description?: string
+          achievement_name?: string
+          achievement_type?: string
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          icon?: string
+          id?: string
+          is_completed?: boolean
+          target_value?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
