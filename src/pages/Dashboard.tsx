@@ -46,6 +46,7 @@ import DashboardBackground from "@/components/dashboard/DashboardBackground";
 import AnimatedStatsCard from "@/components/dashboard/AnimatedStatsCard";
 import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
+import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 
 interface Profile {
@@ -564,6 +565,12 @@ const Dashboard = () => {
           {/* Future You Snapshot (single wide layout across all devices) */}
           <FutureYouSnapshot />
 
+          {/* Blind Spot Mirror - Full Width */}
+          <BlindSpotMirror />
+
+          {/* Knowledge Autopsy - Full Width */}
+          <KnowledgeAutopsy />
+
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Subjects Progress */}
@@ -656,7 +663,6 @@ const Dashboard = () => {
 
             {/* Right Column */}
             <div className="space-y-6">
-              <BlindSpotMirror />
 
               {/* Revision Reminders */}
               <RevisionReminders />
