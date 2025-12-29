@@ -48,6 +48,7 @@ import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
 import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
 import WeeklyAchievements from "@/components/dashboard/WeeklyAchievements";
+import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 
 interface Profile {
@@ -565,6 +566,9 @@ const Dashboard = () => {
 
           {/* Future You Snapshot (single wide layout across all devices) */}
           <FutureYouSnapshot />
+
+          {/* Study Momentum Engine - NEW World-class Feature */}
+          <StudyMomentumEngine />
 
           {/* Blind Spot Mirror - Full Width */}
           <BlindSpotMirror />

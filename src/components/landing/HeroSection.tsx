@@ -302,7 +302,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-5"
+          className="flex items-center justify-center"
         >
           <motion.div 
             whileHover={{ scale: 1.02, x: -5 }}
@@ -313,20 +313,6 @@ export function HeroSection() {
                 <span className="relative z-10">Start Learning Free</span>
                 <ArrowRight className="w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1" />
               </Link>
-            </Button>
-          </motion.div>
-          
-          <motion.div
-            whileHover={{ scale: 1.02, x: 5 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          >
-            <Button 
-              variant="outline" 
-              size="xl" 
-              asChild 
-              className="glass-card border-primary/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 animate-border-glow"
-            >
-              <Link to="/demo">Watch Demo</Link>
             </Button>
           </motion.div>
         </motion.div>
