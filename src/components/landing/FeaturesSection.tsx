@@ -77,6 +77,38 @@ const features = [
     glowColor: "shadow-accent",
     animation: "drift-left",
   },
+  {
+    icon: Brain,
+    title: "Future You Snapshot™",
+    description: "See where your learning is heading with AI-powered mastery projections and confidence forecasts.",
+    color: "primary",
+    glowColor: "shadow-neon",
+    animation: "tilt-left",
+  },
+  {
+    icon: BarChart3,
+    title: "Blind Spot Mirror™",
+    description: "Uncover hidden weaknesses before exams—topics that look strong but haven't been stress-tested.",
+    color: "accent",
+    glowColor: "shadow-neon-accent",
+    animation: "drift-right",
+  },
+  {
+    icon: Globe2,
+    title: "Knowledge Autopsy™",
+    description: "Trace exactly where understanding faded with timeline-based learning breakdown analysis.",
+    color: "success",
+    glowColor: "shadow-glow",
+    animation: "tilt-right",
+  },
+  {
+    icon: Sparkles,
+    title: "Weekly Achievements",
+    description: "Earn XP through weekly challenges that reset every Sunday—fresh goals, fresh motivation.",
+    color: "warning",
+    glowColor: "shadow-accent",
+    animation: "drift-left",
+  },
 ];
 
 // Subtle Rotate Card Component

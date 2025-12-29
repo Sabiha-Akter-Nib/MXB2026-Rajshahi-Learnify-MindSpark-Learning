@@ -240,12 +240,12 @@ export function CTASection() {
             learning smarter with MindSpark's AI-powered tutoring.
           </motion.p>
 
-          {/* CTA Buttons */}
+          {/* CTA Button */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-5"
+            className="flex items-center justify-center"
           >
             <TiltButton variant="primary">
               <Button 
@@ -258,17 +258,6 @@ export function CTASection() {
                   <span>Create Free Account</span>
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Link>
-              </Button>
-            </TiltButton>
-            
-            <TiltButton variant="secondary">
-              <Button 
-                variant="glass" 
-                size="xl" 
-                asChild
-                className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 backdrop-blur-xl"
-              >
-                <Link to="/demo">Try Demo First</Link>
               </Button>
             </TiltButton>
           </motion.div>
