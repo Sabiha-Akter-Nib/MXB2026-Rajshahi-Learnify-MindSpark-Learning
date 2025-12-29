@@ -8,13 +8,77 @@ An AI-powered personalized learning tutor for Bangladeshi students (Grades 1–1
 
 ### Key Features
 
-- **Personalized Learning Plans** - AI-generated daily/weekly study plans based on student performance
-- **Adaptive Practice** - Bloom's Taxonomy-based progression through learning levels
-- **Multimodal Input** - Support for text, voice, and image/PDF uploads
-- **PersonaShift Mode** - Adjustable teaching personas (Strict Teacher, Friendly Mentor, etc.)
-- **Offline Support** - PWA with offline lesson packs for low-bandwidth users
-- **Progress Tracking** - XP system, streaks, achievements, and leaderboards
-- **Revision Scheduling** - Spaced repetition for optimal retention
+- **Curriculum-Locked AI Tutor** – Provides explanations strictly aligned with the NCTB curriculum and refuses to respond beyond verified content.
+
+- **Zero-Hallucination Policy** – Never guesses answers and asks for clarification or source material when certainty is incomplete.
+
+- **Bloom’s Taxonomy Enforcement** – Structures all learning from remembering to creating to ensure long-term understanding.
+
+- **Individualized Learning Plans** – Generates and continuously updates daily or weekly study plans based on learner profile and performance.
+
+- **Adaptive Practice Engine** – Dynamically adjusts practice difficulty and depth in real time based on mastery.
+
+- **Explainable Assessments** – Tests only what the learner studied and explains every answer step by step.
+
+- **Conversation-Based Assessment Generation** – Builds assessments directly from recent AI tutor interactions.
+
+- **Revision Scheduling Engine** – Applies spaced repetition to prevent knowledge decay before exams.
+
+- **Multimodal Input Support** – Accepts text, voice, images, and PDF uploads for flexible learning.
+
+- **Homework and Notes Understanding** – Explains uploaded handwritten notes, diagrams, and class materials accurately.
+
+- **Voice-to-Text Learning Mode** – Enables hands-free learning through spoken input.
+
+- **PersonaShift Mode** – Allows learners to change the tutor’s teaching style without affecting accuracy.
+
+- **Student Progress Dashboard** – Displays mastery, Bloom-level progress, and revision schedules clearly.
+
+- **Weekly Learning Dashboard** – Summarizes weekly XP, streaks, goals, and total study time.
+
+- **Study Momentum Engine™** – Measures learning acceleration using real-time behavioral data.
+
+- **Real-Time XP Velocity Gauge** – Shows how fast learning momentum is increasing relative to time invested.
+
+- **Focus, Consistency, and Efficiency Scores** – Quantifies study quality beyond time spent.
+
+- **Weekly XP Prediction and Milestones** – Forecasts goal completion based on current learning behavior.
+
+- **Optimal Study Window Analysis** – Identifies the most effective times and days to study.
+
+- **Streak Multiplier Display** – Visualizes how consistency compounds learning impact.
+
+- **XP and Rewards System** – Motivates progress through mastery-based XP and incentives.
+
+- **Achievements Framework** – Unlocks milestones that reward consistency and improvement.
+
+- **Interactive Leaderboards** – Encourages healthy competition based on progress rather than raw scores.
+
+- **Future You Snapshot™** – Projects future mastery and retention outcomes based on current habits.
+
+- **Blind Spot Mirror™** – Reveals hidden conceptual weaknesses not yet exposed by assessments.
+
+- **Knowledge Autopsy™** – Shows exactly where and how understanding broke down over time.
+
+- **Offline-First Progressive Web App** – Enables uninterrupted learning with offline lesson packs and auto-sync.
+
+- **Low-End Device Optimization** – Ensures smooth performance on basic hardware and unstable networks.
+
+- **Secure Supabase Authentication** – Provides reliable account creation, login, and data protection.
+
+- **Real-Time Data Synchronization** – Keeps progress and metrics updated across sessions.
+
+- **Multi-Model AI Orchestration** – Combines GPT-5.2, Claude 4.5, and Gemini 3 for robust tutoring.
+
+- **Retrieval-Augmented Generation** – Grounds responses in authoritative datasets to prevent misinformation.
+
+- **Authoritative Dataset Integration** – Uses NCTB data sources.
+
+- **Study-Only Mode Enforcement** – Blocks non-academic interactions to maintain focus and safety.
+
+- **Explainable Learning Decisions** – Makes AI-driven recommendations transparent to learners.
+
+- **National-Scale Architecture** – Designed to deploy sustainably across schools, districts, and regions.
 
 ## Setup and Run Instructions
 
@@ -27,7 +91,7 @@ An AI-powered personalized learning tutor for Bangladeshi students (Grades 1–1
 
 ```bash
 # Clone the repository
-git clone <YOUR_GIT_URL>
+git clone <https://github.com/Sabiha-Akter-Nib/MXB2026-Rajshahi-Learnify-MindSpark-Learning/>
 
 # Navigate to the project directory
 cd mindspark-learning
