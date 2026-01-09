@@ -575,8 +575,10 @@ export type Database = {
       }
       subjects: {
         Row: {
+          category: string | null
           color: string
           created_at: string
+          division: string | null
           icon: string
           id: string
           max_class: number
@@ -586,8 +588,10 @@ export type Database = {
           total_chapters: number
         }
         Insert: {
+          category?: string | null
           color?: string
           created_at?: string
+          division?: string | null
           icon?: string
           id?: string
           max_class?: number
@@ -597,8 +601,10 @@ export type Database = {
           total_chapters?: number
         }
         Update: {
+          category?: string | null
           color?: string
           created_at?: string
+          division?: string | null
           icon?: string
           id?: string
           max_class?: number

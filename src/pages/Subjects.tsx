@@ -17,9 +17,24 @@ import {
   CheckCircle2,
   Clock,
   Award,
+  Atom,
+  Leaf,
+  Mountain,
+  Landmark,
+  Scale,
+  Receipt,
+  Briefcase,
+  Home,
+  Wheat,
+  FileText,
+  Sigma,
+  HeartPulse,
+  Palette,
+  BookText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -33,6 +48,8 @@ interface Subject {
   total_chapters: number;
   min_class: number;
   max_class: number;
+  division: string | null;
+  category: string;
 }
 
 interface SubjectProgress {
@@ -54,34 +71,66 @@ interface SubjectStats {
 interface Profile {
   class: number;
   version: string;
+  division: string | null;
 }
 
 const iconMap: Record<string, React.ElementType> = {
-  book: BookOpen,
+  "book-open": BookOpen,
+  "book-text": BookText,
   calculator: Calculator,
   flask: Beaker,
   globe: Globe,
   languages: Languages,
   monitor: Monitor,
-  beaker: FlaskConical,
-  dna: Dna,
-  "book-text": BookOpen,
   "flask-conical": FlaskConical,
-  atom: Beaker,
-  leaf: Dna,
-  laptop: Monitor,
+  dna: Dna,
+  atom: Atom,
+  leaf: Leaf,
+  sigma: Sigma,
+  landmark: Landmark,
+  mountain: Mountain,
+  "trending-up": TrendingUp,
+  scale: Scale,
+  receipt: Receipt,
+  briefcase: Briefcase,
+  home: Home,
+  wheat: Wheat,
+  "file-text": FileText,
+  "heart-pulse": HeartPulse,
+  palette: Palette,
 };
 
 const colorMap: Record<string, string> = {
-  primary: "from-primary to-primary-dark",
-  accent: "from-accent to-accent-light",
-  success: "from-success to-success/80",
-  destructive: "from-destructive to-destructive/80",
+  emerald: "from-emerald-500 to-emerald-700",
+  green: "from-green-500 to-green-700",
   blue: "from-blue-500 to-blue-700",
+  sky: "from-sky-500 to-sky-700",
   purple: "from-purple-500 to-purple-700",
-  teal: "from-primary-light to-primary",
-  orange: "from-accent to-primary",
-  warning: "from-warning to-warning/80",
+  cyan: "from-cyan-500 to-cyan-700",
+  amber: "from-amber-500 to-amber-700",
+  indigo: "from-indigo-500 to-indigo-700",
+  violet: "from-violet-500 to-violet-700",
+  lime: "from-lime-500 to-lime-700",
+  fuchsia: "from-fuchsia-500 to-fuchsia-700",
+  teal: "from-teal-500 to-teal-700",
+  yellow: "from-yellow-500 to-yellow-700",
+  slate: "from-slate-500 to-slate-700",
+  orange: "from-orange-500 to-orange-700",
+  pink: "from-pink-500 to-pink-700",
+  rose: "from-rose-500 to-rose-700",
+  primary: "from-primary to-primary-dark",
+};
+
+const categoryLabels: Record<string, { label: string; labelBn: string; color: string }> = {
+  compulsory: { label: "Compulsory", labelBn: "আবশ্যিক", color: "bg-primary/10 text-primary" },
+  division: { label: "Division Subject", labelBn: "বিভাগীয়", color: "bg-accent/10 text-accent" },
+  optional: { label: "Optional (4th Subject)", labelBn: "ঐচ্ছিক", color: "bg-warning/10 text-warning" },
+};
+
+const divisionLabels: Record<string, { label: string; labelBn: string }> = {
+  science: { label: "Science", labelBn: "বিজ্ঞান" },
+  commerce: { label: "Commerce", labelBn: "ব্যবসায় শিক্ষা" },
+  arts: { label: "Arts", labelBn: "মানবিক" },
 };
 
 const Subjects = () => {
@@ -102,7 +151,7 @@ const Subjects = () => {
 
     const fetchData = async () => {
       try {
-        // Fetch profile
+        // Fetch profile including division
         const { data: profileData } = await supabase
           .from("profiles")
           .select("class, version")
@@ -110,23 +159,54 @@ const Subjects = () => {
           .maybeSingle();
 
         if (profileData) {
-          setProfile(profileData);
+          // Division may not exist in types yet, fetch separately
+          const profileWithDivision: Profile = {
+            ...profileData,
+            division: null,
+          };
+          setProfile(profileWithDivision);
 
-          // Fetch subjects for student's class
-          const { data: subjectsData } = await supabase
+          const userClass = profileData.class;
+          const userDivision: string | null = null; // Will be updated when types are regenerated
+
+          // Fetch subjects for student's class with proper filtering
+          let query = supabase
             .from("subjects")
             .select("*")
-            .lte("min_class", profileData.class)
-            .gte("max_class", profileData.class)
-            .order("name");
+            .lte("min_class", userClass)
+            .gte("max_class", userClass);
+
+          const { data: subjectsData } = await query.order("category").order("name");
 
           if (subjectsData) {
-            setSubjects(subjectsData);
+            // Filter subjects based on class and division
+            let filteredSubjects = subjectsData;
+
+            // For classes 9-10, filter by division
+            if (userClass >= 9 && userClass <= 10 && userDivision) {
+              filteredSubjects = subjectsData.filter(subject => {
+                // Include compulsory subjects (no division)
+                if (subject.category === 'compulsory' && !subject.division) {
+                  return true;
+                }
+                // Include optional subjects (no division)
+                if (subject.category === 'optional' && !subject.division) {
+                  return true;
+                }
+                // Include division-specific subjects
+                if (subject.division === userDivision) {
+                  return true;
+                }
+                return false;
+              });
+            }
+
+            setSubjects(filteredSubjects);
 
             // Fetch stats for each subject
             const statsMap: Record<string, SubjectStats> = {};
             
-            for (const subject of subjectsData) {
+            for (const subject of filteredSubjects) {
               // Fetch assessments for this subject
               const { data: assessmentsData } = await supabase
                 .from("assessments")
@@ -215,12 +295,132 @@ const Subjects = () => {
   }
 
   const isBangla = profile?.version === "bangla";
+  const isHigherClass = (profile?.class || 0) >= 9;
+
+  // Group subjects by category for class 9-10
+  const compulsorySubjects = subjects.filter(s => s.category === 'compulsory');
+  const divisionSubjects = subjects.filter(s => s.category === 'division');
+  const optionalSubjects = subjects.filter(s => s.category === 'optional');
 
   // Calculate overall stats
   const totalAssessments = Object.values(subjectStats).reduce((sum, s) => sum + s.assessments_completed, 0);
   const totalPracticeSessions = Object.values(subjectStats).reduce((sum, s) => sum + s.practice_sessions, 0);
   const totalPlanTasks = Object.values(subjectStats).reduce((sum, s) => sum + s.plan_tasks_completed, 0);
   const totalXP = Object.values(subjectStats).reduce((sum, s) => sum + s.total_xp, 0);
+
+  const renderSubjectCard = (subject: Subject, index: number) => {
+    const Icon = iconMap[subject.icon] || BookOpen;
+    const gradientClass = colorMap[subject.color] || colorMap.primary;
+    const stats = subjectStats[subject.id] || {
+      assessments_completed: 0,
+      practice_sessions: 0,
+      plan_tasks_completed: 0,
+      total_xp: 0,
+      mastery_score: 0,
+    };
+    
+    // Calculate progress based on activity
+    const activityScore = Math.min(
+      (stats.assessments_completed * 10) + 
+      (stats.practice_sessions * 5) + 
+      (stats.plan_tasks_completed * 15),
+      100
+    );
+
+    const categoryInfo = categoryLabels[subject.category] || categoryLabels.compulsory;
+
+    return (
+      <motion.div
+        key={subject.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+      >
+        <div className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg transition-all duration-300 h-full">
+          <div className="flex items-start justify-between mb-4">
+            <div
+              className={cn(
+                "w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br",
+                gradientClass
+              )}
+            >
+              <Icon className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              {stats.mastery_score > 0 && (
+                <div className="bg-success/10 text-success text-xs font-medium px-2 py-1 rounded-full">
+                  {stats.mastery_score}% Mastery
+                </div>
+              )}
+              {isHigherClass && (
+                <Badge variant="outline" className={cn("text-xs", categoryInfo.color)}>
+                  {isBangla ? categoryInfo.labelBn : categoryInfo.label}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <h3 className="font-heading font-semibold text-lg mb-1">
+            {isBangla && subject.name_bn ? subject.name_bn : subject.name}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            {subject.total_chapters} {isBangla ? "অধ্যায়" : "chapters"} • NCTB
+          </p>
+
+          {/* Activity Stats */}
+          <div className="grid grid-cols-3 gap-2 mb-4 text-center">
+            <div className="bg-muted/50 rounded-lg p-2">
+              <p className="text-lg font-bold text-success">{stats.assessments_completed}</p>
+              <p className="text-xs text-muted-foreground">{isBangla ? "পরীক্ষা" : "Quiz"}</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-2">
+              <p className="text-lg font-bold text-primary">{stats.practice_sessions}</p>
+              <p className="text-xs text-muted-foreground">{isBangla ? "অনুশীলন" : "Practice"}</p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-2">
+              <p className="text-lg font-bold text-warning">{stats.plan_tasks_completed}</p>
+              <p className="text-xs text-muted-foreground">{isBangla ? "পরিকল্পনা" : "Plans"}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{isBangla ? "অগ্রগতি" : "Progress"}</span>
+              <span className="font-medium">{activityScore}%</span>
+            </div>
+            <Progress value={activityScore} className="h-2" />
+          </div>
+
+          {stats.total_xp > 0 && (
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
+              <TrendingUp className="w-4 h-4 text-success" />
+              <span className="text-sm font-medium text-success">
+                {stats.total_xp.toLocaleString()} XP {isBangla ? "অর্জিত" : "earned"}
+              </span>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  };
+
+  const renderSubjectSection = (title: string, titleBn: string, sectionSubjects: Subject[], startIndex: number) => {
+    if (sectionSubjects.length === 0) return null;
+
+    return (
+      <div className="mb-8">
+        <h2 className="font-heading font-semibold text-xl mb-4 flex items-center gap-2">
+          {isBangla ? titleBn : title}
+          <Badge variant="secondary" className="text-xs">
+            {sectionSubjects.length}
+          </Badge>
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sectionSubjects.map((subject, index) => renderSubjectCard(subject, startIndex + index))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -237,7 +437,11 @@ const Subjects = () => {
               {isBangla ? "বিষয়সমূহ" : "My Subjects"}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Class {profile?.class} • {subjects.length} subjects
+              {isBangla ? `শ্রেণি ${profile?.class}` : `Class ${profile?.class}`}
+              {profile?.division && (
+                <> • {isBangla ? divisionLabels[profile.division]?.labelBn : divisionLabels[profile.division]?.label}</>
+              )}
+              {` • ${subjects.length} ${isBangla ? "বিষয়" : "subjects"}`}
             </p>
           </div>
         </div>
@@ -253,14 +457,14 @@ const Subjects = () => {
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle2 className="w-4 h-4 text-success" />
-              <p className="text-sm text-muted-foreground">Assessments</p>
+              <p className="text-sm text-muted-foreground">{isBangla ? "পরীক্ষা" : "Assessments"}</p>
             </div>
             <p className="text-2xl font-heading font-bold">{totalAssessments}</p>
           </div>
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-4 h-4 text-primary" />
-              <p className="text-sm text-muted-foreground">Practice</p>
+              <p className="text-sm text-muted-foreground">{isBangla ? "অনুশীলন" : "Practice"}</p>
             </div>
             <p className="text-2xl font-heading font-bold text-primary">
               {totalPracticeSessions}
@@ -269,7 +473,7 @@ const Subjects = () => {
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-warning" />
-              <p className="text-sm text-muted-foreground">Plan Tasks</p>
+              <p className="text-sm text-muted-foreground">{isBangla ? "কাজ" : "Plan Tasks"}</p>
             </div>
             <p className="text-2xl font-heading font-bold text-warning">
               {totalPlanTasks}
@@ -278,7 +482,7 @@ const Subjects = () => {
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Award className="w-4 h-4 text-accent" />
-              <p className="text-sm text-muted-foreground">Total XP</p>
+              <p className="text-sm text-muted-foreground">{isBangla ? "মোট XP" : "Total XP"}</p>
             </div>
             <p className="text-2xl font-heading font-bold text-accent">
               {totalXP.toLocaleString()}
@@ -286,105 +490,34 @@ const Subjects = () => {
           </div>
         </motion.div>
 
-        {/* Subject Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {subjects.map((subject, index) => {
-            const Icon = iconMap[subject.icon] || BookOpen;
-            const gradientClass = colorMap[subject.color] || colorMap.primary;
-            const subjectProgress = progress[subject.id];
-            const stats = subjectStats[subject.id] || {
-              assessments_completed: 0,
-              practice_sessions: 0,
-              plan_tasks_completed: 0,
-              total_xp: 0,
-              mastery_score: 0,
-            };
-            
-            // Calculate progress based on activity
-            const activityScore = Math.min(
-              (stats.assessments_completed * 10) + 
-              (stats.practice_sessions * 5) + 
-              (stats.plan_tasks_completed * 15),
-              100
-            );
-
-            return (
-              <motion.div
-                key={subject.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <div className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-start justify-between mb-4">
-                    <div
-                      className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br",
-                        gradientClass
-                      )}
-                    >
-                      <Icon className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                    {stats.mastery_score > 0 && (
-                      <div className="bg-success/10 text-success text-xs font-medium px-2 py-1 rounded-full">
-                        {stats.mastery_score}% Mastery
-                      </div>
-                    )}
-                  </div>
-
-                  <h3 className="font-heading font-semibold text-lg mb-1">
-                    {isBangla && subject.name_bn ? subject.name_bn : subject.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    NCTB Curriculum
-                  </p>
-
-                  {/* Activity Stats */}
-                  <div className="grid grid-cols-3 gap-2 mb-4 text-center">
-                    <div className="bg-muted/50 rounded-lg p-2">
-                      <p className="text-lg font-bold text-success">{stats.assessments_completed}</p>
-                      <p className="text-xs text-muted-foreground">Quiz</p>
-                    </div>
-                    <div className="bg-muted/50 rounded-lg p-2">
-                      <p className="text-lg font-bold text-primary">{stats.practice_sessions}</p>
-                      <p className="text-xs text-muted-foreground">Practice</p>
-                    </div>
-                    <div className="bg-muted/50 rounded-lg p-2">
-                      <p className="text-lg font-bold text-warning">{stats.plan_tasks_completed}</p>
-                      <p className="text-xs text-muted-foreground">Plans</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Activity Progress</span>
-                      <span className="font-medium">{activityScore}%</span>
-                    </div>
-                    <Progress value={activityScore} className="h-2" />
-                  </div>
-
-                  {stats.total_xp > 0 && (
-                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
-                      <TrendingUp className="w-4 h-4 text-success" />
-                      <span className="text-sm font-medium text-success">
-                        {stats.total_xp.toLocaleString()} XP earned
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+        {/* Subject Grid - grouped for class 9-10, simple for others */}
+        {isHigherClass ? (
+          <>
+            {renderSubjectSection("Compulsory Subjects", "আবশ্যিক বিষয়সমূহ", compulsorySubjects, 0)}
+            {renderSubjectSection(
+              `${divisionLabels[profile?.division || 'science']?.label} Subjects`,
+              `${divisionLabels[profile?.division || 'science']?.labelBn} বিষয়সমূহ`,
+              divisionSubjects,
+              compulsorySubjects.length
+            )}
+            {renderSubjectSection("Optional Subjects (4th Subject)", "ঐচ্ছিক বিষয় (৪র্থ বিষয়)", optionalSubjects, compulsorySubjects.length + divisionSubjects.length)}
+          </>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {subjects.map((subject, index) => renderSubjectCard(subject, index))}
+          </div>
+        )}
 
         {subjects.length === 0 && (
           <div className="text-center py-12">
             <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-heading font-semibold text-lg mb-2">
-              No subjects found
+              {isBangla ? "কোনো বিষয় পাওয়া যায়নি" : "No subjects found"}
             </h3>
             <p className="text-muted-foreground">
-              Subjects for your class will appear here.
+              {isBangla 
+                ? "আপনার শ্রেণির বিষয়গুলো এখানে দেখাবে।" 
+                : "Subjects for your class will appear here."}
             </p>
           </div>
         )}
