@@ -29,6 +29,12 @@ const classes = [
   { value: "10", label: "Class 10" },
 ];
 
+const divisions = [
+  { value: "science", label: "Science (বিজ্ঞান)", labelBn: "বিজ্ঞান" },
+  { value: "commerce", label: "Commerce (ব্যবসায় শিক্ষা)", labelBn: "ব্যবসায় শিক্ষা" },
+  { value: "arts", label: "Arts (মানবিক)", labelBn: "মানবিক" },
+];
+
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100),
   email: z.string().email("Invalid email address"),
@@ -36,6 +42,16 @@ const signupSchema = z.object({
   school: z.string().min(2, "School name is required").max(200),
   class: z.string().min(1, "Please select a class"),
   version: z.enum(["bangla", "english"], { required_error: "Please select a version" }),
+  division: z.string().optional(),
+}).refine((data) => {
+  const classNum = parseInt(data.class);
+  if (classNum >= 9 && classNum <= 10) {
+    return !!data.division;
+  }
+  return true;
+}, {
+  message: "Please select a division for Class 9-10",
+  path: ["division"],
 });
 
 const Signup = () => {
@@ -48,6 +64,7 @@ const Signup = () => {
     school: "",
     class: "",
     version: "",
+    division: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   
@@ -55,12 +72,22 @@ const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const selectedClass = parseInt(formData.class) || 0;
+  const showDivision = selectedClass >= 9 && selectedClass <= 10;
+
   // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
       navigate("/dashboard");
     }
   }, [user, loading, navigate]);
+
+  // Clear division when class changes to non 9-10
+  useEffect(() => {
+    if (!showDivision && formData.division) {
+      setFormData(prev => ({ ...prev, division: "" }));
+    }
+  }, [showDivision, formData.division]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +116,7 @@ const Signup = () => {
         school_name: formData.school,
         class: parseInt(formData.class),
         version: formData.version as "bangla" | "english",
+        ...(showDivision && formData.division ? { division: formData.division } : {}),
       }
     );
 
@@ -259,6 +287,37 @@ const Signup = () => {
                 {errors.version && <p className="text-sm text-destructive">{errors.version}</p>}
               </div>
             </div>
+
+            {/* Division (for Class 9-10 only) */}
+            {showDivision && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-2"
+              >
+                <Label>Division (বিভাগ)</Label>
+                <Select
+                  value={formData.division}
+                  onValueChange={(value) => setFormData({ ...formData, division: value })}
+                >
+                  <SelectTrigger className={errors.division ? "border-destructive" : ""}>
+                    <SelectValue placeholder="Select your division" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {divisions.map((div) => (
+                      <SelectItem key={div.value} value={div.value}>
+                        {div.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.division && <p className="text-sm text-destructive">{errors.division}</p>}
+                <p className="text-xs text-muted-foreground">
+                  Choose your academic division for specialized subjects
+                </p>
+              </motion.div>
+            )}
 
             {/* Submit */}
             <Button variant="hero" size="lg" className="w-full" type="submit" disabled={isLoading}>
