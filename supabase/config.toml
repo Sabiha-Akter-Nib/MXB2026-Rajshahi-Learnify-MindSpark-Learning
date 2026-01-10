@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.init-weekly-achievements]
 verify_jwt = true
+
+[functions.daily-notification]
+verify_jwt = false
