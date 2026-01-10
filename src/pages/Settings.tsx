@@ -11,6 +11,8 @@ import {
   Loader2,
   CheckCircle,
   GraduationCap,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -43,8 +56,10 @@ const Settings = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -113,15 +128,24 @@ const Settings = () => {
     if (!user || !profile) return;
     setIsSaving(true);
 
+    // Only include division for class 9-10
+    const updateData: Record<string, any> = {
+      full_name: profile.full_name,
+      school_name: profile.school_name,
+      class: profile.class,
+      version: profile.version,
+    };
+
+    // Only save division if user is in class 9-10
+    if (profile.class >= 9 && profile.class <= 10) {
+      updateData.division = profile.division;
+    } else {
+      updateData.division = null;
+    }
+
     const { error } = await supabase
       .from("profiles")
-      .update({
-        full_name: profile.full_name,
-        school_name: profile.school_name,
-        class: profile.class,
-        version: profile.version,
-        division: profile.division,
-      } as any)
+      .update(updateData)
       .eq("user_id", user.id);
 
     if (error) {
@@ -139,6 +163,53 @@ const Settings = () => {
       setHasChanges(false);
     }
     setIsSaving(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== "DELETE" || !user) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      const userId = user.id;
+      
+      // Delete all user data from tables in order (respecting foreign keys)
+      // First delete child records, then parent records
+      await supabase.from("chat_messages").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await supabase.from("chat_conversations").delete().eq("user_id", userId);
+      await supabase.from("learning_plan_tasks").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await supabase.from("learning_plans").delete().eq("user_id", userId);
+      await supabase.from("revision_schedule").delete().eq("user_id", userId);
+      await supabase.from("study_sessions").delete().eq("user_id", userId);
+      await supabase.from("assessments").delete().eq("user_id", userId);
+      await supabase.from("topic_mastery").delete().eq("user_id", userId);
+      await supabase.from("student_progress").delete().eq("user_id", userId);
+      await supabase.from("user_achievements").delete().eq("user_id", userId);
+      await supabase.from("weekly_achievements").delete().eq("user_id", userId);
+      await supabase.from("student_stats").delete().eq("user_id", userId);
+      await supabase.from("leaderboard_entries").delete().eq("user_id", userId);
+      await supabase.from("push_subscriptions").delete().eq("user_id", userId);
+      await supabase.from("profiles").delete().eq("user_id", userId);
+
+      // Sign out the user (the auth user deletion requires admin privileges)
+      await signOut();
+      
+      toast({
+        title: "Account Deleted",
+        description: "Your account and all associated data have been deleted.",
+      });
+      
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete account. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsDeleting(false);
   };
 
   if (loading || isLoading) {
@@ -361,6 +432,85 @@ const Settings = () => {
               <Button variant="outline" asChild className="col-span-2">
                 <Link to="/dashboard">Back to Dashboard</Link>
               </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Danger Zone - Delete Account */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card className="border-destructive/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="w-5 h-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription>
+                Irreversible actions that affect your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full sm:w-auto">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-destructive" />
+                      Delete Your Account?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-3">
+                      <p>
+                        This action <strong>cannot be undone</strong>. This will permanently delete your account and remove all your data including:
+                      </p>
+                      <ul className="list-disc list-inside text-sm space-y-1">
+                        <li>All study sessions and progress</li>
+                        <li>Achievements and XP earned</li>
+                        <li>Learning plans and assessments</li>
+                        <li>Chat history with AI tutor</li>
+                      </ul>
+                      <div className="pt-2">
+                        <Label htmlFor="confirm-delete" className="text-foreground">
+                          Type <strong>DELETE</strong> to confirm:
+                        </Label>
+                        <Input
+                          id="confirm-delete"
+                          value={deleteConfirmText}
+                          onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                          placeholder="DELETE"
+                          className="mt-2"
+                        />
+                      </div>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setDeleteConfirmText("")}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      disabled={deleteConfirmText !== "DELETE" || isDeleting}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isDeleting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        "Delete Account"
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
         </motion.div>

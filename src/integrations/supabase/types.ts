@@ -330,6 +330,7 @@ export type Database = {
         Row: {
           class: number
           created_at: string
+          division: string | null
           email: string
           full_name: string
           id: string
@@ -341,6 +342,7 @@ export type Database = {
         Insert: {
           class: number
           created_at?: string
+          division?: string | null
           email: string
           full_name: string
           id?: string
@@ -352,6 +354,7 @@ export type Database = {
         Update: {
           class?: number
           created_at?: string
+          division?: string | null
           email?: string
           full_name?: string
           id?: string
