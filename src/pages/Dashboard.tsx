@@ -50,6 +50,7 @@ import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
 import WeeklyAchievements from "@/components/dashboard/WeeklyAchievements";
 import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
+import DailyNotificationTrigger from "@/components/notifications/DailyNotificationTrigger";
 
 interface Profile {
   full_name: string;
@@ -747,6 +748,9 @@ const Dashboard = () => {
               isRefreshing={isRefreshing}
             />
           </motion.div>
+
+          {/* Daily Notification Trigger (invisible component) */}
+          <DailyNotificationTrigger />
         </main>
       </div>
     </div>

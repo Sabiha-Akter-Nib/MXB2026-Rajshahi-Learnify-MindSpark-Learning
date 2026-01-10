@@ -151,52 +151,57 @@ const Subjects = () => {
 
     const fetchData = async () => {
       try {
-        // Fetch profile including division
+        // Fetch profile including division using select("*") to get all fields
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("class, version")
+          .select("*")
           .eq("user_id", user.id)
           .maybeSingle();
 
         if (profileData) {
-          // Division may not exist in types yet, fetch separately
+          const userClass = profileData.class;
+          const userVersion = profileData.version;
+          // Get division from profile (may not be in types yet)
+          const userDivision = (profileData as any).division as string | null;
+          
           const profileWithDivision: Profile = {
-            ...profileData,
-            division: null,
+            class: userClass,
+            version: userVersion,
+            division: userDivision,
           };
           setProfile(profileWithDivision);
 
-          const userClass = profileData.class;
-          const userDivision: string | null = null; // Will be updated when types are regenerated
-
-          // Fetch subjects for student's class with proper filtering
-          let query = supabase
+          // Fetch subjects for student's class
+          const { data: subjectsData } = await supabase
             .from("subjects")
             .select("*")
             .lte("min_class", userClass)
-            .gte("max_class", userClass);
-
-          const { data: subjectsData } = await query.order("category").order("name");
+            .gte("max_class", userClass)
+            .order("category")
+            .order("name");
 
           if (subjectsData) {
-            // Filter subjects based on class and division
             let filteredSubjects = subjectsData;
 
-            // For classes 9-10, filter by division
-            if (userClass >= 9 && userClass <= 10 && userDivision) {
+            // For classes 9-10, strictly filter by division
+            if (userClass >= 9 && userClass <= 10) {
               filteredSubjects = subjectsData.filter(subject => {
-                // Include compulsory subjects (no division)
-                if (subject.category === 'compulsory' && !subject.division) {
+                const subjectDivision = (subject as any).division as string | null;
+                const subjectCategory = (subject as any).category as string;
+                
+                // Include compulsory subjects (no division restriction)
+                if (subjectCategory === 'compulsory' && !subjectDivision) {
                   return true;
                 }
-                // Include optional subjects (no division)
-                if (subject.category === 'optional' && !subject.division) {
+                // Include optional subjects (no division restriction)
+                if (subjectCategory === 'optional' && !subjectDivision) {
                   return true;
                 }
-                // Include division-specific subjects
-                if (subject.division === userDivision) {
+                // Include ONLY the student's division subjects
+                if (subjectCategory === 'division' && subjectDivision === userDivision) {
                   return true;
                 }
+                // Exclude other division's subjects
                 return false;
               });
             }

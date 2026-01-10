@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   Loader2,
   CheckCircle,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 
+type Division = "science" | "commerce" | "arts" | null;
 
 interface ProfileData {
   full_name: string;
@@ -34,6 +36,7 @@ interface ProfileData {
   school_name: string;
   class: number;
   version: "bangla" | "english";
+  division: Division;
 }
 
 const Settings = () => {
@@ -56,6 +59,7 @@ const Settings = () => {
       if (!user) return;
       setIsLoading(true);
 
+      // Fetch without division first (type-safe), then get division separately
       const { data, error } = await supabase
         .from("profiles")
         .select("full_name, email, school_name, class, version")
@@ -70,7 +74,22 @@ const Settings = () => {
           variant: "destructive",
         });
       } else if (data) {
-        setProfile(data);
+        // Fetch division separately using raw query to avoid type issues
+        const { data: divisionData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        
+        const profileWithDivision: ProfileData = {
+          full_name: data.full_name,
+          email: data.email,
+          school_name: data.school_name,
+          class: data.class,
+          version: data.version,
+          division: (divisionData as any)?.division || null,
+        };
+        setProfile(profileWithDivision);
       }
       setIsLoading(false);
     };
@@ -78,9 +97,15 @@ const Settings = () => {
     fetchProfile();
   }, [user, toast]);
 
-  const handleChange = (field: keyof ProfileData, value: string | number) => {
+  const handleChange = (field: keyof ProfileData, value: string | number | null) => {
     if (!profile) return;
-    setProfile({ ...profile, [field]: value });
+    
+    // If class changes and is no longer 9-10, clear division
+    if (field === "class" && typeof value === "number" && (value < 9 || value > 10)) {
+      setProfile({ ...profile, [field]: value, division: null });
+    } else {
+      setProfile({ ...profile, [field]: value });
+    }
     setHasChanges(true);
   };
 
@@ -95,7 +120,8 @@ const Settings = () => {
         school_name: profile.school_name,
         class: profile.class,
         version: profile.version,
-      })
+        division: profile.division,
+      } as any)
       .eq("user_id", user.id);
 
     if (error) {
@@ -224,6 +250,32 @@ const Settings = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Division Selection (only for class 9-10) */}
+              {profile.class >= 9 && profile.class <= 10 && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                    Division
+                  </Label>
+                  <Select
+                    value={profile.division || ""}
+                    onValueChange={(val) => handleChange("division", val as Division)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your division" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="science">বিজ্ঞান (Science)</SelectItem>
+                      <SelectItem value="commerce">ব্যবসায় শিক্ষা (Commerce)</SelectItem>
+                      <SelectItem value="arts">মানবিক (Arts)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    This determines which subjects you'll see for your class
+                  </p>
+                </div>
+              )}
 
               {/* Version Selection */}
               <div className="space-y-2">
