@@ -91,7 +91,7 @@ const motivationalMessagesBn = [
 ];
 
 const NOTIFICATION_STORAGE_KEY = "mindspark_last_notification";
-const NOTIFICATION_INTERVAL_HOURS = 8; // Send a notification every 8 hours max
+const NOTIFICATION_INTERVAL_HOURS = 24; // Send a notification once per day
 
 export const DailyNotificationTrigger = () => {
   const { user } = useAuth();
