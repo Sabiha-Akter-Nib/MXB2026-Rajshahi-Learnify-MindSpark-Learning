@@ -417,7 +417,10 @@ serve(async (req) => {
     console.log("Web context available:", webContext ? "Yes" : "No");
     console.log("Sending request to Lovable AI Gateway...");
     
-    // Use gemini-2.5-pro for better reasoning
+    // Track thinking start time for display
+    const thinkingStartTime = Date.now();
+
+    // Use GPT-5 for superior reasoning and accuracy
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -425,7 +428,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: "openai/gpt-5",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,

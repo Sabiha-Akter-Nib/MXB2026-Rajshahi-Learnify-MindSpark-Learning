@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Sparkles, ArrowRight, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import {
   Select,
   SelectContent,
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 const classes = [
@@ -54,9 +56,14 @@ const signupSchema = z.object({
   path: ["division"],
 });
 
+type Step = "form" | "otp" | "success";
+
 const Signup = () => {
+  const [step, setStep] = useState<Step>("form");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -89,7 +96,7 @@ const Signup = () => {
     }
   }, [showDivision, formData.division]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     
@@ -108,45 +115,111 @@ const Signup = () => {
 
     setIsLoading(true);
     
-    const { error } = await signUp(
-      formData.email,
-      formData.password,
-      {
-        full_name: formData.name,
-        school_name: formData.school,
-        class: parseInt(formData.class),
-        version: formData.version as "bangla" | "english",
-        ...(showDivision && formData.division ? { division: formData.division } : {}),
-      }
-    );
+    try {
+      // Send OTP to email
+      const { data, error: otpError } = await supabase.functions.invoke("send-otp", {
+        body: { email: formData.email, type: "signup" },
+      });
 
-    setIsLoading(false);
+      if (otpError) throw otpError;
+      if (data?.error) throw new Error(data.error);
 
-    if (error) {
-      // Handle specific error cases
-      if (error.message.includes("already registered")) {
-        toast({
-          title: "Account exists",
-          description: "An account with this email already exists. Please log in instead.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Signup failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Verification Code Sent",
+        description: "Please check your email for the 6-digit code.",
+      });
+      
+      setStep("otp");
+    } catch (err) {
+      console.error("Send OTP error:", err);
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to send verification code",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyAndSignup = async () => {
+    if (otp.length !== 6) {
+      setOtpError("Please enter the complete 6-digit code");
       return;
     }
 
-    toast({
-      title: "Account created!",
-      description: "Please check your email to verify your account.",
-    });
-    
-    // Navigate to dashboard (will work after email confirmation)
-    navigate("/dashboard");
+    setIsLoading(true);
+    setOtpError("");
+
+    try {
+      // Verify OTP first
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke("verify-otp", {
+        body: { email: formData.email, code: otp, type: "signup" },
+      });
+
+      if (verifyError || verifyData?.error) {
+        throw new Error(verifyData?.error || "Invalid or expired verification code");
+      }
+
+      // OTP verified, now create the account
+      const { error } = await signUp(
+        formData.email,
+        formData.password,
+        {
+          full_name: formData.name,
+          school_name: formData.school,
+          class: parseInt(formData.class),
+          version: formData.version as "bangla" | "english",
+          ...(showDivision && formData.division ? { division: formData.division } : {}),
+        }
+      );
+
+      if (error) {
+        if (error.message.includes("already registered")) {
+          throw new Error("An account with this email already exists. Please log in instead.");
+        }
+        throw error;
+      }
+
+      setStep("success");
+      toast({
+        title: "Account Created!",
+        description: "Welcome to MindSpark Learning!",
+      });
+
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 2000);
+      
+    } catch (err) {
+      console.error("Signup error:", err);
+      setOtpError(err instanceof Error ? err.message : "Failed to create account");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setIsLoading(true);
+    try {
+      await supabase.functions.invoke("send-otp", {
+        body: { email: formData.email, type: "signup" },
+      });
+      toast({
+        title: "Code Resent",
+        description: "A new verification code has been sent to your email.",
+      });
+      setOtp("");
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to resend code",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (loading) {
@@ -177,170 +250,259 @@ const Signup = () => {
             </span>
           </Link>
 
-          <h1 className="font-heading font-bold text-3xl mb-2">
-            Create your account
-          </h1>
-          <p className="text-muted-foreground mb-8">
-            Start your personalized learning journey today
-          </p>
+          {step === "success" ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-8"
+            >
+              <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-10 h-10 text-success" />
+              </div>
+              <h1 className="font-heading font-bold text-3xl mb-2">
+                Welcome to MindSpark!
+              </h1>
+              <p className="text-muted-foreground mb-6">
+                Your account has been created successfully. Redirecting to dashboard...
+              </p>
+              <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
+            </motion.div>
+          ) : step === "otp" ? (
+            <>
+              <h1 className="font-heading font-bold text-3xl mb-2">
+                Verify your email
+              </h1>
+              <p className="text-muted-foreground mb-8">
+                We sent a 6-digit code to <strong>{formData.email}</strong>
+              </p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className={errors.name ? "border-destructive" : ""}
-              />
-              {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
-            </div>
+              <div className="space-y-6">
+                <div className="flex justify-center">
+                  <InputOTP
+                    maxLength={6}
+                    value={otp}
+                    onChange={setOtp}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
 
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className={errors.email ? "border-destructive" : ""}
-              />
-              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-            </div>
+                {otpError && <p className="text-sm text-destructive text-center">{otpError}</p>}
 
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a strong password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className={errors.password ? "border-destructive" : ""}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                <Button
+                  variant="hero"
+                  size="lg"
+                  className="w-full"
+                  onClick={handleVerifyAndSignup}
+                  disabled={isLoading || otp.length !== 6}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    <>
+                      Verify & Create Account
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+
+                <p className="text-center text-muted-foreground text-sm">
+                  Didn't receive the code?{" "}
+                  <button
+                    onClick={handleResendOTP}
+                    disabled={isLoading}
+                    className="text-primary hover:underline disabled:opacity-50"
+                  >
+                    Resend
+                  </button>
+                </p>
+
+                <button
+                  onClick={() => setStep("form")}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground"
+                >
+                  ← Back to signup form
                 </button>
               </div>
-              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-            </div>
+            </>
+          ) : (
+            <>
+              <h1 className="font-heading font-bold text-3xl mb-2">
+                Create your account
+              </h1>
+              <p className="text-muted-foreground mb-8">
+                Start your personalized learning journey today
+              </p>
 
-            {/* School */}
-            <div className="space-y-2">
-              <Label htmlFor="school">School Name</Label>
-              <Input
-                id="school"
-                placeholder="Enter your school name"
-                value={formData.school}
-                onChange={(e) => setFormData({ ...formData, school: e.target.value })}
-                className={errors.school ? "border-destructive" : ""}
-              />
-              {errors.school && <p className="text-sm text-destructive">{errors.school}</p>}
-            </div>
+              <form onSubmit={handleSendOTP} className="space-y-5">
+                {/* Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Enter your full name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className={errors.name ? "border-destructive" : ""}
+                  />
+                  {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                </div>
 
-            {/* Class & Version */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Class</Label>
-                <Select
-                  value={formData.class}
-                  onValueChange={(value) => setFormData({ ...formData, class: value })}
-                >
-                  <SelectTrigger className={errors.class ? "border-destructive" : ""}>
-                    <SelectValue placeholder="Select class" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classes.map((cls) => (
-                      <SelectItem key={cls.value} value={cls.value}>
-                        {cls.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.class && <p className="text-sm text-destructive">{errors.class}</p>}
-              </div>
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className={errors.email ? "border-destructive" : ""}
+                  />
+                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                </div>
 
-              <div className="space-y-2">
-                <Label>Version</Label>
-                <Select
-                  value={formData.version}
-                  onValueChange={(value) => setFormData({ ...formData, version: value })}
-                >
-                  <SelectTrigger className={errors.version ? "border-destructive" : ""}>
-                    <SelectValue placeholder="Select version" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bangla">বাংলা</SelectItem>
-                    <SelectItem value="english">English</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.version && <p className="text-sm text-destructive">{errors.version}</p>}
-              </div>
-            </div>
+                {/* Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a strong password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className={errors.password ? "border-destructive" : ""}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                </div>
 
-            {/* Division (for Class 9-10 only) */}
-            {showDivision && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="space-y-2"
-              >
-                <Label>Division (বিভাগ)</Label>
-                <Select
-                  value={formData.division}
-                  onValueChange={(value) => setFormData({ ...formData, division: value })}
-                >
-                  <SelectTrigger className={errors.division ? "border-destructive" : ""}>
-                    <SelectValue placeholder="Select your division" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {divisions.map((div) => (
-                      <SelectItem key={div.value} value={div.value}>
-                        {div.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.division && <p className="text-sm text-destructive">{errors.division}</p>}
-                <p className="text-xs text-muted-foreground">
-                  Choose your academic division for specialized subjects
-                </p>
-              </motion.div>
-            )}
+                {/* School */}
+                <div className="space-y-2">
+                  <Label htmlFor="school">School Name</Label>
+                  <Input
+                    id="school"
+                    placeholder="Enter your school name"
+                    value={formData.school}
+                    onChange={(e) => setFormData({ ...formData, school: e.target.value })}
+                    className={errors.school ? "border-destructive" : ""}
+                  />
+                  {errors.school && <p className="text-sm text-destructive">{errors.school}</p>}
+                </div>
 
-            {/* Submit */}
-            <Button variant="hero" size="lg" className="w-full" type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating Account...
-                </>
-              ) : (
-                <>
-                  Create Account
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </Button>
-          </form>
+                {/* Class & Version */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Class</Label>
+                    <Select
+                      value={formData.class}
+                      onValueChange={(value) => setFormData({ ...formData, class: value })}
+                    >
+                      <SelectTrigger className={errors.class ? "border-destructive" : ""}>
+                        <SelectValue placeholder="Select class" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {classes.map((cls) => (
+                          <SelectItem key={cls.value} value={cls.value}>
+                            {cls.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.class && <p className="text-sm text-destructive">{errors.class}</p>}
+                  </div>
 
-          <p className="text-center text-muted-foreground mt-6">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">
-              Log in
-            </Link>
-          </p>
+                  <div className="space-y-2">
+                    <Label>Version</Label>
+                    <Select
+                      value={formData.version}
+                      onValueChange={(value) => setFormData({ ...formData, version: value })}
+                    >
+                      <SelectTrigger className={errors.version ? "border-destructive" : ""}>
+                        <SelectValue placeholder="Select version" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="bangla">বাংলা</SelectItem>
+                        <SelectItem value="english">English</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.version && <p className="text-sm text-destructive">{errors.version}</p>}
+                  </div>
+                </div>
+
+                {/* Division (for Class 9-10 only) */}
+                {showDivision && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-2"
+                  >
+                    <Label>Division (বিভাগ)</Label>
+                    <Select
+                      value={formData.division}
+                      onValueChange={(value) => setFormData({ ...formData, division: value })}
+                    >
+                      <SelectTrigger className={errors.division ? "border-destructive" : ""}>
+                        <SelectValue placeholder="Select your division" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {divisions.map((div) => (
+                          <SelectItem key={div.value} value={div.value}>
+                            {div.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.division && <p className="text-sm text-destructive">{errors.division}</p>}
+                    <p className="text-xs text-muted-foreground">
+                      Choose your academic division for specialized subjects
+                    </p>
+                  </motion.div>
+                )}
+
+                {/* Submit */}
+                <Button variant="hero" size="lg" className="w-full" type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Sending Code...
+                    </>
+                  ) : (
+                    <>
+                      Continue
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              <p className="text-center text-muted-foreground mt-6">
+                Already have an account?{" "}
+                <Link to="/login" className="text-primary font-medium hover:underline">
+                  Log in
+                </Link>
+              </p>
+            </>
+          )}
         </motion.div>
       </div>
 
