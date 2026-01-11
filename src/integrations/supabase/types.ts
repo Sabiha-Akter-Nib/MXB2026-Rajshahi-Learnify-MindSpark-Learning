@@ -326,6 +326,36 @@ export type Database = {
           },
         ]
       }
+      otp_codes: {
+        Row: {
+          code: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          type: string
+          verified: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          type: string
+          verified?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          type?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           class: number
@@ -700,6 +730,30 @@ export type Database = {
           },
         ]
       }
+      user_avatars: {
+        Row: {
+          avatar_url: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       weekly_achievements: {
         Row: {
           achievement_description: string
@@ -750,6 +804,56 @@ export type Database = {
           xp_reward?: number
         }
         Relationships: []
+      }
+      weekly_notes: {
+        Row: {
+          created_at: string
+          id: string
+          mcq_content: Json
+          notes_content: Json
+          pdf_url: string | null
+          subject_id: string | null
+          subject_name: string
+          updated_at: string
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mcq_content?: Json
+          notes_content?: Json
+          pdf_url?: string | null
+          subject_id?: string | null
+          subject_name: string
+          updated_at?: string
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mcq_content?: Json
+          notes_content?: Json
+          pdf_url?: string | null
+          subject_id?: string | null
+          subject_name?: string
+          updated_at?: string
+          user_id?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_notes_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
