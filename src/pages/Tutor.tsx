@@ -2,25 +2,11 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
-  Send,
-  Mic,
-  Image,
-  Upload,
-  Sparkles,
   ArrowLeft,
-  BookOpen,
   Brain,
-  User,
-  MoreVertical,
-  RefreshCw,
-  ThumbsUp,
-  ThumbsDown,
-  Copy,
-  Loader2,
-  MicOff,
   Settings2,
   Trash2,
-  MessageSquare,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -28,20 +14,34 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
-
 import { useStudySession } from "@/hooks/useStudySession";
 import { PersonaSelector, PersonaType, getPersonaPrompt } from "@/components/tutor/PersonaSelector";
 import { FileUploadModal } from "@/components/tutor/FileUploadModal";
-import { MultimodalInput } from "@/components/tutor/MultimodalInput";
 import { ChatHistory } from "@/components/tutor/ChatHistory";
 import TutorBackground from "@/components/tutor/TutorBackground";
-import IOSInputSection from "@/components/tutor/IOSInputSection";
+import MessageBubble from "@/components/tutor/MessageBubble";
+import ThinkingIndicator from "@/components/tutor/ThinkingIndicator";
+import EnhancedInputBar from "@/components/tutor/EnhancedInputBar";
+import SubjectSelector from "@/components/tutor/SubjectSelector";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  thinkingTime?: number;
+  attachments?: Array<{ type: "image" | "pdf"; url: string; name?: string }>;
 }
 
 interface StudentInfo {
@@ -52,48 +52,6 @@ interface StudentInfo {
 
 const CHAT_URL = `https://vprrgfzwaueklfnfpfrh.supabase.co/functions/v1/ai-tutor`;
 
-// Format text by removing asterisks, hashtags and applying proper styling
-const formatMessageContent = (content: string): React.ReactNode[] => {
-  let formattedContent = content
-    .replace(/\*\*\*(.+?)\*\*\*/g, '$1')
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1')
-    .replace(/^#{1,6}\s+(.+)$/gm, '$1');
-
-  return formattedContent.split("\n").map((line, i) => {
-    const isHeading = /^[A-Z][^.!?]*:$/.test(line.trim()) || 
-                      /^(Step|Example|Note|Key|Important|Why|How|What|When|Where|Think|Remember|Summary|Practice|Question)/i.test(line.trim());
-    
-    const isBullet = /^[\•\-]\s/.test(line.trim()) || /^\d+[\.\)]\s/.test(line.trim());
-    
-    if (!line.trim()) {
-      return <div key={i} className="h-3" />;
-    }
-    
-    if (isHeading) {
-      return (
-        <p key={i} className="font-semibold text-foreground mt-4 mb-2 first:mt-0">
-          {line}
-        </p>
-      );
-    }
-    
-    if (isBullet) {
-      return (
-        <p key={i} className="pl-4 mb-1 text-foreground/90">
-          {line}
-        </p>
-      );
-    }
-    
-    return (
-      <p key={i} className="mb-2 leading-relaxed">
-        {line}
-      </p>
-    );
-  });
-};
-
 const Tutor = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -102,11 +60,15 @@ const Tutor = () => {
   const [persona, setPersona] = useState<PersonaType>("friendly");
   const [showPersonaSelector, setShowPersonaSelector] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showMultimodal, setShowMultimodal] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+  const [selectedSubjectName, setSelectedSubjectName] = useState<string | null>(null);
+  const [thinkingStartTime, setThinkingStartTime] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
-  
+
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -122,7 +84,7 @@ const Tutor = () => {
       endSession();
     };
   }, [user]);
-  
+
   useEffect(() => {
     if (!loading && !user) {
       navigate("/login");
@@ -131,7 +93,7 @@ const Tutor = () => {
 
   const createInitialGreeting = useCallback((data: { full_name: string; class: number; version: string }) => {
     const isBangla = data.version === "bangla";
-    const greeting = isBangla 
+    const greeting = isBangla
       ? `আসসালামু আলাইকুম!
 
 আমি MindSpark AI Tutor। আমি Class ${data.class} এর NCTB পাঠ্যক্রম অনুযায়ী পড়াশোনায় সাহায্য করতে এসেছি।
@@ -156,7 +118,7 @@ Here is what I can help you with:
 • Assist with exam preparation
 
 What would you like to study today?`;
-    
+
     return {
       id: "1",
       role: "assistant" as const,
@@ -168,13 +130,13 @@ What would you like to study today?`;
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
-      
+
       const { data } = await supabase
         .from("profiles")
         .select("full_name, class, version")
         .eq("user_id", user.id)
         .maybeSingle();
-      
+
       if (data) {
         const info = {
           name: data.full_name,
@@ -184,10 +146,11 @@ What would you like to study today?`;
         setStudentInfo(info);
         setMessages([createInitialGreeting(data)]);
       } else {
-        setMessages([{
-          id: "1",
-          role: "assistant",
-          content: `Assalamu Alaikum!
+        setMessages([
+          {
+            id: "1",
+            role: "assistant",
+            content: `Assalamu Alaikum!
 
 I am MindSpark AI Tutor. I am here to help you learn any subject from your NCTB curriculum.
 
@@ -197,17 +160,25 @@ You can ask me to:
 • Get homework help
 
 What would you like to learn today?`,
-          timestamp: new Date(),
-        }]);
+            timestamp: new Date(),
+          },
+        ]);
       }
     };
 
     fetchProfile();
   }, [user, createInitialGreeting]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  // Smooth scroll without auto-scroll on new content
+  const scrollToBottom = useCallback((behavior: "smooth" | "auto" = "smooth") => {
+    if (chatContainerRef.current) {
+      const { scrollHeight, scrollTop, clientHeight } = chatContainerRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
+      if (isNearBottom) {
+        messagesEndRef.current?.scrollIntoView({ behavior });
+      }
+    }
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -227,13 +198,18 @@ What would you like to learn today?`,
 
   const ensureConversation = async (firstUserMessage?: string): Promise<string> => {
     if (currentConversationId) return currentConversationId;
-    
+
     if (!user) throw new Error("User not authenticated");
-    
-    const title = firstUserMessage 
+
+    // Create title based on subject and message
+    let title = firstUserMessage
       ? firstUserMessage.slice(0, 50) + (firstUserMessage.length > 50 ? "..." : "")
       : "New Conversation";
     
+    if (selectedSubjectName) {
+      title = `${selectedSubjectName}: ${title}`;
+    }
+
     const { data, error } = await supabase
       .from("chat_conversations")
       .insert({
@@ -242,9 +218,9 @@ What would you like to learn today?`,
       })
       .select()
       .single();
-    
+
     if (error) throw error;
-    
+
     setCurrentConversationId(data.id);
     return data.id;
   };
@@ -256,9 +232,9 @@ What would you like to learn today?`,
         .select("*")
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
-      
+
       if (error) throw error;
-      
+
       if (data && data.length > 0) {
         const loadedMessages: Message[] = data.map((msg) => ({
           id: msg.id,
@@ -282,60 +258,52 @@ What would you like to learn today?`,
   const handleNewConversation = () => {
     setCurrentConversationId(null);
     if (studentInfo) {
-      setMessages([createInitialGreeting({
-        full_name: studentInfo.name,
-        class: studentInfo.class,
-        version: studentInfo.version,
-      })]);
-    }
-  };
-
-  const handleDeleteAllHistory = async () => {
-    if (!user) return;
-    
-    const confirmMessage = studentInfo?.version === "bangla" 
-      ? "তুমি কি নিশ্চিত যে সব কথোপকথন মুছে ফেলতে চাও?" 
-      : "Are you sure you want to delete all chat history?";
-    
-    if (!window.confirm(confirmMessage)) return;
-    
-    try {
-      const { error } = await supabase
-        .from("chat_conversations")
-        .delete()
-        .eq("user_id", user.id);
-      
-      if (error) throw error;
-      
-      setCurrentConversationId(null);
-      if (studentInfo) {
-        setMessages([createInitialGreeting({
+      setMessages([
+        createInitialGreeting({
           full_name: studentInfo.name,
           class: studentInfo.class,
           version: studentInfo.version,
-        })]);
-      }
-      
+        }),
+      ]);
+    }
+  };
+
+  const handleDeleteCurrentChat = async () => {
+    if (!currentConversationId || !user) return;
+
+    try {
+      // Delete messages first
+      await supabase.from("chat_messages").delete().eq("conversation_id", currentConversationId);
+
+      // Then delete conversation
+      await supabase.from("chat_conversations").delete().eq("id", currentConversationId);
+
+      handleNewConversation();
       toast({
         title: studentInfo?.version === "bangla" ? "মুছে ফেলা হয়েছে" : "Deleted",
-        description: studentInfo?.version === "bangla" ? "সব কথোপকথন মুছে ফেলা হয়েছে" : "All chat history deleted",
+        description: studentInfo?.version === "bangla" ? "চ্যাট মুছে ফেলা হয়েছে" : "Chat deleted",
       });
     } catch (error) {
-      console.error("Error deleting history:", error);
+      console.error("Error deleting chat:", error);
       toast({
-        title: studentInfo?.version === "bangla" ? "ত্রুটি" : "Error",
-        description: studentInfo?.version === "bangla" ? "মুছতে পারিনি" : "Failed to delete history",
+        title: "Error",
+        description: "Failed to delete chat",
         variant: "destructive",
       });
+    } finally {
+      setShowDeleteConfirm(false);
     }
   };
 
   const streamChat = async (userMessages: Array<{ role: string; content: string }>) => {
-    // Get session token for authenticated request
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session?.access_token) {
       throw new Error("Please log in to use the AI tutor");
     }
+
+    setThinkingStartTime(Date.now());
 
     const resp = await fetch(CHAT_URL, {
       method: "POST",
@@ -343,10 +311,11 @@ What would you like to learn today?`,
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         messages: userMessages,
         studentInfo: studentInfo,
         persona: getPersonaPrompt(persona),
+        subjectName: selectedSubjectName,
       }),
     });
 
@@ -368,18 +337,25 @@ What would you like to learn today?`,
     let textBuffer = "";
     let assistantContent = "";
     const assistantId = Date.now().toString();
+    const thinkingTime = thinkingStartTime ? Math.floor((Date.now() - thinkingStartTime) / 1000) : undefined;
 
-    setMessages(prev => [...prev, {
-      id: assistantId,
-      role: "assistant",
-      content: "",
-      timestamp: new Date(),
-    }]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+        timestamp: new Date(),
+        thinkingTime: thinkingTime && thinkingTime > 2 ? thinkingTime : undefined,
+      },
+    ]);
+
+    setThinkingStartTime(null);
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      
+
       textBuffer += decoder.decode(value, { stream: true });
 
       let newlineIndex: number;
@@ -399,12 +375,8 @@ What would you like to learn today?`,
           const content = parsed.choices?.[0]?.delta?.content as string | undefined;
           if (content) {
             assistantContent += content;
-            setMessages(prev => 
-              prev.map(m => 
-                m.id === assistantId 
-                  ? { ...m, content: assistantContent }
-                  : m
-              )
+            setMessages((prev) =>
+              prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
             );
           }
         } catch {
@@ -414,6 +386,7 @@ What would you like to learn today?`,
       }
     }
 
+    // Final flush
     if (textBuffer.trim()) {
       for (let raw of textBuffer.split("\n")) {
         if (!raw) continue;
@@ -427,15 +400,13 @@ What would you like to learn today?`,
           const content = parsed.choices?.[0]?.delta?.content as string | undefined;
           if (content) {
             assistantContent += content;
-            setMessages(prev => 
-              prev.map(m => 
-                m.id === assistantId 
-                  ? { ...m, content: assistantContent }
-                  : m
-              )
+            setMessages((prev) =>
+              prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
             );
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
 
@@ -452,7 +423,7 @@ What would you like to learn today?`,
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     const currentInput = input;
     setInput("");
     setIsTyping(true);
@@ -461,14 +432,12 @@ What would you like to learn today?`,
       const conversationId = await ensureConversation(currentInput);
       await saveMessage(conversationId, "user", currentInput);
 
-      const chatHistory = messages
-        .filter(m => m.id !== "1")
-        .map(m => ({ role: m.role, content: m.content }));
-      
+      const chatHistory = messages.filter((m) => m.id !== "1").map((m) => ({ role: m.role, content: m.content }));
+
       chatHistory.push({ role: "user", content: currentInput });
 
       const assistantContent = await streamChat(chatHistory);
-      
+
       if (assistantContent) {
         await saveMessage(conversationId, "assistant", assistantContent);
         await supabase
@@ -478,6 +447,7 @@ What would you like to learn today?`,
       }
     } catch (error) {
       console.error("Chat error:", error);
+      setThinkingStartTime(null);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to get response",
@@ -493,14 +463,6 @@ What would you like to learn today?`,
       e.preventDefault();
       handleSend();
     }
-  };
-
-  const handleCopy = (content: string) => {
-    navigator.clipboard.writeText(content);
-    toast({
-      title: "Copied!",
-      description: "Message copied to clipboard",
-    });
   };
 
   if (loading) {
@@ -521,8 +483,8 @@ What would you like to learn today?`,
   return (
     <div className="min-h-screen flex flex-col relative">
       <TutorBackground />
-      
-      {/* iOS-style Header */}
+
+      {/* Header */}
       <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/60 border-b border-border/30">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -534,9 +496,9 @@ What would you like to learn today?`,
                   </Link>
                 </Button>
               </motion.div>
-              
+
               <div className="flex items-center gap-3">
-                <motion.div 
+                <motion.div
                   className="relative w-11 h-11 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30"
                   animate={{
                     boxShadow: [
@@ -554,7 +516,7 @@ What would you like to learn today?`,
                     transition={{ duration: 2, repeat: Infinity }}
                   />
                 </motion.div>
-                
+
                 <div>
                   <h1 className="font-heading font-bold text-lg">AI Tutor</h1>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
@@ -566,6 +528,20 @@ What would you like to learn today?`,
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Subject Selector */}
+              {studentInfo && (
+                <SubjectSelector
+                  userId={user.id}
+                  studentClass={studentInfo.class}
+                  selectedSubject={selectedSubjectId}
+                  onSubjectChange={(id, name) => {
+                    setSelectedSubjectId(id);
+                    setSelectedSubjectName(name);
+                  }}
+                  isBangla={isBangla}
+                />
+              )}
+
               {user && (
                 <ChatHistory
                   userId={user.id}
@@ -575,150 +551,52 @@ What would you like to learn today?`,
                   isBangla={isBangla}
                 />
               )}
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={handleDeleteAllHistory}
-                  title={isBangla ? "সব ইতিহাস মুছুন" : "Delete all history"}
-                >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
-              </motion.div>
+
+              {currentConversationId && (
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    title={isBangla ? "এই চ্যাট মুছুন" : "Delete this chat"}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                </motion.div>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       {/* Chat Area */}
-      <main className="flex-1 overflow-y-auto relative z-10">
-        <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+      <main ref={chatContainerRef} className="flex-1 overflow-y-auto relative z-10 scroll-smooth">
+        <div className="max-w-4xl mx-auto px-4 py-6">
           <AnimatePresence>
             {messages.map((message, index) => (
-              <motion.div
+              <MessageBubble
                 key={message.id}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: index * 0.05, duration: 0.3 }}
-                className={cn(
-                  "flex gap-3",
-                  message.role === "user" ? "justify-end" : "justify-start"
-                )}
-              >
-                {message.role === "assistant" && (
-                  <motion.div 
-                    className="w-9 h-9 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-lg shadow-primary/20"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-                  >
-                    <Sparkles className="w-4 h-4 text-primary-foreground" />
-                  </motion.div>
-                )}
-
-                <motion.div
-                  className={cn(
-                    "max-w-[85%] rounded-3xl px-5 py-4 backdrop-blur-md",
-                    message.role === "user"
-                      ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-br-lg shadow-lg shadow-primary/20"
-                      : "bg-card/80 border border-border/50 rounded-bl-lg shadow-xl"
-                  )}
-                  whileHover={{ scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className={cn(
-                    "prose prose-sm max-w-none",
-                    message.role === "user" 
-                      ? "text-primary-foreground" 
-                      : "dark:prose-invert text-foreground"
-                  )}>
-                    {message.role === "assistant" 
-                      ? formatMessageContent(message.content)
-                      : message.content.split("\n").map((line, i) => (
-                          <p key={i} className="mb-2 last:mb-0">{line}</p>
-                        ))
-                    }
-                  </div>
-
-                  {message.role === "assistant" && message.content && (
-                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/30">
-                      <motion.button 
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                        onClick={() => handleCopy(message.content)}
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                        Copy
-                      </motion.button>
-                      <div className="flex-1" />
-                      <motion.button 
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-success hover:bg-success/10 transition-colors"
-                      >
-                        <ThumbsUp className="w-3.5 h-3.5" />
-                      </motion.button>
-                      <motion.button 
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                      >
-                        <ThumbsDown className="w-3.5 h-3.5" />
-                      </motion.button>
-                    </div>
-                  )}
-                </motion.div>
-
-                {message.role === "user" && (
-                  <motion.div 
-                    className="w-9 h-9 bg-gradient-to-br from-accent to-accent/80 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-lg shadow-accent/20"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-                  >
-                    <User className="w-4 h-4 text-accent-foreground" />
-                  </motion.div>
-                )}
-              </motion.div>
+                id={message.id}
+                role={message.role}
+                content={message.content}
+                timestamp={message.timestamp}
+                isStreaming={isTyping && index === messages.length - 1 && message.role === "assistant"}
+                thinkingTime={message.thinkingTime}
+                attachments={message.attachments}
+                index={index}
+              />
             ))}
           </AnimatePresence>
 
-          {/* Typing indicator */}
-          {isTyping && messages[messages.length - 1]?.role === "user" && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex gap-3"
-            >
-              <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
-                <Sparkles className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <div className="bg-card/80 backdrop-blur-md border border-border/50 rounded-3xl rounded-bl-lg px-5 py-4 shadow-xl">
-                <div className="flex gap-1.5">
-                  <motion.span 
-                    className="w-2.5 h-2.5 bg-primary/60 rounded-full"
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
-                  />
-                  <motion.span 
-                    className="w-2.5 h-2.5 bg-primary/60 rounded-full"
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }}
-                  />
-                  <motion.span 
-                    className="w-2.5 h-2.5 bg-primary/60 rounded-full"
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
+          {/* Thinking indicator */}
+          <AnimatePresence>
+            {isTyping && thinkingStartTime && messages[messages.length - 1]?.role === "user" && (
+              <ThinkingIndicator startTime={thinkingStartTime} />
+            )}
+          </AnimatePresence>
 
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} className="h-4" />
         </div>
       </main>
 
@@ -732,8 +610,8 @@ What would you like to learn today?`,
         }}
       />
 
-      {/* iOS-style Input Area */}
-      <div className="sticky bottom-0 z-20 bg-background border-t border-border/30 px-4 py-2">
+      {/* Input Area */}
+      <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent pt-4 px-4 pb-4">
         <div className="max-w-4xl mx-auto">
           {/* Persona Selector */}
           <AnimatePresence>
@@ -747,9 +625,7 @@ What would you like to learn today?`,
                 <div className="bg-card/80 backdrop-blur-md rounded-3xl border border-border/50 p-4 shadow-xl">
                   <div className="flex items-center gap-2 mb-3">
                     <Settings2 className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium">
-                      {isBangla ? "শিক্ষক মোড" : "Teaching Style"}
-                    </span>
+                    <span className="text-sm font-medium">{isBangla ? "শিক্ষক মোড" : "Teaching Style"}</span>
                   </div>
                   <PersonaSelector
                     selected={persona}
@@ -764,36 +640,9 @@ What would you like to learn today?`,
               </motion.div>
             )}
           </AnimatePresence>
-          
-          {/* Multimodal Input Section */}
-          <AnimatePresence>
-            {showMultimodal && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-4 overflow-hidden"
-              >
-                <div className="bg-card/80 backdrop-blur-md rounded-3xl border border-border/50 p-4 shadow-xl">
-                  <MultimodalInput
-                    onContentReady={(content, imageData) => {
-                      if (imageData) {
-                        setInput(content);
-                      } else {
-                        setInput(content);
-                      }
-                      setShowMultimodal(false);
-                    }}
-                    disabled={isTyping}
-                    isBangla={isBangla}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
-          {/* Main iOS Input */}
-          <IOSInputSection
+          {/* Enhanced Input Bar */}
+          <EnhancedInputBar
             input={input}
             setInput={setInput}
             onSend={handleSend}
@@ -804,15 +653,39 @@ What would you like to learn today?`,
             onStartRecording={startRecording}
             onStopRecording={stopRecording}
             onTogglePersona={() => setShowPersonaSelector(!showPersonaSelector)}
-            onToggleMultimodal={() => setShowMultimodal(!showMultimodal)}
             onOpenUpload={() => setShowUploadModal(true)}
             showPersonaSelector={showPersonaSelector}
-            showMultimodal={showMultimodal}
             isBangla={isBangla}
           />
-
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent className="bg-card/95 backdrop-blur-xl border-border/50">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              {isBangla ? "এই চ্যাট মুছে ফেলবেন?" : "Delete this chat?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isBangla
+                ? "এই কথোপকথন এবং এর সমস্ত মেসেজ স্থায়ীভাবে মুছে যাবে।"
+                : "This conversation and all its messages will be permanently deleted."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">{isBangla ? "বাতিল" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCurrentChat}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              {isBangla ? "মুছে ফেলুন" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
