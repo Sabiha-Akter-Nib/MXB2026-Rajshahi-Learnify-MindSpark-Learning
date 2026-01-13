@@ -67,6 +67,13 @@ const quickActions: QuickAction[] = [
   },
 ];
 
+interface PendingAttachment {
+  type: "image" | "pdf";
+  url: string;
+  base64?: string;
+  name?: string;
+}
+
 interface EnhancedInputBarProps {
   input: string;
   setInput: (value: string) => void;
@@ -83,6 +90,8 @@ interface EnhancedInputBarProps {
   showPersonaSelector: boolean;
   isBangla: boolean;
   disabled?: boolean;
+  pendingAttachment?: PendingAttachment | null;
+  onRemoveAttachment?: () => void;
 }
 
 const EnhancedInputBar = ({
@@ -101,10 +110,11 @@ const EnhancedInputBar = ({
   showPersonaSelector,
   isBangla,
   disabled = false,
+  pendingAttachment,
+  onRemoveAttachment,
 }: EnhancedInputBarProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -119,20 +129,15 @@ const EnhancedInputBar = ({
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setSelectedImage(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
       onImageSelected?.(file);
     }
   };
 
-  const removeSelectedImage = () => {
-    setSelectedImage(null);
+  const handleRemoveAttachment = () => {
     if (imageInputRef.current) {
       imageInputRef.current.value = "";
     }
+    onRemoveAttachment?.();
   };
 
   const handleVoiceToggle = async () => {
@@ -156,13 +161,13 @@ const EnhancedInputBar = ({
     setShowQuickActions(false);
   };
 
-  const canSend = (input.trim() || selectedImage) && !isTyping && !disabled;
+  const canSend = (input.trim() || pendingAttachment) && !isTyping && !disabled;
 
   return (
     <div className="relative">
-      {/* Selected image preview */}
+      {/* Pending attachment preview */}
       <AnimatePresence>
-        {selectedImage && (
+        {pendingAttachment && (
           <motion.div
             initial={{ opacity: 0, y: 10, height: 0 }}
             animate={{ opacity: 1, y: 0, height: "auto" }}
@@ -170,15 +175,22 @@ const EnhancedInputBar = ({
             className="mb-3 overflow-hidden"
           >
             <div className="relative inline-block group">
-              <img
-                src={selectedImage}
-                alt="Selected"
-                className="max-h-32 rounded-xl border border-border/50 shadow-lg transition-transform group-hover:scale-105"
-              />
+              {pendingAttachment.type === "image" && pendingAttachment.url ? (
+                <img
+                  src={pendingAttachment.url}
+                  alt="Selected"
+                  className="max-h-32 rounded-xl border border-border/50 shadow-lg transition-transform group-hover:scale-105"
+                />
+              ) : (
+                <div className="flex items-center gap-2 px-4 py-3 bg-muted rounded-xl border border-border/50">
+                  <Paperclip className="w-5 h-5 text-primary" />
+                  <span className="text-sm font-medium">{pendingAttachment.name || "PDF Document"}</span>
+                </div>
+              )}
               <motion.button
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={removeSelectedImage}
+                onClick={handleRemoveAttachment}
                 className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center shadow-md"
               >
                 <X className="w-3.5 h-3.5" />
@@ -187,6 +199,7 @@ const EnhancedInputBar = ({
           </motion.div>
         )}
       </AnimatePresence>
+
 
       {/* Main input container */}
       <motion.div

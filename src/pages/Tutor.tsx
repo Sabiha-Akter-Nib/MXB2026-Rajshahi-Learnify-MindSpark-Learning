@@ -35,13 +35,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Loader2, AlertTriangle } from "lucide-react";
 
+interface Attachment {
+  type: "image" | "pdf";
+  url: string;
+  name?: string;
+  base64?: string;
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
   thinkingTime?: number;
-  attachments?: Array<{ type: "image" | "pdf"; url: string; name?: string }>;
+  attachments?: Attachment[];
 }
 
 interface StudentInfo {
@@ -65,6 +72,8 @@ const Tutor = () => {
   const [selectedSubjectName, setSelectedSubjectName] = useState<string | null>(null);
   const [thinkingStartTime, setThinkingStartTime] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [pendingAttachment, setPendingAttachment] = useState<Attachment | null>(null);
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
@@ -169,20 +178,29 @@ What would you like to learn today?`,
     fetchProfile();
   }, [user, createInitialGreeting]);
 
-  // Smooth scroll without auto-scroll on new content
-  const scrollToBottom = useCallback((behavior: "smooth" | "auto" = "smooth") => {
+  // Only auto-scroll when user is at bottom, not when they scroll up
+  const scrollToBottom = useCallback((behavior: "smooth" | "auto" = "smooth", force = false) => {
+    if (chatContainerRef.current && !userScrolledUp || force) {
+      messagesEndRef.current?.scrollIntoView({ behavior });
+    }
+  }, [userScrolledUp]);
+
+  // Track user scroll position
+  const handleScroll = useCallback(() => {
     if (chatContainerRef.current) {
       const { scrollHeight, scrollTop, clientHeight } = chatContainerRef.current;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
-      if (isNearBottom) {
-        messagesEndRef.current?.scrollIntoView({ behavior });
-      }
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      // If user scrolls up more than 100px from bottom, disable auto-scroll
+      setUserScrolledUp(distanceFromBottom > 100);
     }
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Only scroll if user hasn't scrolled up
+    if (!userScrolledUp) {
+      scrollToBottom();
+    }
+  }, [messages, userScrolledUp, scrollToBottom]);
 
   const saveMessage = async (conversationId: string, role: "user" | "assistant", content: string) => {
     try {
@@ -295,7 +313,7 @@ What would you like to learn today?`,
     }
   };
 
-  const streamChat = async (userMessages: Array<{ role: string; content: string }>) => {
+  const streamChat = async (userMessages: Array<{ role: string; content: string }>, attachment?: Attachment | null) => {
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -316,6 +334,7 @@ What would you like to learn today?`,
         studentInfo: studentInfo,
         persona: getPersonaPrompt(persona),
         subjectName: selectedSubjectName,
+        imageBase64: attachment?.type === "image" ? attachment.base64 : undefined,
       }),
     });
 
@@ -414,29 +433,44 @@ What would you like to learn today?`,
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isTyping) return;
+    if ((!input.trim() && !pendingAttachment) || isTyping) return;
 
+    const attachments = pendingAttachment ? [pendingAttachment] : undefined;
+    
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: input,
       timestamp: new Date(),
+      attachments,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     const currentInput = input;
+    const currentAttachment = pendingAttachment;
     setInput("");
+    setPendingAttachment(null);
+    setUserScrolledUp(false); // Reset scroll state when user sends
     setIsTyping(true);
 
     try {
-      const conversationId = await ensureConversation(currentInput);
-      await saveMessage(conversationId, "user", currentInput);
+      const conversationId = await ensureConversation(currentInput || "Image/PDF analysis");
+      await saveMessage(conversationId, "user", currentInput || "[Attachment]");
 
       const chatHistory = messages.filter((m) => m.id !== "1").map((m) => ({ role: m.role, content: m.content }));
 
-      chatHistory.push({ role: "user", content: currentInput });
+      // Build message content with attachment info
+      let messageContent = currentInput;
+      if (currentAttachment) {
+        const attachmentDesc = currentAttachment.type === "image" 
+          ? `[Image uploaded: ${currentAttachment.name || "image"}]\n\nPlease analyze this image carefully and help me understand the content. If it's homework, a textbook page, or a diagram, explain the concepts shown step by step.`
+          : `[PDF uploaded: ${currentAttachment.name || "document.pdf"}]\n\nPlease help me understand the content of this document.`;
+        messageContent = messageContent ? `${attachmentDesc}\n\n${messageContent}` : attachmentDesc;
+      }
 
-      const assistantContent = await streamChat(chatHistory);
+      chatHistory.push({ role: "user", content: messageContent });
+
+      const assistantContent = await streamChat(chatHistory, currentAttachment);
 
       if (assistantContent) {
         await saveMessage(conversationId, "assistant", assistantContent);
@@ -571,7 +605,11 @@ What would you like to learn today?`,
       </header>
 
       {/* Chat Area */}
-      <main ref={chatContainerRef} className="flex-1 overflow-y-auto relative z-10 scroll-smooth">
+      <main 
+        ref={chatContainerRef} 
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto relative z-10 scroll-smooth"
+      >
         <div className="max-w-4xl mx-auto px-4 py-6">
           <AnimatePresence>
             {messages.map((message, index) => (
@@ -604,8 +642,16 @@ What would you like to learn today?`,
       <FileUploadModal
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
-        onFileProcessed={(content) => {
-          setInput(content);
+        onFileProcessed={(content, type, base64, name) => {
+          setPendingAttachment({
+            type,
+            url: type === "image" && base64 ? `data:image/jpeg;base64,${base64}` : "",
+            base64,
+            name,
+          });
+          if (content) {
+            setInput(content);
+          }
           setShowUploadModal(false);
         }}
       />
@@ -656,6 +702,8 @@ What would you like to learn today?`,
             onOpenUpload={() => setShowUploadModal(true)}
             showPersonaSelector={showPersonaSelector}
             isBangla={isBangla}
+            pendingAttachment={pendingAttachment}
+            onRemoveAttachment={() => setPendingAttachment(null)}
           />
         </div>
       </div>

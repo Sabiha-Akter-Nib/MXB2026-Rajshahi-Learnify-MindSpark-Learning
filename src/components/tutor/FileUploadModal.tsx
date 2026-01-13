@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 interface FileUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onFileProcessed: (content: string, type: "image" | "pdf") => void;
+  onFileProcessed: (content: string, type: "image" | "pdf", base64?: string, name?: string) => void;
 }
 
 export const FileUploadModal = ({
@@ -57,16 +57,16 @@ export const FileUploadModal = ({
     try {
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const base64 = (reader.result as string).split(",")[1];
+        const base64Full = reader.result as string;
+        const base64 = base64Full.split(",")[1];
         const isImage = file.type.startsWith("image/");
 
-        // For images, we'll send the base64 directly to be analyzed
-        // For PDFs, we'd need OCR processing
+        // Pass the base64 data along with description
         const description = isImage
-          ? `[Image uploaded: ${file.name}]\n\nPlease analyze this image and help me understand the content. If it's homework or a textbook page, explain the concepts shown.`
-          : `[PDF uploaded: ${file.name}]\n\nPlease help me understand the content of this document.`;
+          ? `Please analyze this image and help me understand the content. If it's homework or a textbook page, explain the concepts shown.`
+          : `Please help me understand the content of this PDF document.`;
 
-        onFileProcessed(description, isImage ? "image" : "pdf");
+        onFileProcessed(description, isImage ? "image" : "pdf", base64, file.name);
         onClose();
         resetState();
       };
@@ -78,7 +78,6 @@ export const FileUploadModal = ({
         description: "Could not process the file. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsProcessing(false);
     }
   };
