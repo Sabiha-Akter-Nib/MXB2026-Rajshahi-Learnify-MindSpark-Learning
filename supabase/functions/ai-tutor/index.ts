@@ -360,7 +360,7 @@ serve(async (req) => {
 
     console.log("Authenticated user:", user.id);
 
-    const { messages, studentInfo, persona } = await req.json();
+    const { messages, studentInfo, persona, imageBase64 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
 
@@ -376,7 +376,7 @@ serve(async (req) => {
     // If the student asks only by chapter number, we must first resolve the exact chapter title.
     const chapterReq = latestMessage?.content ? parseChapterRequest(String(latestMessage.content)) : { hasExplicitChapterTitle: true };
 
-    if (latestMessage?.content && chapterReq?.chapterNumber && !chapterReq?.hasExplicitChapterTitle) {
+    if (latestMessage?.content && chapterReq?.chapterNumber && !chapterReq?.hasExplicitChapterTitle && !imageBase64) {
       // Without a subject, we cannot safely map "chapter 2" to a real chapter.
       if (!chapterReq.subjectHint) {
         return sseText(
@@ -399,7 +399,7 @@ serve(async (req) => {
             : `${chapterReq.subjectHint} এর অধ্যায় ${chapterReq.chapterNumber} এর সঠিক নাম আমি নির্ভরযোগ্যভাবে যাচাই করতে পারিনি। দয়া করে অধ্যায়ের নাম বলো, অথবা সূচিপত্র/চ্যাপ্টার লিস্টের ছবি/PDF আপলোড করো।`
         );
       }
-    } else {
+    } else if (!imageBase64) {
       // Perform web search if we have Perplexity API key and there's a substantial question
       if (PERPLEXITY_API_KEY && latestMessage?.content?.length > 10) {
         const searchQuery = extractSearchQuery(latestMessage.content, studentInfo?.class || 5);
@@ -415,12 +415,42 @@ serve(async (req) => {
 
     console.log("Student Info:", JSON.stringify(studentInfo));
     console.log("Web context available:", webContext ? "Yes" : "No");
+    console.log("Image attached:", imageBase64 ? "Yes" : "No");
     console.log("Sending request to Lovable AI Gateway...");
     
     // Track thinking start time for display
     const thinkingStartTime = Date.now();
 
-    // Use GPT-5 for superior reasoning and accuracy
+    // Prepare messages with image if provided
+    let apiMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.slice(0, -1), // All messages except the last one
+    ];
+
+    // Handle the last message with potential image
+    if (imageBase64) {
+      // For vision requests, use GPT-5 with image content
+      const lastUserMessage = messages[messages.length - 1];
+      apiMessages.push({
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: lastUserMessage.content || "Please analyze this image and explain what you see. If it's educational content, explain the concepts thoroughly following Bloom's Taxonomy.",
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/jpeg;base64,${imageBase64}`,
+            },
+          },
+        ],
+      });
+    } else {
+      apiMessages.push(messages[messages.length - 1]);
+    }
+
+    // Use GPT-5 for superior reasoning and accuracy (supports vision)
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -429,10 +459,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "openai/gpt-5",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
+        messages: apiMessages,
         stream: true,
       }),
     });
