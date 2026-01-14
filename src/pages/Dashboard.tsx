@@ -49,6 +49,8 @@ import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
 import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
 import WeeklyAchievements from "@/components/dashboard/WeeklyAchievements";
 import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
+import WeeklyNotesDownload from "@/components/dashboard/WeeklyNotesDownload";
+import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import DailyNotificationTrigger from "@/components/notifications/DailyNotificationTrigger";
 
@@ -514,14 +516,13 @@ const Dashboard = () => {
                 <span className="font-semibold text-accent text-xs">{streak.currentStreak || stats?.current_streak || 0}</span>
               </motion.div>
 
-              {/* Profile */}
-              <motion.div 
-                className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg cursor-pointer"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <User className="w-5 h-5 text-primary-foreground" />
-              </motion.div>
+              {/* Profile Avatar */}
+              <AvatarUpload 
+                userId={user.id} 
+                userName={profile?.full_name || ""} 
+                size="sm" 
+                showUploadButton={false}
+              />
             </div>
           </div>
         </header>
@@ -579,6 +580,9 @@ const Dashboard = () => {
 
           {/* Weekly Achievements - Full Width */}
           <WeeklyAchievements />
+
+          {/* Weekly Notes Download */}
+          <WeeklyNotesDownload />
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -14,6 +14,7 @@ import {
   Trash2,
   AlertTriangle,
 } from "lucide-react";
+import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -258,6 +259,16 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Avatar Upload */}
+              <div className="flex justify-center pb-4 border-b border-border/50">
+                <AvatarUpload
+                  userId={user.id}
+                  userName={profile.full_name}
+                  size="lg"
+                  showUploadButton={true}
+                />
+              </div>
+
               {/* Full Name */}
               <div className="space-y-2">
                 <Label htmlFor="full_name" className="flex items-center gap-2">
