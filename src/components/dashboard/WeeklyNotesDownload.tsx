@@ -143,14 +143,35 @@ const WeeklyNotesDownload = () => {
       const { startOfWeek, endOfWeek } = getWeekDates();
 
       // Get all conversations for this week
-      const { data: conversations } = await supabase
+      const { data: allConversations } = await supabase
         .from("chat_conversations")
-        .select("id, title")
+        .select("id, title, updated_at")
         .eq("user_id", user.id)
         .gte("updated_at", startOfWeek.toISOString())
-        .lte("updated_at", endOfWeek.toISOString());
+        .lte("updated_at", endOfWeek.toISOString())
+        .order("updated_at", { ascending: false });
 
-      if (!conversations || conversations.length === 0) {
+      // Filter conversations that match the selected subject by title
+      const subjectKeywords = [
+        subject.name.toLowerCase(),
+        subject.name_bn?.toLowerCase() || "",
+        // Add common variations
+        subject.name.replace(/\s+/g, "").toLowerCase(),
+      ].filter(Boolean);
+
+      const filteredConversations = (allConversations || []).filter(conv => {
+        const titleLower = conv.title.toLowerCase();
+        return subjectKeywords.some(keyword => 
+          keyword && titleLower.includes(keyword)
+        );
+      });
+
+      // If no subject-specific conversations, check for any conversations
+      const conversationsToUse = filteredConversations.length > 0 
+        ? filteredConversations 
+        : allConversations || [];
+
+      if (!conversationsToUse || conversationsToUse.length === 0) {
         toast({
           title: isBangla ? "কোনো নোট নেই" : "No Notes Found",
           description: isBangla 
@@ -162,9 +183,12 @@ const WeeklyNotesDownload = () => {
         return;
       }
 
-      // Get messages from all conversations
+      // Get messages from filtered conversations
       let allMessages: ConversationMessage[] = [];
-      for (const conv of conversations) {
+      const conversationTitles: string[] = [];
+      
+      for (const conv of conversationsToUse) {
+        conversationTitles.push(conv.title);
         const { data: messages } = await supabase
           .from("chat_messages")
           .select("role, content, created_at")
@@ -179,11 +203,12 @@ const WeeklyNotesDownload = () => {
       // Get assessments for this subject this week
       const { data: assessments } = await supabase
         .from("assessments")
-        .select("topic, bloom_level, correct_answers, total_questions, xp_earned")
+        .select("topic, bloom_level, correct_answers, total_questions, xp_earned, completed_at")
         .eq("user_id", user.id)
         .eq("subject_id", subjectId)
         .gte("created_at", startOfWeek.toISOString())
-        .lte("created_at", endOfWeek.toISOString());
+        .lte("created_at", endOfWeek.toISOString())
+        .order("completed_at", { ascending: true });
 
       // Create PDF
       const doc = new jsPDF();
@@ -191,127 +216,224 @@ const WeeklyNotesDownload = () => {
       const margin = 20;
       let yPos = 20;
 
+      // Header with gradient effect (simulated with colors)
+      doc.setFillColor(74, 144, 226);
+      doc.rect(0, 0, pageWidth, 45, "F");
+      
       // Title
-      doc.setFontSize(22);
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
       doc.setFont("helvetica", "bold");
-      doc.text(`Weekly Study Notes`, pageWidth / 2, yPos, { align: "center" });
-      yPos += 10;
+      doc.text(`Weekly Study Notes`, pageWidth / 2, 18, { align: "center" });
+      
+      doc.setFontSize(16);
+      doc.text(isBangla ? subject.name_bn || subject.name : subject.name, pageWidth / 2, 28, { align: "center" });
 
-      doc.setFontSize(14);
+      doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
-      doc.text(subject.name, pageWidth / 2, yPos, { align: "center" });
-      yPos += 8;
-
-      doc.setFontSize(10);
       doc.text(
-        `Week: ${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`,
+        `${startOfWeek.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${endOfWeek.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
         pageWidth / 2,
-        yPos,
+        38,
         { align: "center" }
       );
-      yPos += 15;
+
+      yPos = 55;
+      doc.setTextColor(0, 0, 0);
+
+      // Summary Stats Box
+      doc.setFillColor(245, 247, 250);
+      doc.roundedRect(margin, yPos, pageWidth - margin * 2, 25, 3, 3, "F");
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      const totalConversations = conversationsToUse.length;
+      const totalAssessments = assessments?.length || 0;
+      const totalXP = assessments?.reduce((sum, a) => sum + a.xp_earned, 0) || 0;
+      
+      doc.text(`📚 ${totalConversations} Conversations`, margin + 10, yPos + 10);
+      doc.text(`📝 ${totalAssessments} Assessments`, margin + 80, yPos + 10);
+      doc.text(`⭐ ${totalXP} XP Earned`, margin + 150, yPos + 10);
+      
+      yPos += 35;
+
+      // Topics Covered Section
+      if (conversationTitles.length > 0) {
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(74, 144, 226);
+        doc.text("📖 Topics Covered This Week", margin, yPos);
+        yPos += 8;
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(80, 80, 80);
+        
+        const uniqueTopics = [...new Set(conversationTitles)].slice(0, 8);
+        for (const topic of uniqueTopics) {
+          if (yPos > 270) {
+            doc.addPage();
+            yPos = 20;
+          }
+          const truncatedTopic = topic.length > 60 ? topic.slice(0, 60) + "..." : topic;
+          doc.text(`• ${truncatedTopic}`, margin + 5, yPos);
+          yPos += 6;
+        }
+        yPos += 5;
+      }
 
       // Separator
-      doc.setDrawColor(200);
+      doc.setDrawColor(200, 200, 200);
       doc.line(margin, yPos, pageWidth - margin, yPos);
       yPos += 10;
 
-      // AI Tutor Summary
+      // AI Tutor Learning Summary
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("AI Tutor Learning Summary", margin, yPos);
-      yPos += 8;
+      doc.setTextColor(74, 144, 226);
+      doc.text("🤖 AI Tutor Learning Summary", margin, yPos);
+      yPos += 10;
 
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
+      doc.setTextColor(50, 50, 50);
 
-      // Extract key topics from messages
+      // Extract key topics from assistant messages
       const assistantMessages = allMessages
         .filter(m => m.role === "assistant")
-        .slice(0, 10); // Take first 10 AI responses
+        .slice(0, 15);
 
       if (assistantMessages.length === 0) {
+        doc.setTextColor(150, 150, 150);
         doc.text("No learning sessions recorded this week.", margin, yPos);
         yPos += 10;
       } else {
-        for (const msg of assistantMessages) {
-          // Truncate content for PDF
-          const content = msg.content.slice(0, 300) + (msg.content.length > 300 ? "..." : "");
-          const lines = doc.splitTextToSize(content, pageWidth - margin * 2);
+        for (let i = 0; i < assistantMessages.length; i++) {
+          const msg = assistantMessages[i];
+          // Clean and format content
+          let content = msg.content
+            .replace(/\*\*/g, "")
+            .replace(/###/g, "")
+            .replace(/\n\n+/g, "\n")
+            .trim();
+          
+          // Take meaningful excerpt (first 400 chars or first complete paragraph)
+          const firstPara = content.split("\n")[0];
+          content = firstPara.length > 400 ? firstPara.slice(0, 400) + "..." : firstPara;
+          
+          if (content.length < 20) continue; // Skip very short messages
+          
+          const lines = doc.splitTextToSize(content, pageWidth - margin * 2 - 10);
           
           // Check if we need a new page
-          if (yPos + lines.length * 5 > 280) {
+          if (yPos + lines.length * 5 > 275) {
             doc.addPage();
             yPos = 20;
           }
           
-          doc.text(lines, margin, yPos);
-          yPos += lines.length * 5 + 5;
+          // Add message number indicator
+          doc.setFillColor(74, 144, 226);
+          doc.circle(margin + 3, yPos - 1.5, 2, "F");
+          
+          doc.setTextColor(50, 50, 50);
+          doc.text(lines, margin + 10, yPos);
+          yPos += lines.length * 5 + 8;
         }
       }
 
-      // Add separator
+      // Add separator before assessments
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
       yPos += 5;
+      doc.setDrawColor(200, 200, 200);
       doc.line(margin, yPos, pageWidth - margin, yPos);
       yPos += 10;
 
       // Assessment Results
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("Assessment Performance", margin, yPos);
-      yPos += 8;
+      doc.setTextColor(74, 144, 226);
+      doc.text("📊 Assessment Performance", margin, yPos);
+      yPos += 10;
 
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
 
       if (!assessments || assessments.length === 0) {
-        doc.text("No assessments completed this week.", margin, yPos);
+        doc.setTextColor(150, 150, 150);
+        doc.text("No assessments completed this week for this subject.", margin, yPos);
         yPos += 10;
       } else {
         for (const assessment of assessments) {
-          const line = `• ${assessment.topic || "General"} (${assessment.bloom_level}): ${assessment.correct_answers}/${assessment.total_questions} correct (+${assessment.xp_earned} XP)`;
-          
-          if (yPos > 280) {
+          if (yPos > 275) {
             doc.addPage();
             yPos = 20;
           }
           
+          const percentage = Math.round((assessment.correct_answers / assessment.total_questions) * 100);
+          const emoji = percentage >= 80 ? "🌟" : percentage >= 60 ? "✅" : "📝";
+          
+          doc.setTextColor(50, 50, 50);
+          const line = `${emoji} ${assessment.topic || "General Quiz"} (${assessment.bloom_level})`;
           doc.text(line, margin, yPos);
-          yPos += 6;
+          
+          // Score bar
+          const barX = margin + 120;
+          const barWidth = 40;
+          doc.setFillColor(230, 230, 230);
+          doc.roundedRect(barX, yPos - 3, barWidth, 5, 1, 1, "F");
+          
+          const fillColor = percentage >= 80 ? [76, 175, 80] : percentage >= 60 ? [255, 193, 7] : [255, 87, 34];
+          doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+          doc.roundedRect(barX, yPos - 3, barWidth * (percentage / 100), 5, 1, 1, "F");
+          
+          doc.text(`${assessment.correct_answers}/${assessment.total_questions} (${percentage}%)`, barX + barWidth + 5, yPos);
+          
+          yPos += 10;
         }
       }
 
       // Footer
-      yPos = 285;
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text(
-        "Generated by MindSpark Learning - mindsparklearning.lovable.app",
-        pageWidth / 2,
-        yPos,
-        { align: "center" }
-      );
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(
+          `Generated by MindSpark Learning | Page ${i} of ${pageCount}`,
+          pageWidth / 2,
+          290,
+          { align: "center" }
+        );
+      }
 
       // Save PDF
       const fileName = `${subject.name.replace(/\s+/g, "_")}_Weekly_Notes_${startOfWeek.toISOString().split("T")[0]}.pdf`;
       doc.save(fileName);
 
-      // Save to database
+      // Save to database for tracking
+      const notesContent = assistantMessages.map(m => ({ 
+        content: m.content.slice(0, 500), 
+        date: m.created_at 
+      }));
+
       await supabase.from("weekly_notes").upsert({
         user_id: user.id,
         subject_id: subjectId,
         subject_name: subject.name,
         week_start: startOfWeek.toISOString().split("T")[0],
         week_end: endOfWeek.toISOString().split("T")[0],
-        notes_content: assistantMessages.map(m => ({ content: m.content.slice(0, 500), date: m.created_at })),
+        notes_content: notesContent,
         mcq_content: assessments || [],
       }, { onConflict: "user_id,subject_id,week_start" });
 
       toast({
-        title: isBangla ? "PDF ডাউনলোড হয়েছে!" : "PDF Downloaded!",
+        title: isBangla ? "PDF ডাউনলোড হয়েছে! ✨" : "PDF Downloaded! ✨",
         description: isBangla 
-          ? "তোমার সাপ্তাহিক নোট ডাউনলোড হয়েছে।"
-          : "Your weekly notes have been downloaded.",
+          ? `${subject.name_bn || subject.name} এর সাপ্তাহিক নোট ডাউনলোড হয়েছে।`
+          : `Your weekly notes for ${subject.name} have been downloaded.`,
       });
 
       // Refresh notes list
