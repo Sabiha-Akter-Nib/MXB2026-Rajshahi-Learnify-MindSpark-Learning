@@ -49,7 +49,7 @@ import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
 import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
 import WeeklyAchievements from "@/components/dashboard/WeeklyAchievements";
 import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
-import WeeklyNotesDownload from "@/components/dashboard/WeeklyNotesDownload";
+
 import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import DailyNotificationTrigger from "@/components/notifications/DailyNotificationTrigger";
@@ -581,8 +581,6 @@ const Dashboard = () => {
           {/* Weekly Achievements - Full Width */}
           <WeeklyAchievements />
 
-          {/* Weekly Notes Download */}
-          <WeeklyNotesDownload />
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

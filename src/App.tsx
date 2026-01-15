@@ -4,6 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import OfflineIndicator from "@/components/pwa/OfflineIndicator";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
+import UpdateNotification from "@/components/pwa/UpdateNotification";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -25,6 +28,8 @@ const queryClient = new QueryClient();
 function AppContent() {
   return (
     <>
+      <OfflineIndicator />
+      <UpdateNotification />
       <Toaster />
       <Sonner />
       <Routes>
@@ -56,6 +61,7 @@ const App = () => {
         <BrowserRouter>
           <AuthProvider>
             <AppContent />
+            <InstallPrompt />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
