@@ -41,7 +41,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
-import { OfflineLessonManager } from "@/components/offline/OfflineLessonManager";
 
 type Division = "science" | "commerce" | "arts" | null;
 
@@ -423,14 +422,6 @@ const Settings = () => {
           <NotificationSettings />
         </motion.div>
 
-        {/* Offline Content Manager */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <OfflineLessonManager />
-        </motion.div>
 
 
         {/* Navigation Links */}

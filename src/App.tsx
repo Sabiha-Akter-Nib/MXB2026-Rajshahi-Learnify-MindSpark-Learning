@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import OfflineIndicator from "@/components/pwa/OfflineIndicator";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
-import UpdateNotification from "@/components/pwa/UpdateNotification";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -29,7 +28,6 @@ function AppContent() {
   return (
     <>
       <OfflineIndicator />
-      <UpdateNotification />
       <Toaster />
       <Sonner />
       <Routes>
