@@ -17,6 +17,7 @@ interface SignUpMetadata {
   school_name: string;
   class: number;
   version: "bangla" | "english";
+  division?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -59,6 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           school_name: metadata.school_name,
           class: metadata.class,
           version: metadata.version,
+          ...(metadata.division ? { division: metadata.division } : {}),
         },
       },
     });

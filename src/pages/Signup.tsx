@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Sparkles, ArrowRight, Loader2, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Sparkles, ArrowRight, Loader2, CheckCircle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import {
   Select,
   SelectContent,
@@ -15,7 +14,6 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 const classes = [
@@ -56,14 +54,12 @@ const signupSchema = z.object({
   path: ["division"],
 });
 
-type Step = "form" | "otp" | "success";
+type Step = "form" | "emailSent" | "success";
 
 const Signup = () => {
   const [step, setStep] = useState<Step>("form");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -96,7 +92,7 @@ const Signup = () => {
     }
   }, [showDivision, formData.division]);
 
-  const handleSendOTP = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     
@@ -116,52 +112,6 @@ const Signup = () => {
     setIsLoading(true);
     
     try {
-      // Send OTP to email
-      const { data, error: otpError } = await supabase.functions.invoke("send-otp", {
-        body: { email: formData.email, type: "signup" },
-      });
-
-      if (otpError) throw otpError;
-      if (data?.error) throw new Error(data.error);
-
-      toast({
-        title: "Verification Code Sent",
-        description: "Please check your email for the 6-digit code.",
-      });
-      
-      setStep("otp");
-    } catch (err) {
-      console.error("Send OTP error:", err);
-      toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : "Failed to send verification code",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifyAndSignup = async () => {
-    if (otp.length !== 6) {
-      setOtpError("Please enter the complete 6-digit code");
-      return;
-    }
-
-    setIsLoading(true);
-    setOtpError("");
-
-    try {
-      // Verify OTP first
-      const { data: verifyData, error: verifyError } = await supabase.functions.invoke("verify-otp", {
-        body: { email: formData.email, code: otp, type: "signup" },
-      });
-
-      if (verifyError || verifyData?.error) {
-        throw new Error(verifyData?.error || "Invalid or expired verification code");
-      }
-
-      // OTP verified, now create the account
       const { error } = await signUp(
         formData.email,
         formData.password,
@@ -181,40 +131,17 @@ const Signup = () => {
         throw error;
       }
 
-      setStep("success");
+      setStep("emailSent");
       toast({
-        title: "Account Created!",
-        description: "Welcome to MindSpark Learning!",
+        title: "Verification Email Sent",
+        description: "Please check your email to confirm your account.",
       });
-
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 2000);
       
     } catch (err) {
       console.error("Signup error:", err);
-      setOtpError(err instanceof Error ? err.message : "Failed to create account");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResendOTP = async () => {
-    setIsLoading(true);
-    try {
-      await supabase.functions.invoke("send-otp", {
-        body: { email: formData.email, type: "signup" },
-      });
-      toast({
-        title: "Code Resent",
-        description: "A new verification code has been sent to your email.",
-      });
-      setOtp("");
-    } catch (err) {
       toast({
         title: "Error",
-        description: "Failed to resend code",
+        description: err instanceof Error ? err.message : "Failed to create account",
         variant: "destructive",
       });
     } finally {
@@ -250,91 +177,38 @@ const Signup = () => {
             </span>
           </Link>
 
-          {step === "success" ? (
+          {step === "emailSent" ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               className="text-center py-8"
             >
-              <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="w-10 h-10 text-success" />
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Mail className="w-10 h-10 text-primary" />
               </div>
               <h1 className="font-heading font-bold text-3xl mb-2">
-                Welcome to MindSpark!
+                Check your email
               </h1>
               <p className="text-muted-foreground mb-6">
-                Your account has been created successfully. Redirecting to dashboard...
+                We've sent a confirmation link to <strong>{formData.email}</strong>. 
+                Click the link in the email to activate your account.
               </p>
-              <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
-            </motion.div>
-          ) : step === "otp" ? (
-            <>
-              <h1 className="font-heading font-bold text-3xl mb-2">
-                Verify your email
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                We sent a 6-digit code to <strong>{formData.email}</strong>
+              <p className="text-sm text-muted-foreground mb-6">
+                Didn't receive the email? Check your spam folder or try signing up again.
               </p>
-
-              <div className="space-y-6">
-                <div className="flex justify-center">
-                  <InputOTP
-                    maxLength={6}
-                    value={otp}
-                    onChange={setOtp}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-
-                {otpError && <p className="text-sm text-destructive text-center">{otpError}</p>}
-
+              <div className="flex flex-col gap-3">
                 <Button
-                  variant="hero"
-                  size="lg"
-                  className="w-full"
-                  onClick={handleVerifyAndSignup}
-                  disabled={isLoading || otp.length !== 6}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    <>
-                      Verify & Create Account
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </Button>
-
-                <p className="text-center text-muted-foreground text-sm">
-                  Didn't receive the code?{" "}
-                  <button
-                    onClick={handleResendOTP}
-                    disabled={isLoading}
-                    className="text-primary hover:underline disabled:opacity-50"
-                  >
-                    Resend
-                  </button>
-                </p>
-
-                <button
+                  variant="outline"
                   onClick={() => setStep("form")}
-                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground"
+                  className="w-full"
                 >
-                  ← Back to signup form
-                </button>
+                  Back to signup
+                </Button>
+                <Link to="/login" className="text-primary hover:underline text-sm">
+                  Already verified? Log in
+                </Link>
               </div>
-            </>
+            </motion.div>
           ) : (
             <>
               <h1 className="font-heading font-bold text-3xl mb-2">
@@ -344,7 +218,7 @@ const Signup = () => {
                 Start your personalized learning journey today
               </p>
 
-              <form onSubmit={handleSendOTP} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Name */}
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
@@ -473,22 +347,24 @@ const Signup = () => {
                       </SelectContent>
                     </Select>
                     {errors.division && <p className="text-sm text-destructive">{errors.division}</p>}
-                    <p className="text-xs text-muted-foreground">
-                      Choose your academic division for specialized subjects
-                    </p>
                   </motion.div>
                 )}
 
-                {/* Submit */}
-                <Button variant="hero" size="lg" className="w-full" type="submit" disabled={isLoading}>
+                <Button
+                  variant="hero"
+                  size="lg"
+                  className="w-full"
+                  type="submit"
+                  disabled={isLoading}
+                >
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Sending Code...
+                      Creating Account...
                     </>
                   ) : (
                     <>
-                      Continue
+                      Create Account
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -511,14 +387,14 @@ const Signup = () => {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-          className="absolute top-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl"
+          className="absolute top-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl"
         />
         <motion.div
           animate={{ rotate: -360 }}
           transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-0 left-0 w-96 h-96 bg-primary-foreground/10 rounded-full blur-3xl"
+          className="absolute bottom-0 right-0 w-96 h-96 bg-primary-foreground/10 rounded-full blur-3xl"
         />
-        
+
         <div className="relative z-10 text-center px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -526,14 +402,19 @@ const Signup = () => {
             transition={{ delay: 0.3 }}
           >
             <div className="w-24 h-24 bg-primary-foreground/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
-              <Sparkles className="w-12 h-12 text-primary-foreground" />
+              {step === "emailSent" ? (
+                <Mail className="w-12 h-12 text-primary-foreground" />
+              ) : (
+                <Sparkles className="w-12 h-12 text-primary-foreground" />
+              )}
             </div>
             <h2 className="font-heading font-bold text-3xl text-primary-foreground mb-4">
-              Welcome to MindSpark
+              {step === "emailSent" ? "Almost there!" : "Join MindSpark Learning"}
             </h2>
             <p className="text-primary-foreground/80 text-lg max-w-sm mx-auto">
-              Join thousands of students who are learning smarter with 
-              personalized AI tutoring.
+              {step === "emailSent" 
+                ? "Just one more step - confirm your email to start learning."
+                : "Your personalized AI tutor, designed for NCTB curriculum. Learn smarter, not harder."}
             </p>
           </motion.div>
         </div>
