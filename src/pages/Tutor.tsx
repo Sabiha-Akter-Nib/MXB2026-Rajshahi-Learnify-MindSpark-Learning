@@ -532,29 +532,15 @@ What would you like to learn today?`,
               </motion.div>
 
               <div className="flex items-center gap-3">
-                <motion.div
-                  className="relative w-11 h-11 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30"
-                  animate={{
-                    boxShadow: [
-                      "0 10px 30px -10px hsl(var(--primary) / 0.4)",
-                      "0 10px 40px -10px hsl(var(--primary) / 0.6)",
-                      "0 10px 30px -10px hsl(var(--primary) / 0.4)",
-                    ],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                >
+                <div className="relative w-11 h-11 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
                   <Brain className="w-5 h-5 text-primary-foreground" />
-                  <motion.div
-                    className="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-background"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </motion.div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-background" />
+                </div>
 
                 <div>
                   <h1 className="font-heading font-bold text-lg">AI Tutor</h1>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
+                    <span className="w-1.5 h-1.5 bg-success rounded-full" />
                     {studentInfo ? `Class ${studentInfo.class} • ${isBangla ? "বাংলা" : "English"}` : "Online"}
                   </p>
                 </div>
