@@ -3,13 +3,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 // Perform web search using Perplexity to verify and get accurate information
 async function searchWeb(query: string, apiKey: string): Promise<string> {
   try {
     console.log("Searching web for:", query);
+    console.log("Using Perplexity API key:", apiKey ? `${apiKey.substring(0, 8)}...` : "NOT SET");
     
     const response = await fetch("https://api.perplexity.ai/chat/completions", {
       method: "POST",
@@ -22,16 +23,18 @@ async function searchWeb(query: string, apiKey: string): Promise<string> {
         messages: [
           { 
             role: "system", 
-            content: "You are a research assistant. Provide accurate, factual information about the given topic. Focus on Bangladesh NCTB curriculum content if relevant. Be concise but thorough." 
+            content: "You are a research assistant specializing in Bangladesh NCTB curriculum. Provide accurate, factual information about the given topic. Focus on educational content relevant to Bangladeshi students. Be concise but thorough. Include specific chapter names, topics, and key concepts when available." 
           },
           { role: "user", content: query }
         ],
-        search_recency_filter: "year",
       }),
     });
 
     if (!response.ok) {
-      console.error("Perplexity search failed:", response.status);
+      const errorText = await response.text();
+      console.error("Perplexity search failed:", response.status, errorText);
+      
+      // If Perplexity fails, return empty but don't block the response
       return "";
     }
 
@@ -39,7 +42,8 @@ async function searchWeb(query: string, apiKey: string): Promise<string> {
     const content = data.choices?.[0]?.message?.content || "";
     const citations = data.citations || [];
     
-    console.log("Web search completed, found citations:", citations.length);
+    console.log("Web search completed successfully, content length:", content.length);
+    console.log("Citations found:", citations.length);
     
     return content + (citations.length > 0 ? "\n\nSources: " + citations.slice(0, 3).join(", ") : "");
   } catch (error) {
