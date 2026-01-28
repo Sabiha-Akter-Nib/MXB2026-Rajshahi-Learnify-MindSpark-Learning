@@ -353,7 +353,7 @@ What would you like to learn today?`,
 
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
-    let textBuffer = "";
+    let buffer = "";
     let assistantContent = "";
     const assistantId = Date.now().toString();
     const thinkingTime = thinkingStartTime ? Math.floor((Date.now() - thinkingStartTime) / 1000) : undefined;
@@ -371,62 +371,77 @@ What would you like to learn today?`,
 
     setThinkingStartTime(null);
 
+    // Robust SSE parsing (handles partial chunks + avoids getting stuck on malformed lines)
+    const applyDelta = (delta: string) => {
+      assistantContent += delta;
+      setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m)));
+    };
+
+    let sawDone = false;
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      textBuffer += decoder.decode(value, { stream: true });
+      buffer += decoder.decode(value, { stream: true });
 
-      let newlineIndex: number;
-      while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-        let line = textBuffer.slice(0, newlineIndex);
-        textBuffer = textBuffer.slice(newlineIndex + 1);
+      // SSE events are separated by a blank line ("\n\n")
+      while (true) {
+        const sepIndex = buffer.indexOf("\n\n");
+        if (sepIndex === -1) break;
 
-        if (line.endsWith("\r")) line = line.slice(0, -1);
-        if (line.startsWith(":") || line.trim() === "") continue;
-        if (!line.startsWith("data: ")) continue;
+        const eventBlock = buffer.slice(0, sepIndex);
+        buffer = buffer.slice(sepIndex + 2);
 
-        const jsonStr = line.slice(6).trim();
-        if (jsonStr === "[DONE]") break;
-
-        try {
-          const parsed = JSON.parse(jsonStr);
-          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-          if (content) {
-            assistantContent += content;
-            setMessages((prev) =>
-              prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
-            );
+        const lines = eventBlock.split("\n");
+        for (const l of lines) {
+          const line = l.endsWith("\r") ? l.slice(0, -1) : l;
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") {
+            sawDone = true;
+            continue;
           }
-        } catch {
-          textBuffer = line + "\n" + textBuffer;
-          break;
+          try {
+            const parsed = JSON.parse(data);
+            const delta = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (delta) applyDelta(delta);
+          } catch {
+            // Ignore malformed JSON chunks; next events will still render.
+          }
         }
+      }
+
+      if (sawDone) {
+        // Some streams send [DONE] before the connection fully closes.
+        // We still keep reading until done=true, but sawDone helps diagnostics if needed.
       }
     }
 
-    // Final flush
-    if (textBuffer.trim()) {
-      for (let raw of textBuffer.split("\n")) {
-        if (!raw) continue;
-        if (raw.endsWith("\r")) raw = raw.slice(0, -1);
-        if (raw.startsWith(":") || raw.trim() === "") continue;
-        if (!raw.startsWith("data: ")) continue;
-        const jsonStr = raw.slice(6).trim();
-        if (jsonStr === "[DONE]") continue;
+    // Final best-effort parse for remaining buffer
+    if (buffer.trim()) {
+      const lines = buffer.split("\n");
+      for (const l of lines) {
+        const line = l.endsWith("\r") ? l.slice(0, -1) : l;
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") continue;
         try {
-          const parsed = JSON.parse(jsonStr);
-          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-          if (content) {
-            assistantContent += content;
-            setMessages((prev) =>
-              prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
-            );
-          }
+          const parsed = JSON.parse(data);
+          const delta = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (delta) applyDelta(delta);
         } catch {
           /* ignore */
         }
       }
+    }
+
+    // Absolute fallback: if we somehow got no deltas but request succeeded, show a friendly error.
+    if (!assistantContent.trim()) {
+      const fallback = isBangla
+        ? "দুঃখিত, এইবার উত্তরটি প্রদর্শনে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করো।"
+        : "Sorry, the response could not be displayed this time. Please try again.";
+      assistantContent = fallback;
+      setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m)));
     }
 
     return assistantContent;
