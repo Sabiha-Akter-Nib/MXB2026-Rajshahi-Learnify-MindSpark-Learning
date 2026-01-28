@@ -1,104 +1,5 @@
-import { motion } from "framer-motion";
-
-// Floating white particles
-const FloatingParticles = () => {
-  const particles = Array.from({ length: 40 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: 2 + Math.random() * 5,
-    duration: 15 + Math.random() * 20,
-    delay: Math.random() * 5,
-  }));
-
-  return (
-    <>
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className="fixed rounded-full pointer-events-none"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-            background: `rgba(255, 255, 255, ${0.4 + Math.random() * 0.4})`,
-            boxShadow: `0 0 ${p.size * 3}px ${p.size}px rgba(255, 255, 255, 0.3)`,
-          }}
-          animate={{
-            y: [0, -50, 0, 50, 0],
-            x: [0, 30, -30, 20, 0],
-            opacity: [0.4, 0.8, 0.5, 0.9, 0.4],
-            scale: [1, 1.5, 1, 1.3, 1],
-          }}
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: p.delay,
-          }}
-        />
-      ))}
-    </>
-  );
-};
-
-// Glowing white orbs
-const GlowingOrbs = () => {
-  const orbs = [
-    { size: 500, x: "-10%", y: "10%", delay: 0 },
-    { size: 400, x: "80%", y: "20%", delay: 1.5 },
-    { size: 350, x: "20%", y: "70%", delay: 3 },
-    { size: 300, x: "70%", y: "80%", delay: 2 },
-  ];
-
-  return (
-    <>
-      {orbs.map((orb, i) => (
-        <motion.div
-          key={i}
-          className="fixed rounded-full pointer-events-none"
-          style={{
-            width: orb.size,
-            height: orb.size,
-            left: orb.x,
-            top: orb.y,
-            background: `radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 70%)`,
-            filter: "blur(40px)",
-          }}
-          animate={{
-            x: [0, 40, -30, 0],
-            y: [0, -30, 40, 0],
-            scale: [1, 1.2, 0.9, 1],
-            opacity: [0.3, 0.5, 0.2, 0.3],
-          }}
-          transition={{
-            duration: 20 + i * 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: orb.delay,
-          }}
-        />
-      ))}
-    </>
-  );
-};
-
-// Subtle grid pattern (white)
-const GridPattern = () => {
-  return (
-    <div
-      className="fixed inset-0 pointer-events-none opacity-[0.04]"
-      style={{
-        backgroundImage: `
-          linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px)
-        `,
-        backgroundSize: "40px 40px",
-      }}
-    />
-  );
-};
+// Static, performance-optimized tutor background without rapid animations
+// Removes the glitchy blinking caused by 40 particles with continuous scale animations
 
 const TutorBackground = () => {
   return (
@@ -126,9 +27,90 @@ const TutorBackground = () => {
         }}
       />
       
-      <GridPattern />
-      <GlowingOrbs />
-      <FloatingParticles />
+      {/* Subtle static grid pattern */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px)
+          `,
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      {/* Static glowing orbs - CSS only, no JS animations */}
+      <div 
+        className="absolute rounded-full pointer-events-none animate-pulse"
+        style={{
+          width: 500,
+          height: 500,
+          left: "-10%",
+          top: "10%",
+          background: `radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 70%)`,
+          filter: "blur(40px)",
+          animationDuration: "8s",
+        }}
+      />
+      <div 
+        className="absolute rounded-full pointer-events-none animate-pulse"
+        style={{
+          width: 400,
+          height: 400,
+          left: "80%",
+          top: "20%",
+          background: `radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 70%)`,
+          filter: "blur(40px)",
+          animationDuration: "10s",
+          animationDelay: "1s",
+        }}
+      />
+      <div 
+        className="absolute rounded-full pointer-events-none animate-pulse"
+        style={{
+          width: 350,
+          height: 350,
+          left: "20%",
+          top: "70%",
+          background: `radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 70%)`,
+          filter: "blur(40px)",
+          animationDuration: "12s",
+          animationDelay: "2s",
+        }}
+      />
+      <div 
+        className="absolute rounded-full pointer-events-none animate-pulse"
+        style={{
+          width: 300,
+          height: 300,
+          left: "70%",
+          top: "80%",
+          background: `radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 50%, transparent 70%)`,
+          filter: "blur(40px)",
+          animationDuration: "14s",
+          animationDelay: "3s",
+        }}
+      />
+
+      {/* Static particles using CSS - subtle and non-distracting */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full animate-pulse"
+            style={{
+              left: `${10 + (i * 7) % 80}%`,
+              top: `${15 + (i * 11) % 70}%`,
+              width: 3 + (i % 3),
+              height: 3 + (i % 3),
+              background: `rgba(255, 255, 255, ${0.3 + (i % 3) * 0.1})`,
+              boxShadow: `0 0 ${6 + i % 4}px ${2 + i % 2}px rgba(255, 255, 255, 0.2)`,
+              animationDuration: `${6 + i * 2}s`,
+              animationDelay: `${i * 0.5}s`,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 };
