@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface StreamingMessageProps {
@@ -8,7 +7,7 @@ interface StreamingMessageProps {
   className?: string;
 }
 
-// Parse markdown-like content into styled components
+// Parse markdown-like content into styled components - static, no framer-motion
 const parseContent = (content: string): React.ReactNode[] => {
   const lines = content.split("\n");
   const result: React.ReactNode[] = [];
@@ -38,76 +37,64 @@ const parseContent = (content: string): React.ReactNode[] => {
 
     if (isStep) {
       result.push(
-        <motion.div
+        <div
           key={lineIndex}
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.05 }}
-          className="flex items-start gap-3 mt-4 mb-2"
+          className="flex items-start gap-3 mt-4 mb-2 animate-fade-in"
         >
           <div className="w-7 h-7 rounded-lg bg-white/20 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
             {trimmed.match(/\d+/)?.[0] || "•"}
           </div>
           <p className="font-semibold text-white pt-0.5">{trimmed.replace(/^(Step|ধাপ)\s*\d+[:\s]*/i, "")}</p>
-        </motion.div>
+        </div>
       );
       return;
     }
 
     if (isHeading) {
       result.push(
-        <motion.p
+        <p
           key={lineIndex}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="font-semibold text-white mt-4 mb-2 first:mt-0 text-[15px]"
+          className="font-semibold text-white mt-4 mb-2 first:mt-0 text-[15px] animate-fade-in"
         >
           {trimmed}
-        </motion.p>
+        </p>
       );
       return;
     }
 
     if (isFormula) {
       result.push(
-        <motion.div
+        <div
           key={lineIndex}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="my-3 px-4 py-3 bg-white/10 rounded-xl border border-white/20 font-mono text-sm overflow-x-auto backdrop-blur-sm"
+          className="my-3 px-4 py-3 bg-white/10 rounded-xl border border-white/20 font-mono text-sm overflow-x-auto backdrop-blur-sm animate-fade-in"
         >
           <code className="text-white font-medium">{trimmed}</code>
-        </motion.div>
+        </div>
       );
       return;
     }
 
     if (isBullet) {
       result.push(
-        <motion.p
+        <p
           key={lineIndex}
-          initial={{ opacity: 0, x: -5 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="pl-4 mb-1.5 text-white flex items-start gap-2"
+          className="pl-4 mb-1.5 text-white flex items-start gap-2 animate-fade-in"
         >
           <span className="text-white/70 mt-1.5 text-xs">●</span>
           <span>{trimmed.replace(/^[•\-]\s*/, "").replace(/^\d+[\.\)]\s*/, "")}</span>
-        </motion.p>
+        </p>
       );
       return;
     }
 
-    // Regular paragraph with word-by-word animation
+    // Regular paragraph
     result.push(
-      <motion.p
+      <p
         key={lineIndex}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.02 }}
-        className="mb-2 leading-relaxed text-white"
+        className="mb-2 leading-relaxed text-white animate-fade-in"
       >
         {trimmed}
-      </motion.p>
+      </p>
     );
   });
 
@@ -127,13 +114,9 @@ const StreamingMessage = ({ content, isComplete, className }: StreamingMessagePr
     <div className={cn("prose prose-sm max-w-none font-sans", className)}>
       {parseContent(displayContent)}
       
-      {/* Blinking cursor when still streaming */}
+      {/* Blinking cursor when still streaming - simple CSS animation */}
       {!isComplete && content && (
-        <motion.span
-          animate={{ opacity: [1, 0] }}
-          transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
-          className="inline-block w-2 h-4 bg-primary ml-1 rounded-sm align-middle"
-        />
+        <span className="inline-block w-2 h-4 bg-primary ml-1 rounded-sm align-middle animate-pulse" />
       )}
     </div>
   );

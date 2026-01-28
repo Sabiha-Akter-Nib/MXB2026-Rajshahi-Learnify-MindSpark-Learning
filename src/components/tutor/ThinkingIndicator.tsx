@@ -24,52 +24,25 @@ const ThinkingIndicator = ({ startTime }: ThinkingIndicatorProps) => {
       exit={{ opacity: 0, y: -10 }}
       className="flex gap-3 mb-6"
     >
-      {/* Avatar */}
-      <motion.div
-        className="w-10 h-10 flex-shrink-0"
-        animate={{
-          boxShadow: [
-            "0 0 0 0 hsl(var(--primary) / 0)",
-            "0 0 20px 4px hsl(var(--primary) / 0.3)",
-            "0 0 0 0 hsl(var(--primary) / 0)",
-          ],
-        }}
-        transition={{ duration: 1.5, repeat: Infinity }}
-      >
+      {/* Avatar - static, no animation */}
+      <div className="w-10 h-10 flex-shrink-0">
         <div className="w-full h-full bg-gradient-to-br from-primary via-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          >
-            <Brain className="w-5 h-5 text-primary-foreground" />
-          </motion.div>
+          <Brain className="w-5 h-5 text-primary-foreground" />
         </div>
-      </motion.div>
+      </div>
 
       {/* Thinking bubble */}
       <div className="bg-card/60 backdrop-blur-xl border border-white/20 rounded-3xl rounded-bl-lg px-5 py-4 shadow-xl relative overflow-hidden">
-        {/* Glass decorations */}
+        {/* Glass decorations - static */}
         <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl" />
         <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-accent/10 to-transparent rounded-full blur-xl" />
 
         <div className="relative z-10 flex items-center gap-3">
-          {/* Animated dots */}
+          {/* Simple CSS-only dots animation */}
           <div className="flex gap-1.5">
-            <motion.span
-              className="w-2.5 h-2.5 bg-primary/60 rounded-full"
-              animate={{ y: [0, -8, 0], opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 0.8, repeat: Infinity, delay: 0 }}
-            />
-            <motion.span
-              className="w-2.5 h-2.5 bg-primary/60 rounded-full"
-              animate={{ y: [0, -8, 0], opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 0.8, repeat: Infinity, delay: 0.15 }}
-            />
-            <motion.span
-              className="w-2.5 h-2.5 bg-primary/60 rounded-full"
-              animate={{ y: [0, -8, 0], opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 0.8, repeat: Infinity, delay: 0.3 }}
-            />
+            <span className="w-2.5 h-2.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1s' }} />
+            <span className="w-2.5 h-2.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '150ms', animationDuration: '1s' }} />
+            <span className="w-2.5 h-2.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '300ms', animationDuration: '1s' }} />
           </div>
 
           {/* Elapsed time */}

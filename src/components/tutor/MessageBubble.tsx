@@ -58,32 +58,22 @@ const MessageBubble = ({
       transition={{ delay: index * 0.02, duration: 0.3 }}
       className={cn("flex gap-4 mb-8", isUser ? "justify-end" : "justify-start")}
     >
-      {/* Assistant Avatar */}
+      {/* Assistant Avatar - static, no continuous animations */}
       {!isUser && (
-        <motion.div
-          className="relative w-11 h-11 flex-shrink-0 mt-1"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-        >
-          <motion.div 
+        <div className="relative w-11 h-11 flex-shrink-0 mt-1">
+          <div 
             className="w-full h-full bg-gradient-to-br from-primary via-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-xl"
-            whileHover={{ scale: 1.05, rotate: 5 }}
             style={{
               boxShadow: "0 8px 24px -8px hsl(var(--primary) / 0.5)"
             }}
           >
             <Sparkles className="w-5 h-5 text-primary-foreground" />
-          </motion.div>
-          {/* Online indicator */}
-          <motion.div 
-            className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background"
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
+          </div>
+          {/* Online indicator - static */}
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
           {/* Corner decoration */}
           <div className="absolute -top-1 -left-1 w-3 h-3 border-l-2 border-t-2 border-primary/30 rounded-tl-lg" />
-        </motion.div>
+        </div>
       )}
 
       {/* Message Container */}
@@ -247,24 +237,18 @@ const MessageBubble = ({
         </motion.div>
       </div>
 
-      {/* User Avatar */}
+      {/* User Avatar - static */}
       {isUser && (
-        <motion.div
-          className="w-11 h-11 flex-shrink-0 mt-1"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-        >
-          <motion.div 
+        <div className="w-11 h-11 flex-shrink-0 mt-1">
+          <div 
             className="w-full h-full bg-gradient-to-br from-accent to-accent/80 rounded-2xl flex items-center justify-center shadow-xl"
-            whileHover={{ scale: 1.05, rotate: -5 }}
             style={{
               boxShadow: "0 8px 24px -8px hsl(var(--accent) / 0.4)"
             }}
           >
             <User className="w-5 h-5 text-accent-foreground" />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </motion.div>
   );
