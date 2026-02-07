@@ -97,7 +97,7 @@ const ModuleCardItem = ({
 
           {/* Labels */}
           <div className="mt-2 text-center">
-            <h3 className={cn("font-heading font-extrabold text-sm tracking-wide sm:text-3xl", mod.textColor)}>
+            <h3 className={cn("font-heading font-extrabold text-sm tracking-wide sm:text-2xl", mod.textColor)}>
               {mod.labelBn}
             </h3>
             <p className="text-[10px] sm:text-xs text-muted-foreground font-semibold">
