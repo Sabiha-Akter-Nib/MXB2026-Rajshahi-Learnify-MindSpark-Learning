@@ -468,11 +468,11 @@ const Dashboard = () => {
               </motion.button>
               <div>
                 <motion.h1 
-                  className="font-heading font-bold text-lg sm:text-2xl"
+                  className="font-heading font-extrabold text-xl sm:text-3xl tracking-tight"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <span className="hidden sm:inline">Welcome back, </span><span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{displayName}</span><span className="hidden sm:inline">! 👋</span>
+                  <span className="hidden sm:inline">Welcome back, </span><span className="bg-gradient-to-r from-[hsl(270,65%,55%)] via-[hsl(320,70%,55%)] to-[hsl(35,90%,55%)] bg-clip-text text-transparent drop-shadow-sm">{displayName}</span><span className="hidden sm:inline"> 🚀</span>
                 </motion.h1>
                 <motion.p 
                   className="text-muted-foreground text-xs sm:text-sm hidden sm:block"

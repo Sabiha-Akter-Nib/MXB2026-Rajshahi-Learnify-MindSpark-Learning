@@ -79,7 +79,7 @@ const ModuleCardItem = ({ mod, index }: { mod: ModuleCard; index: number }) => {
         >
           {/* Icon */}
           <motion.div
-            className="relative w-14 h-14 sm:w-[4.5rem] sm:h-[4.5rem] rounded-2xl overflow-hidden"
+            className="relative w-[4.2rem] h-[4.2rem] sm:w-[5.5rem] sm:h-[5.5rem] rounded-2xl overflow-hidden"
             animate={{
               boxShadow: hovered
                 ? `0 8px 25px -4px ${mod.gradientFrom}88, 0 0 30px -8px ${mod.gradientTo}44`
