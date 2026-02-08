@@ -44,6 +44,7 @@ import ProgressVisualization from "@/components/dashboard/ProgressVisualization"
 import RevisionReminders from "@/components/dashboard/RevisionReminders";
 import DashboardBackground from "@/components/dashboard/DashboardBackground";
 import AnimatedStatsCard from "@/components/dashboard/AnimatedStatsCard";
+import StreakCard from "@/components/dashboard/StreakCard";
 import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
 import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
@@ -71,6 +72,8 @@ interface WeeklyStats {
   weekly_study_minutes: number;
   weekly_goal_percent: number;
   today_study_minutes: number;
+  activeDaysThisWeek: Set<number>; // 0=Sat … 6=Fri (BD week)
+  isFirstTimeUser: boolean;
 }
 
 interface Subject {
@@ -124,6 +127,8 @@ const Dashboard = () => {
     weekly_study_minutes: 0,
     weekly_goal_percent: 0,
     today_study_minutes: 0,
+    activeDaysThisWeek: new Set<number>(),
+    isFirstTimeUser: true,
   });
   const [subjects, setSubjects] = useState<SubjectWithProgress[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -228,11 +233,29 @@ const Dashboard = () => {
           100
         );
 
+        // Compute active days this week (BD week: Sat=0 … Fri=6)
+        const activeDays = new Set<number>();
+        weeklySessionsData?.forEach((s) => {
+          const d = new Date(s.created_at);
+          const jsDay = d.getDay(); // 0=Sun
+          const bdDay = jsDay === 6 ? 0 : jsDay + 1;
+          if (s.duration_minutes >= 1) activeDays.add(bdDay);
+        });
+
+        // Check if first-time user (no sessions at all before this week)
+        const { count } = await supabase
+          .from("study_sessions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
+        const isFirstTime = (count || 0) === 0;
+
         setWeeklyStats({
           weekly_xp: weeklyXP,
           weekly_study_minutes: weeklyMinutes,
           weekly_goal_percent: weeklyGoalPercent,
           today_study_minutes: todayMinutes,
+          activeDaysThisWeek: activeDays,
+          isFirstTimeUser: isFirstTime,
         });
 
         // Fetch subjects based on student class
@@ -532,8 +555,16 @@ const Dashboard = () => {
           {/* Quick Actions */}
           <QuickActions />
 
+          {/* Streak Card - Full Width */}
+          <StreakCard
+            currentStreak={streak.currentStreak || stats?.current_streak || 0}
+            totalStudyMinutes={stats?.total_study_minutes || 0}
+            isFirstTimeUser={weeklyStats.isFirstTimeUser}
+            activeDaysThisWeek={weeklyStats.activeDaysThisWeek}
+          />
+
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <AnimatedStatsCard
               icon={TrendingUp}
               label="Weekly XP"
@@ -542,26 +573,19 @@ const Dashboard = () => {
               index={0}
             />
             <AnimatedStatsCard
-              icon={Flame}
-              label="Day Streak"
-              value={streak.currentStreak || stats?.current_streak || 0}
-              color="accent"
-              index={1}
-            />
-            <AnimatedStatsCard
               icon={Target}
               label="Weekly Goal"
               value={weeklyStats.weekly_goal_percent}
               suffix="%"
               color="success"
-              index={2}
+              index={1}
             />
             <AnimatedStatsCard
               icon={Clock}
               label="Today's Study"
               value={formatStudyTime(weeklyStats.today_study_minutes)}
               color="warning"
-              index={3}
+              index={2}
               isAnimatedNumber={false}
             />
           </div>
