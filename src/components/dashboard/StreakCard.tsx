@@ -129,9 +129,8 @@ const StreakCard = ({
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      <img src={streakFlame} alt="🔥" className="w-3.5 h-3.5 object-contain" />
-                    </motion.div>
+                      className="w-2 h-2 rounded-full bg-[hsl(20,90%,35%)]"
+                    />
                   )}
                 </div>
               </motion.div>
@@ -158,8 +157,8 @@ const StreakCard = ({
                 <motion.img
                   src={streakFlame}
                   alt="🔥"
-                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                  animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.2, 1] }}
+                  className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                  animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.15, 1] }}
                   transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 2 }}
                 />
               )}

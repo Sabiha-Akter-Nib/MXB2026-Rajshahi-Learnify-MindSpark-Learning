@@ -189,9 +189,15 @@ const Dashboard = () => {
           });
         }
 
-        // Fetch weekly stats
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        // Compute the start of the current BD week (Saturday 00:00 Asia/Dhaka)
+        const now = new Date();
+        const jsDay = now.getDay(); // 0=Sun
+        const bdDayIndex = jsDay === 6 ? 0 : jsDay + 1; // Sat=0
+        const weekStartDate = new Date(now);
+        weekStartDate.setDate(weekStartDate.getDate() - bdDayIndex);
+        weekStartDate.setHours(0, 0, 0, 0);
+
+        const oneWeekAgo = weekStartDate; // sessions from this week only
 
         // Get today's start (midnight)
         const todayStart = new Date();
