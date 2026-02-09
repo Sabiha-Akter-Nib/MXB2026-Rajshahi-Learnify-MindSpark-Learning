@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-
+import { Flame } from "lucide-react";
 import streakFlame from "@/assets/streak-flame.png";
 import streakBg1 from "@/assets/streak-bg-1.png";
 import streakBg2 from "@/assets/streak-bg-2.png";
@@ -78,7 +78,7 @@ const StreakCard = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: 0.15, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="relative w-full overflow-hidden rounded-2xl shadow-xl"
-      style={{ height: "clamp(140px, 22vw, 180px)" }}
+      style={{ height: "clamp(140px, 22vw, 220px)" }}
     >
       {/* Background image */}
       <img
@@ -129,8 +129,9 @@ const StreakCard = ({
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 300 }}
-                      className="w-2 h-2 rounded-full bg-[hsl(20,90%,35%)]"
-                    />
+                    >
+                      <Flame className="w-3 h-3 text-[hsl(20,90%,40%)]" />
+                    </motion.div>
                   )}
                 </div>
               </motion.div>
@@ -142,7 +143,7 @@ const StreakCard = ({
         <div className="flex items-end justify-between gap-3">
           <div>
             <motion.div
-              className="flex items-baseline gap-2"
+              className="flex items-center gap-2"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
