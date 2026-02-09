@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Flame } from "lucide-react";
 
+import streakFlame from "@/assets/streak-flame.png";
 import streakBg1 from "@/assets/streak-bg-1.png";
 import streakBg2 from "@/assets/streak-bg-2.png";
 import streakBg3 from "@/assets/streak-bg-3.png";
@@ -130,7 +130,7 @@ const StreakCard = ({
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 300 }}
                     >
-                      <Flame className="w-3 h-3 text-[hsl(20,90%,40%)]" />
+                      <img src={streakFlame} alt="🔥" className="w-3.5 h-3.5 object-contain" />
                     </motion.div>
                   )}
                 </div>
@@ -155,13 +155,13 @@ const StreakCard = ({
                 Day Streak
               </span>
               {!showAngry && effectiveStreak > 0 && (
-                <motion.span
+                <motion.img
+                  src={streakFlame}
+                  alt="🔥"
+                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                   animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.2, 1] }}
                   transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 2 }}
-                  className="text-2xl"
-                >
-                  🔥
-                </motion.span>
+                />
               )}
             </motion.div>
             <motion.p
