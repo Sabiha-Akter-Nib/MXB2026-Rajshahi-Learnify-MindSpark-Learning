@@ -8,6 +8,15 @@ interface StreakData {
   previousStreak: number;
 }
 
+/** Get today's date string in Asia/Dhaka timezone (YYYY-MM-DD) */
+const dhakaDate = (d: Date) =>
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Dhaka",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+
 export const useStreakTracker = (userId: string | undefined) => {
   const [streakData, setStreakData] = useState<StreakData>({
     currentStreak: 0,
@@ -24,8 +33,6 @@ export const useStreakTracker = (userId: string | undefined) => {
       try {
         setHasChecked(true);
 
-        // Read-only: just fetch current stats without modifying streak.
-        // Streak is only updated by track-session edge function after ≥1min study.
         const { data: stats } = await supabase
           .from("student_stats")
           .select("current_streak, last_activity_date, longest_streak")
@@ -42,11 +49,28 @@ export const useStreakTracker = (userId: string | undefined) => {
           return;
         }
 
+        // Validate streak: if last activity was NOT today or yesterday (BD time),
+        // the streak is broken regardless of what the DB says.
+        const today = dhakaDate(new Date());
+        const yesterday = dhakaDate(new Date(Date.now() - 86400000));
+
+        let displayStreak = stats.current_streak;
+        if (
+          stats.last_activity_date &&
+          stats.last_activity_date !== today &&
+          stats.last_activity_date !== yesterday
+        ) {
+          // Streak is broken — gap of 2+ days
+          displayStreak = 0;
+        } else if (!stats.last_activity_date) {
+          displayStreak = 0;
+        }
+
         setStreakData({
-          currentStreak: stats.current_streak,
+          currentStreak: displayStreak,
           showStreakAnimation: false,
           streakIncreased: false,
-          previousStreak: stats.current_streak,
+          previousStreak: displayStreak,
         });
       } catch (error) {
         console.error("Error reading streak:", error);

@@ -239,18 +239,58 @@ Return only valid JSON.`
         }
       }
 
-      // Update student stats with XP
+      // Update student stats with XP + streak + last_activity_date
+      // Use Bangladesh time (Asia/Dhaka) for streak day boundaries
+      const dhakaDate = (d: Date) =>
+        new Intl.DateTimeFormat("en-CA", {
+          timeZone: "Asia/Dhaka",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(d);
+
+      const today = dhakaDate(new Date());
+
       const { data: currentStats } = await supabase
         .from("student_stats")
-        .select("total_xp")
+        .select("*")
         .eq("user_id", userId)
         .single();
 
       if (currentStats) {
+        const lastActivity = currentStats.last_activity_date;
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = dhakaDate(yesterday);
+
+        let newStreak = currentStats.current_streak;
+
+        if (lastActivity === today) {
+          // Already active today, keep streak
+        } else if (lastActivity === yesterdayStr) {
+          // Active yesterday, increment streak
+          newStreak += 1;
+        } else if (!lastActivity) {
+          newStreak = 1;
+        } else {
+          // Streak broken (gap of 2+ days), start fresh
+          newStreak = 1;
+        }
+
+        const longestStreak = Math.max(currentStats.longest_streak, newStreak);
+
         await supabase
           .from("student_stats")
-          .update({ total_xp: currentStats.total_xp + totalXp })
+          .update({
+            total_xp: currentStats.total_xp + totalXp,
+            current_streak: newStreak,
+            longest_streak: longestStreak,
+            last_activity_date: today,
+            updated_at: new Date().toISOString(),
+          })
           .eq("user_id", userId);
+
+        console.log(`Assessment stats: streak=${newStreak}, xp=${currentStats.total_xp + totalXp}`);
       }
 
       // Determine if student should level up
