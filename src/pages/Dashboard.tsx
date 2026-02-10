@@ -240,12 +240,27 @@ const Dashboard = () => {
         );
 
         // Compute active days this week (BD week: Sat=0 … Fri=6)
+        // Count both study sessions (≥1min) AND assessments as active days
         const activeDays = new Set<number>();
         weeklySessionsData?.forEach((s) => {
           const d = new Date(s.created_at);
           const jsDay = d.getDay(); // 0=Sun
           const bdDay = jsDay === 6 ? 0 : jsDay + 1;
           if (s.duration_minutes >= 1) activeDays.add(bdDay);
+        });
+
+        // Also fetch assessment dates this week and count them as active
+        const { data: weeklyAssessmentDates } = await supabase
+          .from("assessments")
+          .select("completed_at")
+          .eq("user_id", user.id)
+          .gte("completed_at", oneWeekAgo.toISOString());
+
+        weeklyAssessmentDates?.forEach((a) => {
+          const d = new Date(a.completed_at);
+          const jsDay = d.getDay();
+          const bdDay = jsDay === 6 ? 0 : jsDay + 1;
+          activeDays.add(bdDay);
         });
 
         // Check if first-time user (no sessions at all before this week)
@@ -564,7 +579,7 @@ const Dashboard = () => {
           {/* Streak Card - Full Width */}
           <StreakCard
             currentStreak={streak.currentStreak || stats?.current_streak || 0}
-            totalStudyMinutes={stats?.total_study_minutes || 0}
+            totalStudyMinutes={weeklyStats.today_study_minutes}
             isFirstTimeUser={weeklyStats.isFirstTimeUser}
             activeDaysThisWeek={weeklyStats.activeDaysThisWeek}
           />
