@@ -31,10 +31,11 @@ const DAYS_BN = ["শনি", "রবি", "সোম", "মঙ্গল", "ব�
 
 interface StreakCardProps {
   currentStreak: number;
+  /** TODAY's study minutes (not all-time) */
   totalStudyMinutes: number;
   isFirstTimeUser: boolean;
-  /** Array of ISO date strings (or YYYY-MM-DD) the user was active this week */
-  activeDaysThisWeek: Set<number>; // 0=Sat … 6=Fri (Bangladesh week)
+  /** Active day indices this BD week: 0=Sat … 6=Fri */
+  activeDaysThisWeek: Set<number>;
 }
 
 const StreakCard = ({
@@ -43,12 +44,17 @@ const StreakCard = ({
   isFirstTimeUser,
   activeDaysThisWeek,
 }: StreakCardProps) => {
-  // Determine if streak is broken
-  // Study time > 1 min counts as 1 day. If total < 1 min and not first time → broken
-  const isBroken = !isFirstTimeUser && totalStudyMinutes < 1 && currentStreak === 0;
-  const effectiveStreak = totalStudyMinutes >= 1 ? Math.max(currentStreak, 1) : currentStreak;
+  // todayStudied = user has ≥1 min study today
+  const todayStudied = totalStudyMinutes >= 1;
 
-  const showAngry = isBroken || (!isFirstTimeUser && effectiveStreak === 0);
+  // If user hasn't studied today yet → show angry (unless first-time user)
+  // If streak is 0 and not studied today → angry
+  const showAngry = !isFirstTimeUser && !todayStudied;
+
+  // Effective streak: what we display
+  // - If studied today: show currentStreak (already incremented by track-session)
+  // - If NOT studied today: show currentStreak as-is (could be 0 if broken, or previous value)
+  const effectiveStreak = currentStreak;
 
   // Pick a random image – stable per render via useMemo
   const backgroundImage = useMemo(() => {
