@@ -223,8 +223,8 @@ const Dashboard = () => {
         const weeklyMinutes =
           weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
 
-        // Calculate today's study minutes
-        const todayMinutes =
+        // Calculate today's study minutes (sessions + assessments count as 1 min each)
+        const todaySessionMinutes =
           weeklySessionsData?.reduce((sum, s) => {
             const sessionDate = new Date(s.created_at);
             if (sessionDate >= todayStart) {
@@ -232,6 +232,19 @@ const Dashboard = () => {
             }
             return sum;
           }, 0) || 0;
+
+        // Fetch today's assessments count (each counts as 1 min minimum)
+        const { data: todayAssessments } = await supabase
+          .from("assessments")
+          .select("id, time_taken_seconds")
+          .eq("user_id", user.id)
+          .gte("completed_at", todayStart.toISOString());
+
+        const todayAssessmentMinutes = todayAssessments?.reduce((sum, a) => {
+          return sum + Math.max(1, Math.round((a.time_taken_seconds || 60) / 60));
+        }, 0) || 0;
+
+        const todayMinutes = todaySessionMinutes + todayAssessmentMinutes;
 
         const weeklyGoalXP = 500;
         const weeklyGoalPercent = Math.min(
