@@ -11,8 +11,10 @@ import streakBg6 from "@/assets/streak-bg-6.png";
 import streakBg7 from "@/assets/streak-bg-7.png";
 import streakBg8 from "@/assets/streak-bg-8.png";
 import streakBgAngry from "@/assets/streak-bg-angry.png";
+import streakBgAngry2 from "@/assets/streak-bg-angry-2.png";
 
 const goodImages = [streakBg1, streakBg2, streakBg3, streakBg4, streakBg5, streakBg6, streakBg7, streakBg8];
+const angryImages = [streakBgAngry, streakBgAngry2];
 
 const goodComments = [
   "আরেহহহহ, আমি তো এভাবেই চেয়েছিলাম! 🎉",
@@ -62,7 +64,7 @@ const StreakCard = ({
 
   // Pick a random image – stable per render via useMemo
   const backgroundImage = useMemo(() => {
-    if (showAngry) return streakBgAngry;
+    if (showAngry) return angryImages[Math.floor(Math.random() * angryImages.length)];
     return goodImages[Math.floor(Math.random() * goodImages.length)];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAngry]);
