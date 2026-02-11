@@ -118,7 +118,8 @@ const MascotStatCard = ({ type, value, suffix = "", index }: MascotStatCardProps
       <img
         src={config.bg}
         alt=""
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 scale-110"
+        style={{ objectPosition: "center left" }}
       />
 
       {/* Dark overlay for text readability */}
