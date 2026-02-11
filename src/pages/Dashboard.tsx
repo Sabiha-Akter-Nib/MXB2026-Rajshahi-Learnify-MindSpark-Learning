@@ -43,7 +43,7 @@ import QuickActions from "@/components/dashboard/QuickActions";
 import ProgressVisualization from "@/components/dashboard/ProgressVisualization";
 import RevisionReminders from "@/components/dashboard/RevisionReminders";
 import DashboardBackground from "@/components/dashboard/DashboardBackground";
-import AnimatedStatsCard from "@/components/dashboard/AnimatedStatsCard";
+import MascotStatCard from "@/components/dashboard/MascotStatCard";
 import StreakCard from "@/components/dashboard/StreakCard";
 import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
@@ -599,28 +599,21 @@ const Dashboard = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            <AnimatedStatsCard
-              icon={TrendingUp}
-              label="Weekly XP"
+            <MascotStatCard
+              type="xp"
               value={weeklyStats.weekly_xp}
-              color="primary"
               index={0}
             />
-            <AnimatedStatsCard
-              icon={Target}
-              label="Weekly Goal"
+            <MascotStatCard
+              type="goal"
               value={weeklyStats.weekly_goal_percent}
               suffix="%"
-              color="success"
               index={1}
             />
-            <AnimatedStatsCard
-              icon={Clock}
-              label="Today's Study"
+            <MascotStatCard
+              type="study"
               value={formatStudyTime(weeklyStats.today_study_minutes)}
-              color="warning"
               index={2}
-              isAnimatedNumber={false}
             />
           </div>
 
