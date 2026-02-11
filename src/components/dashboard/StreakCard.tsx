@@ -6,9 +6,13 @@ import streakBg1 from "@/assets/streak-bg-1.png";
 import streakBg2 from "@/assets/streak-bg-2.png";
 import streakBg3 from "@/assets/streak-bg-3.png";
 import streakBg4 from "@/assets/streak-bg-4.png";
+import streakBg5 from "@/assets/streak-bg-5.png";
+import streakBg6 from "@/assets/streak-bg-6.png";
+import streakBg7 from "@/assets/streak-bg-7.png";
+import streakBg8 from "@/assets/streak-bg-8.png";
 import streakBgAngry from "@/assets/streak-bg-angry.png";
 
-const goodImages = [streakBg1, streakBg2, streakBg3, streakBg4];
+const goodImages = [streakBg1, streakBg2, streakBg3, streakBg4, streakBg5, streakBg6, streakBg7, streakBg8];
 
 const goodComments = [
   "আরেহহহহ, আমি তো এভাবেই চেয়েছিলাম! 🎉",
