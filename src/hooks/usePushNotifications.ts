@@ -50,7 +50,7 @@ export const usePushNotifications = (): PushNotificationHook => {
 
       // Check if already subscribed
       try {
-        const registration = await navigator.serviceWorker.ready;
+        const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager: PushManager };
         const subscription = await registration.pushManager.getSubscription();
         setIsSubscribed(!!subscription);
       } catch (error) {
@@ -80,7 +80,7 @@ export const usePushNotifications = (): PushNotificationHook => {
       }
 
       // Get service worker registration
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager: PushManager };
 
       // Subscribe to push notifications
       const subscription = await registration.pushManager.subscribe({
@@ -118,7 +118,7 @@ export const usePushNotifications = (): PushNotificationHook => {
     setIsLoading(true);
 
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistration & { pushManager: PushManager };
       const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
