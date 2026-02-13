@@ -185,7 +185,7 @@ const Dashboard = () => {
           // Prefer the streak computed/updated by the hook (daily-visit aware)
           setStats({
             ...statsData,
-            current_streak: streak.currentStreak || statsData.current_streak,
+            current_streak: streak.currentStreak ?? statsData.current_streak,
           });
         }
 
@@ -562,7 +562,7 @@ const Dashboard = () => {
                 >
                   <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                 </motion.div>
-                <span className="font-semibold text-accent text-sm sm:text-base">{streak.currentStreak || stats?.current_streak || 0} Day Streak</span>
+                <span className="font-semibold text-accent text-sm sm:text-base">{streak.currentStreak ?? stats?.current_streak ?? 0} Day Streak</span>
               </motion.div>
 
               {/* Mobile Streak */}
@@ -570,7 +570,7 @@ const Dashboard = () => {
                 className="flex sm:hidden items-center gap-1 px-2 py-1 bg-amber-50 rounded-full border border-amber-200"
               >
                 <Flame className="w-4 h-4 text-accent" />
-                <span className="font-semibold text-accent text-xs">{streak.currentStreak || stats?.current_streak || 0}</span>
+                <span className="font-semibold text-accent text-xs">{streak.currentStreak ?? stats?.current_streak ?? 0}</span>
               </motion.div>
 
               {/* Profile Avatar */}
@@ -591,7 +591,7 @@ const Dashboard = () => {
 
           {/* Streak Card - Full Width */}
           <StreakCard
-            currentStreak={streak.currentStreak || stats?.current_streak || 0}
+            currentStreak={streak.currentStreak ?? stats?.current_streak ?? 0}
             totalStudyMinutes={weeklyStats.today_study_minutes}
             isFirstTimeUser={weeklyStats.isFirstTimeUser}
             activeDaysThisWeek={weeklyStats.activeDaysThisWeek}
