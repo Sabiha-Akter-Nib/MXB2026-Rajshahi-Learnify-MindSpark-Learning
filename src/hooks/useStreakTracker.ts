@@ -25,6 +25,19 @@ export const useStreakTracker = (userId: string | undefined) => {
     previousStreak: 0,
   });
   const [hasChecked, setHasChecked] = useState(false);
+  const [currentDate, setCurrentDate] = useState(() => dhakaDate(new Date()));
+
+  // Re-check streak when BD date changes (user stays past midnight)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = dhakaDate(new Date());
+      if (now !== currentDate) {
+        setCurrentDate(now);
+        setHasChecked(false); // force re-evaluation
+      }
+    }, 30_000); // check every 30s
+    return () => clearInterval(interval);
+  }, [currentDate]);
 
   useEffect(() => {
     if (!userId || hasChecked) return;
@@ -49,8 +62,6 @@ export const useStreakTracker = (userId: string | undefined) => {
           return;
         }
 
-        // Validate streak: if last activity was NOT today or yesterday (BD time),
-        // the streak is broken regardless of what the DB says.
         const today = dhakaDate(new Date());
         const yesterday = dhakaDate(new Date(Date.now() - 86400000));
 
@@ -60,7 +71,6 @@ export const useStreakTracker = (userId: string | undefined) => {
           stats.last_activity_date !== today &&
           stats.last_activity_date !== yesterday
         ) {
-          // Streak is broken — gap of 2+ days
           displayStreak = 0;
         } else if (!stats.last_activity_date) {
           displayStreak = 0;
