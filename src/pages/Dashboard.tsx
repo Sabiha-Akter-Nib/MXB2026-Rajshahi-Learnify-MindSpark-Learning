@@ -393,7 +393,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen flex relative bg-gradient-to-br from-[hsl(270,40%,88%)] via-[hsl(255,45%,82%)] to-[hsl(230,55%,72%)]">
+    <div className="min-h-screen flex relative">
       <DashboardBackground />
       
       {/* Mobile Overlay */}
@@ -416,18 +416,13 @@ const Dashboard = () => {
           width: sidebarOpen ? 280 : 80
         }}
         className={cn(
-          "text-sidebar-foreground border-r border-white/10 flex flex-col fixed h-screen z-40",
+          "bg-sidebar/95 backdrop-blur-xl text-sidebar-foreground border-r border-sidebar-border/50 flex flex-col fixed h-screen z-40",
           "lg:translate-x-0",
           !sidebarOpen && "max-lg:-translate-x-full"
         )}
-        style={{
-          background: "linear-gradient(180deg, rgba(20,15,60,0.97) 0%, rgba(15,12,45,0.99) 100%)",
-          backdropFilter: "blur(40px) saturate(1.8)",
-          boxShadow: "4px 0 30px rgba(0,0,0,0.25), inset -1px 0 0 rgba(255,255,255,0.05)",
-        }}
       >
         {/* Logo */}
-        <div className="p-4 flex items-center gap-3 border-b border-white/8">
+        <div className="p-4 flex items-center gap-3 border-b border-sidebar-border/50">
           <motion.div 
             className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
             whileHover={{ scale: 1.05, rotate: 5 }}
@@ -496,7 +491,7 @@ const Dashboard = () => {
         </nav>
 
         {/* Bottom Actions */}
-        <div className="p-4 border-t border-white/8 space-y-1">
+        <div className="p-4 border-t border-sidebar-border/50 space-y-1">
           <Link
             to="/settings"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-all duration-200"
@@ -517,15 +512,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className={cn("flex-1 transition-all duration-300 w-full", sidebarOpen ? "lg:ml-[280px]" : "lg:ml-20")}>
         {/* Top Bar */}
-        <header
-          className="sticky top-0 z-30 px-3 sm:px-6 py-3 sm:py-4 border-b border-white/15"
-          style={{
-            background: "rgba(255,255,255,0.45)",
-            backdropFilter: "blur(30px) saturate(1.6)",
-            WebkitBackdropFilter: "blur(30px) saturate(1.6)",
-            boxShadow: "0 4px 30px rgba(0,0,0,0.06), inset 0 -1px 0 rgba(255,255,255,0.4)",
-          }}
-        >
+        <header className="sticky top-0 bg-background/60 backdrop-blur-xl border-b border-border/50 z-30 px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-4">
               <motion.button
@@ -558,12 +545,16 @@ const Dashboard = () => {
             <div className="flex items-center gap-2 sm:gap-4">
               {/* Streak Badge */}
               <motion.div 
-                className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-amber-200/60 shadow-lg"
-                style={{
-                  background: "rgba(255,251,235,0.85)",
-                  backdropFilter: "blur(12px)",
-                  boxShadow: "0 4px 15px rgba(245,158,11,0.15), inset 0 1px 0 rgba(255,255,255,0.6)",
+                className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-50 rounded-full border border-amber-200 shadow-md"
+                whileHover={{ scale: 1.05 }}
+                animate={{
+                  boxShadow: [
+                    "0 0 0 0 rgba(var(--accent), 0)",
+                    "0 0 20px 2px rgba(var(--accent), 0.2)",
+                    "0 0 0 0 rgba(var(--accent), 0)",
+                  ],
                 }}
+                transition={{ duration: 2, repeat: Infinity }}
               >
                 <motion.div
                   animate={{ rotate: [0, -10, 10, 0] }}
@@ -576,8 +567,7 @@ const Dashboard = () => {
 
               {/* Mobile Streak */}
               <motion.div 
-                className="flex sm:hidden items-center gap-1 px-2 py-1 rounded-full border border-amber-200/60"
-                style={{ background: "rgba(255,251,235,0.85)", backdropFilter: "blur(12px)" }}
+                className="flex sm:hidden items-center gap-1 px-2 py-1 bg-amber-50 rounded-full border border-amber-200"
               >
                 <Flame className="w-4 h-4 text-accent" />
                 <span className="font-semibold text-accent text-xs">{streak.currentStreak ?? stats?.current_streak ?? 0}</span>
@@ -595,7 +585,7 @@ const Dashboard = () => {
         </header>
 
         {/* Dashboard Content */}
-        <main className="p-3 sm:p-6 space-y-5 sm:space-y-7">
+        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6">
           {/* Quick Actions */}
           <QuickActions />
 
@@ -627,26 +617,21 @@ const Dashboard = () => {
             />
           </div>
 
-          {/* Glass Divider */}
-          <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)" }} />
-
-          {/* Future You Snapshot */}
+          {/* Future You Snapshot (single wide layout across all devices) */}
           <FutureYouSnapshot />
 
-          {/* Study Momentum Engine */}
+          {/* Study Momentum Engine - NEW World-class Feature */}
           <StudyMomentumEngine />
 
-          {/* Glass Divider */}
-          <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)" }} />
-
-          {/* Blind Spot Mirror */}
+          {/* Blind Spot Mirror - Full Width */}
           <BlindSpotMirror />
 
-          {/* Knowledge Autopsy */}
+          {/* Knowledge Autopsy - Full Width */}
           <KnowledgeAutopsy />
 
-          {/* Weekly Achievements */}
+          {/* Weekly Achievements - Full Width */}
           <WeeklyAchievements />
+
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -655,13 +640,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="lg:col-span-2 rounded-3xl border border-white/30 p-6"
-              style={{
-                background: "linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.25) 100%)",
-                backdropFilter: "blur(30px) saturate(1.4)",
-                WebkitBackdropFilter: "blur(30px) saturate(1.4)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.03)",
-              }}
+              className="lg:col-span-2 bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-6 shadow-xl"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -700,16 +679,12 @@ const Dashboard = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.1 + index * 0.05 }}
-                        whileHover={{ scale: 1.02, y: -3 }}
+                        whileHover={{ scale: 1.02, y: -2 }}
                         className={cn(
-                          "group rounded-2xl p-4 cursor-pointer border border-white/25 transition-all duration-300",
-                          "hover:shadow-xl"
+                          "group bg-muted/30 backdrop-blur-sm rounded-xl p-4 cursor-pointer border transition-all duration-300",
+                          "hover:bg-muted/50 hover:shadow-lg",
+                          colors.border
                         )}
-                        style={{
-                          background: "rgba(255,255,255,0.4)",
-                          backdropFilter: "blur(16px)",
-                          boxShadow: "0 4px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)",
-                        }}
                       >
                         <div className="flex items-center gap-3 mb-3">
                           <motion.div 
@@ -732,7 +707,7 @@ const Dashboard = () => {
                             <span className="text-muted-foreground">Progress</span>
                             <span className={cn("font-semibold", colors.text)}>{subject.progress}%</span>
                           </div>
-                          <div className="relative h-2.5 bg-white/40 rounded-full overflow-hidden" style={{ boxShadow: "inset 0 1px 3px rgba(0,0,0,0.08)" }}>
+                          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
                             <motion.div
                               className={cn("absolute inset-y-0 left-0 rounded-full", colors.bg)}
                               initial={{ width: 0 }}
@@ -759,11 +734,7 @@ const Dashboard = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="relative overflow-hidden rounded-3xl p-6 text-primary-foreground"
-                style={{
-                  background: "linear-gradient(135deg, hsl(270,60%,45%) 0%, hsl(250,55%,40%) 50%, hsl(200,80%,55%) 100%)",
-                  boxShadow: "0 12px 40px rgba(100,60,180,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
-                }}
+                className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-accent rounded-2xl p-6 text-primary-foreground shadow-xl"
               >
                 {/* Animated background elements */}
                 <motion.div
