@@ -587,42 +587,108 @@ const Dashboard = () => {
         {/* Dashboard Content */}
         <main className="p-3 sm:p-6 space-y-4 sm:space-y-6">
           {/* Welcome Card - Liquid Glass */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.6)] p-5 sm:p-7"
-          >
-            {/* Glass reflections */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-white/5 pointer-events-none" />
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
+          {(() => {
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : hour < 21 ? "Good Evening" : "Burning the Midnight Oil";
+            const emoji = hour < 12 ? "☀️" : hour < 17 ? "🌤️" : hour < 21 ? "🌙" : "🦉";
+            const motivations = [
+              "Every expert was once a beginner. Keep going!",
+              "Small steps every day lead to big results.",
+              "Your future self will thank you for studying today.",
+              "Consistency beats talent. Show up and shine!",
+              "The more you learn, the more you earn — in knowledge!",
+            ];
+            const todayMotivation = motivations[new Date().getDay() % motivations.length];
+            const fullName = profile?.full_name || displayName;
 
-            <div className="relative z-10 flex items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <motion.h2
-                  className="font-heading font-extrabold text-2xl sm:text-4xl tracking-tight leading-tight"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 }}
-                >
-                  Welcome back,{" "}
-                  <span className="bg-gradient-to-r from-[hsl(270,65%,55%)] via-[hsl(320,70%,55%)] to-[hsl(35,90%,55%)] bg-clip-text text-transparent">
-                    {profile?.full_name || displayName}
-                  </span>{" "}
-                  <span className="inline-block">🚀</span>
-                </motion.h2>
-                <motion.p
-                  className="text-muted-foreground text-sm sm:text-base mt-1"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.25 }}
-                >
-                  {classText} • {versionText} Version — Let's make today count!
-                </motion.p>
-              </div>
-            </div>
-          </motion.div>
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="relative overflow-hidden rounded-3xl border border-white/20 p-5 sm:p-8"
+                style={{
+                  background: "linear-gradient(135deg, hsl(270 60% 30% / 0.15), hsl(250 50% 20% / 0.1), hsl(200 60% 40% / 0.08))",
+                  backdropFilter: "blur(40px) saturate(1.5)",
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.1)",
+                }}
+              >
+                {/* Liquid glass reflections */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-transparent pointer-events-none rounded-3xl" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none" />
+                <motion.div
+                  className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none"
+                  style={{ background: "radial-gradient(circle, hsl(270 55% 55% / 0.2), transparent 70%)" }}
+                  animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full pointer-events-none"
+                  style={{ background: "radial-gradient(circle, hsl(200 60% 50% / 0.15), transparent 70%)" }}
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                />
+
+                <div className="relative z-10">
+                  {/* Greeting row */}
+                  <motion.div
+                    className="flex items-center gap-2 mb-2"
+                    initial={{ opacity: 0, x: -15 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.15 }}
+                  >
+                    <motion.span
+                      className="text-2xl sm:text-3xl"
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    >
+                      {emoji}
+                    </motion.span>
+                    <span className="text-sm sm:text-base font-medium text-muted-foreground tracking-wide uppercase">
+                      {greeting}
+                    </span>
+                  </motion.div>
+
+                  {/* Name */}
+                  <motion.h2
+                    className="font-heading font-black text-3xl sm:text-5xl tracking-tight leading-[1.1] mb-3"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                  >
+                    <span className="bg-gradient-to-r from-[hsl(270,65%,55%)] via-[hsl(300,60%,50%)] to-[hsl(200,70%,50%)] bg-clip-text text-transparent bg-[length:200%_auto] animate-shimmer">
+                      {fullName}
+                    </span>
+                  </motion.h2>
+
+                  {/* Motivational quote */}
+                  <motion.p
+                    className="text-muted-foreground/80 text-sm sm:text-base max-w-lg leading-relaxed"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    ✨ {todayMotivation}
+                  </motion.p>
+
+                  {/* Info chips */}
+                  <motion.div
+                    className="flex flex-wrap gap-2 mt-4"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-primary/10 text-primary border border-primary/20">
+                      📖 {classText}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-accent/10 text-accent border border-accent/20">
+                      🌐 {versionText} Version
+                    </span>
+                  </motion.div>
+                </div>
+              </motion.div>
+            );
+          })()}
 
           {/* Quick Actions */}
           <QuickActions />
