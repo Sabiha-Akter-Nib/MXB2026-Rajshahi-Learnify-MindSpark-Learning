@@ -50,6 +50,8 @@ import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
 import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
 import WeeklyAchievements from "@/components/dashboard/WeeklyAchievements";
 import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
+import BloomStudyTips from "@/components/dashboard/BloomStudyTips";
+import DailyMotivation from "@/components/dashboard/DailyMotivation";
 
 import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
@@ -589,16 +591,11 @@ const Dashboard = () => {
           {/* Welcome Card - Liquid Glass */}
           {(() => {
             const hour = new Date().getHours();
-            const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : hour < 21 ? "Good Evening" : "Burning the Midnight Oil";
+            const isBangla = profile?.version === "bangla";
+            const greeting = isBangla
+              ? (hour < 12 ? "সুপ্রভাত" : hour < 17 ? "শুভ অপরাহ্ণ" : hour < 21 ? "শুভ সন্ধ্যা" : "রাত জেগে পড়ছো?")
+              : (hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : hour < 21 ? "Good Evening" : "Burning the Midnight Oil");
             const emoji = hour < 12 ? "☀️" : hour < 17 ? "🌤️" : hour < 21 ? "🌙" : "🦉";
-            const motivations = [
-              "Every expert was once a beginner. Keep going!",
-              "Small steps every day lead to big results.",
-              "Your future self will thank you for studying today.",
-              "Consistency beats talent. Show up and shine!",
-              "The more you learn, the more you earn — in knowledge!",
-            ];
-            const todayMotivation = motivations[new Date().getDay() % motivations.length];
             const fullName = profile?.full_name || displayName;
 
             return (
@@ -637,52 +634,36 @@ const Dashboard = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.15 }}
                   >
-                    <motion.span
-                      className="text-2xl sm:text-3xl"
-                      animate={{ rotate: [0, 10, -10, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                    >
-                      {emoji}
-                    </motion.span>
+                    <span className="text-2xl sm:text-3xl">{emoji}</span>
                     <span className="text-sm sm:text-base font-medium text-muted-foreground tracking-wide uppercase">
                       {greeting}
                     </span>
                   </motion.div>
 
-                  {/* Name */}
+                  {/* Name - static gradient, no shimmer */}
                   <motion.h2
                     className="font-heading font-black text-3xl sm:text-5xl tracking-tight leading-[1.1] mb-3"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.25 }}
                   >
-                    <span className="bg-gradient-to-r from-[hsl(270,65%,55%)] via-[hsl(300,60%,50%)] to-[hsl(200,70%,50%)] bg-clip-text text-transparent bg-[length:200%_auto] animate-shimmer">
+                    <span className="bg-gradient-to-r from-[hsl(270,65%,55%)] via-[hsl(300,60%,50%)] to-[hsl(200,70%,50%)] bg-clip-text text-transparent">
                       {fullName}
                     </span>
                   </motion.h2>
 
-                  {/* Motivational quote */}
-                  <motion.p
-                    className="text-muted-foreground/80 text-sm sm:text-base max-w-lg leading-relaxed"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    ✨ {todayMotivation}
-                  </motion.p>
-
                   {/* Info chips */}
                   <motion.div
-                    className="flex flex-wrap gap-2 mt-4"
+                    className="flex flex-wrap gap-2"
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
+                    transition={{ delay: 0.35 }}
                   >
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-primary/10 text-primary border border-primary/20">
-                      📖 {classText}
+                      📖 {isBangla ? `শ্রেণি ${profile?.class || ""}` : classText}
                     </span>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-accent/10 text-accent border border-accent/20">
-                      🌐 {versionText} Version
+                      🌐 {isBangla ? "বাংলা সংস্করণ" : `${versionText} Version`}
                     </span>
                   </motion.div>
                 </div>
@@ -735,6 +716,12 @@ const Dashboard = () => {
 
           {/* Weekly Achievements - Full Width */}
           <WeeklyAchievements />
+
+          {/* Bloom's Tips & Daily Motivation */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <BloomStudyTips isBangla={profile?.version === "bangla"} />
+            <DailyMotivation isBangla={profile?.version === "bangla"} />
+          </div>
 
 
           {/* Main Grid */}
