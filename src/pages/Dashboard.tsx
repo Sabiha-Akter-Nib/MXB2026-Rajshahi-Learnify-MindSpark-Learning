@@ -586,6 +586,44 @@ const Dashboard = () => {
 
         {/* Dashboard Content */}
         <main className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+          {/* Welcome Card - Liquid Glass */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.6)] p-5 sm:p-7"
+          >
+            {/* Glass reflections */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-white/5 pointer-events-none" />
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <motion.h2
+                  className="font-heading font-extrabold text-2xl sm:text-4xl tracking-tight leading-tight"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 }}
+                >
+                  Welcome back,{" "}
+                  <span className="bg-gradient-to-r from-[hsl(270,65%,55%)] via-[hsl(320,70%,55%)] to-[hsl(35,90%,55%)] bg-clip-text text-transparent">
+                    {profile?.full_name || displayName}
+                  </span>{" "}
+                  <span className="inline-block">🚀</span>
+                </motion.h2>
+                <motion.p
+                  className="text-muted-foreground text-sm sm:text-base mt-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  {classText} • {versionText} Version — Let's make today count!
+                </motion.p>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Quick Actions */}
           <QuickActions />
 
