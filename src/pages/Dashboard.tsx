@@ -393,7 +393,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen flex relative">
+    <div className="min-h-screen flex relative overflow-x-hidden">
       <DashboardBackground />
       
       {/* Mobile Overlay */}
@@ -510,7 +510,7 @@ const Dashboard = () => {
       </motion.aside>
 
       {/* Main Content */}
-      <div className={cn("flex-1 transition-all duration-300 w-full", sidebarOpen ? "lg:ml-[280px]" : "lg:ml-20")}>
+      <div className={cn("flex-1 transition-all duration-300 w-full overflow-x-hidden", sidebarOpen ? "lg:ml-[280px]" : "lg:ml-20")}>
         {/* Top Bar */}
         <header className="sticky top-0 bg-background/60 backdrop-blur-xl border-b border-border/50 z-30 px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
