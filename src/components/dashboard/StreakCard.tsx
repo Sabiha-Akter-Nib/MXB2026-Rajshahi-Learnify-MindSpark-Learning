@@ -58,9 +58,12 @@ const StreakCard = ({
   const showAngry = !isFirstTimeUser && !todayStudied;
 
   // Effective streak: what we display
-  // - If studied today: show currentStreak (already incremented by track-session)
-  // - If NOT studied today: show currentStreak as-is (could be 0 if broken, or previous value)
   const effectiveStreak = currentStreak;
+
+  // If streak is broken (0), don't show any lit circles even if there were sessions this week
+  const effectiveActiveDays = currentStreak === 0 && !todayStudied
+    ? new Set<number>()
+    : activeDaysThisWeek;
 
   // Pick a random image – stable per render via useMemo
   const backgroundImage = useMemo(() => {
@@ -114,7 +117,7 @@ const StreakCard = ({
         {/* Top: Day circles */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {DAYS_BN.map((day, i) => {
-            const isActive = activeDaysThisWeek.has(i);
+            const isActive = effectiveActiveDays.has(i);
             const isToday = i === todayIndex;
             return (
               <motion.div
