@@ -78,7 +78,7 @@ const InstallPrompt = () => {
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-heading font-semibold">Install MindSpark</h3>
+                  <h3 className="font-heading font-semibold">Install OddhaboshAI</h3>
                   <Sparkles className="w-4 h-4 text-accent" />
                 </div>
                 <p className="text-sm text-muted-foreground">

@@ -105,7 +105,7 @@ const Tutor = () => {
     const greeting = isBangla
       ? `আসসালামু আলাইকুম!
 
-আমি MindSpark AI Tutor। আমি Class ${data.class} এর NCTB পাঠ্যক্রম অনুযায়ী পড়াশোনায় সাহায্য করতে এসেছি।
+আমি অধ্যবসায় AI Tutor। আমি Class ${data.class} এর NCTB পাঠ্যক্রম অনুযায়ী পড়াশোনায় সাহায্য করতে এসেছি।
 
 তুমি আমাকে যা বলতে পারো:
 
@@ -117,7 +117,7 @@ const Tutor = () => {
 আজ কোন বিষয়ে পড়তে চাও?`
       : `Assalamu Alaikum!
 
-I am MindSpark AI Tutor, here to help you with your Class ${data.class} NCTB curriculum.
+I am OddhaboshAI Tutor, here to help you with your Class ${data.class} NCTB curriculum.
 
 Here is what I can help you with:
 
@@ -161,7 +161,7 @@ What would you like to study today?`;
             role: "assistant",
             content: `Assalamu Alaikum!
 
-I am MindSpark AI Tutor. I am here to help you learn any subject from your NCTB curriculum.
+I am OddhaboshAI Tutor. I am here to help you learn any subject from your NCTB curriculum.
 
 You can ask me to:
 • Explain any topic in detail

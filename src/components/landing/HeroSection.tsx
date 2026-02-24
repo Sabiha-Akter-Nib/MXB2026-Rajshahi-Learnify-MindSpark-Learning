@@ -290,7 +290,7 @@ export function HeroSection() {
           className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
         >
           Experience adaptive learning aligned with the NCTB curriculum. 
-          MindSpark creates{" "}
+          OddhaboshAI creates{" "}
           <span className="text-primary font-medium">personalized study plans</span>,{" "}
           tracks your progress, and helps you{" "}
           <span className="text-accent font-medium">excel in every subject</span>{" "}

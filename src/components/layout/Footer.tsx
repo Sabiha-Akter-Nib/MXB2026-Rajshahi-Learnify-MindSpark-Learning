@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Sparkles, Facebook, Twitter, Youtube, Mail } from "lucide-react";
+import { Facebook, Twitter, Youtube, Mail } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 
 const footerLinks = {
   product: [
@@ -35,10 +36,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="font-heading font-bold text-xl">MindSpark</span>
+              <img src={logoImg} alt="OddhaboshAI" className="h-10" />
             </Link>
             <p className="text-primary-foreground/60 text-sm mb-4">
               AI-powered personalized learning for Bangladeshi students, 
@@ -129,7 +127,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-primary-foreground/10 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-primary-foreground/60 text-sm">
-            © {new Date().getFullYear()} MindSpark Learning. All rights reserved.
+            © {new Date().getFullYear()} OddhaboshAI. All rights reserved.
           </p>
           <p className="text-primary-foreground/60 text-sm">
             Made with ❤️ for students in Bangladesh

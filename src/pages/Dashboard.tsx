@@ -53,6 +53,7 @@ import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
 import BloomStudyTips from "@/components/dashboard/BloomStudyTips";
 import DailyMotivation from "@/components/dashboard/DailyMotivation";
 
+import logoImg from "@/assets/logo.png";
 import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import DailyNotificationTrigger from "@/components/notifications/DailyNotificationTrigger";
@@ -425,22 +426,23 @@ const Dashboard = () => {
       >
         {/* Logo */}
         <div className="p-4 flex items-center gap-3 border-b border-sidebar-border/50">
-          <motion.div 
-            className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
-            whileHover={{ scale: 1.05, rotate: 5 }}
-          >
-            <Sparkles className="w-5 h-5 text-primary-foreground" />
-          </motion.div>
           <AnimatePresence>
-            {sidebarOpen && (
-              <motion.span
+            {sidebarOpen ? (
+              <motion.img
+                src={logoImg}
+                alt="OddhaboshAI"
+                className="h-10"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="font-heading font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
-              >
-                MindSpark
-              </motion.span>
+              />
+            ) : (
+              <motion.img
+                src={logoImg}
+                alt="OddhaboshAI"
+                className="h-8 w-8 object-contain"
+                whileHover={{ scale: 1.05, rotate: 5 }}
+              />
             )}
           </AnimatePresence>
         </div>
