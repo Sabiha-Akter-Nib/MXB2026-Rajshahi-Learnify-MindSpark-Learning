@@ -237,7 +237,7 @@ export function CTASection() {
             className="text-xl md:text-2xl text-primary-foreground/80 mb-12 leading-relaxed"
           >
             Join thousands of students across Bangladesh who are already 
-            learning smarter with MindSpark's AI-powered tutoring.
+            learning smarter with OddhaboshAI's AI-powered tutoring.
           </motion.p>
 
           {/* CTA Button */}

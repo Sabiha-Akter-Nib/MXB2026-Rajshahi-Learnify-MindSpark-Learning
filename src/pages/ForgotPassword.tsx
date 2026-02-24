@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowLeft, Loader2, Mail, CheckCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, CheckCircle } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -117,12 +118,7 @@ const ForgotPassword = () => {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-glow">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-heading font-bold text-xl text-foreground">
-              MindSpark
-            </span>
+            <img src={logoImg} alt="OddhaboshAI" className="h-12" />
           </Link>
 
           {step === "emailSent" ? (

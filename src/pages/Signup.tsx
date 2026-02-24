@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Sparkles, ArrowRight, Loader2, CheckCircle, Mail } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Loader2, CheckCircle, Mail } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,12 +170,7 @@ const Signup = () => {
         >
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-glow">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-heading font-bold text-xl text-foreground">
-              MindSpark
-            </span>
+            <img src={logoImg} alt="OddhaboshAI" className="h-12" />
           </Link>
 
           {step === "emailSent" ? (
@@ -401,15 +397,15 @@ const Signup = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="w-24 h-24 bg-primary-foreground/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
+            <div className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-8">
               {step === "emailSent" ? (
                 <Mail className="w-12 h-12 text-primary-foreground" />
               ) : (
-                <Sparkles className="w-12 h-12 text-primary-foreground" />
+                <img src={logoImg} alt="OddhaboshAI" className="h-20" />
               )}
             </div>
             <h2 className="font-heading font-bold text-3xl text-primary-foreground mb-4">
-              {step === "emailSent" ? "Almost there!" : "Join MindSpark Learning"}
+              {step === "emailSent" ? "Almost there!" : "Join OddhaboshAI"}
             </h2>
             <p className="text-primary-foreground/80 text-lg max-w-sm mx-auto">
               {step === "emailSent" 

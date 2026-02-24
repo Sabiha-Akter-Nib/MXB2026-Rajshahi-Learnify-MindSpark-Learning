@@ -297,7 +297,7 @@ export function FeaturesSection() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
           >
-            MindSpark combines cutting-edge AI with proven educational methods 
+            OddhaboshAI combines cutting-edge AI with proven educational methods 
             to create the ultimate learning experience.
           </motion.p>
         </motion.div>

@@ -14,7 +14,7 @@ const motivationalMessages = [
   },
   {
     title: "🎯 Focus Time",
-    body: "Great learners study every day. Open MindSpark and continue your journey!",
+    body: "Great learners study every day. Open OddhaboshAI and continue your journey!",
   },
   {
     title: "💡 Did You Know?",
@@ -42,7 +42,7 @@ const motivationalMessages = [
   },
   {
     title: "🎓 Future You Will Thank You",
-    body: "The effort you put in today builds your success tomorrow. Open MindSpark!",
+    body: "The effort you put in today builds your success tomorrow. Open OddhaboshAI!",
   },
 ];
 
@@ -58,7 +58,7 @@ const motivationalMessagesBn = [
   },
   {
     title: "🎯 মনোযোগের সময়",
-    body: "ভালো শিক্ষার্থীরা প্রতিদিন পড়ে। MindSpark খুলে তোমার যাত্রা চালিয়ে যাও!",
+    body: "ভালো শিক্ষার্থীরা প্রতিদিন পড়ে। অধ্যবসায় খুলে তোমার যাত্রা চালিয়ে যাও!",
   },
   {
     title: "💡 তুমি কি জানো?",
@@ -86,11 +86,11 @@ const motivationalMessagesBn = [
   },
   {
     title: "🎓 ভবিষ্যতের তুমি ধন্যবাদ দেবে",
-    body: "আজকের প্রচেষ্টা আগামীকালের সাফল্য গড়ে। MindSpark খোলো!",
+    body: "আজকের প্রচেষ্টা আগামীকালের সাফল্য গড়ে। অধ্যবসায় খোলো!",
   },
 ];
 
-const NOTIFICATION_STORAGE_KEY = "mindspark_last_notification";
+const NOTIFICATION_STORAGE_KEY = "oddhaboshai_last_notification";
 const NOTIFICATION_INTERVAL_HOURS = 24; // Send a notification once per day
 
 export const DailyNotificationTrigger = () => {

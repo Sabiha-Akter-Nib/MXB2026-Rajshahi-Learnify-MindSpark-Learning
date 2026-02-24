@@ -146,7 +146,7 @@ export const usePushNotifications = (): PushNotificationHook => {
   const sendTestNotification = useCallback(() => {
     if (!isSupported || permission !== "granted") return;
 
-    new Notification("MindSpark Learning", {
+    new Notification("OddhaboshAI", {
       body: "Notifications are working! You'll receive study reminders here.",
       icon: "/favicon.ico",
       badge: "/favicon.ico",
