@@ -1,139 +1,103 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import logoImg from "@/assets/logo.png";
+import welcomeCardImg from "@/assets/welcome-card.png";
 import tugiImg from "@/assets/tugi-mascot.png";
 
 const Welcome = () => {
   return (
-    <div className="min-h-screen relative flex flex-col items-center justify-center overflow-hidden px-4 py-8">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-dark via-primary to-primary-dark" />
-      
-      {/* Animated orbs */}
-      <motion.div
-        animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-accent/20 blur-3xl"
-      />
-      <motion.div
-        animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary-light/20 blur-3xl"
+    <div
+      className="min-h-screen relative flex items-center justify-center overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #1A1F30 0%, #5B4364 28%, #0B065A 47%, #B5BFEE 89%)",
+      }}
+    >
+      {/* Desktop decorative elements */}
+      <div className="hidden lg:block absolute top-[10%] left-[8%] w-[300px] h-[300px] rounded-full opacity-20 blur-[100px]" style={{ background: "#B5BFEE" }} />
+      <div className="hidden lg:block absolute bottom-[15%] right-[25%] w-[250px] h-[250px] rounded-full opacity-15 blur-[80px]" style={{ background: "#5B4364" }} />
+      <div className="hidden lg:block absolute top-[40%] left-[30%] w-[180px] h-[180px] rounded-full opacity-10 blur-[60px]" style={{ background: "#B5BFEE" }} />
+
+      {/* Subtle grid pattern for desktop richness */}
+      <div
+        className="hidden lg:block absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
       />
 
-      {/* Main card */}
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-md"
-      >
-        {/* Glass card */}
-        <div
-          className="rounded-3xl p-8 md:p-10 text-center relative overflow-hidden"
-          style={{
-            background: "linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(240,235,255,0.92) 50%, rgba(230,225,250,0.9) 100%)",
-            boxShadow: "0 20px 60px rgba(100, 50, 180, 0.25), 0 0 0 1px rgba(180, 140, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.8)",
-          }}
-        >
-          {/* Subtle purple border glow */}
-          <div className="absolute inset-0 rounded-3xl border-2 border-primary-light/30 pointer-events-none" />
+      {/* Main content area */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
+        
+        {/* Left side - Welcome card image */}
+        <div className="w-full max-w-sm lg:max-w-md flex-shrink-0">
+          <img
+            src={welcomeCardImg}
+            alt="OddhaboshAI - Your AI Study Companion"
+            className="w-full h-auto drop-shadow-2xl"
+          />
+        </div>
+
+        {/* Right side - Buttons & info (desktop) / Below (mobile) */}
+        <div className="flex flex-col items-center lg:items-start gap-6 lg:gap-8 w-full max-w-sm">
           
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex justify-center mb-5"
-          >
-            <img src={logoImg} alt="OddhaboshAI" className="h-20 md:h-24 object-contain" />
-          </motion.div>
-
-          {/* Tagline badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-            className="inline-flex items-center px-5 py-2 rounded-full mb-6"
-            style={{
-              background: "linear-gradient(135deg, hsl(270 30% 94%) 0%, hsl(200 80% 92%) 100%)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-            }}
-          >
-            <span className="text-sm font-semibold tracking-wide text-primary uppercase">
-              Your AI Study Companion
-            </span>
-          </motion.div>
-
-          {/* Heading */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-          >
-            <h1 className="font-heading font-bold text-xl md:text-2xl mb-3 uppercase tracking-wide"
+          {/* Desktop heading */}
+          <div className="hidden lg:block">
+            <h1
+              className="font-heading font-bold text-4xl xl:text-5xl mb-3 leading-tight"
               style={{
-                background: "linear-gradient(135deg, hsl(270 60% 40%), hsl(300 50% 45%), hsl(270 55% 55%))",
+                background: "linear-gradient(135deg, #E8D5FF 0%, #B5BFEE 50%, #FFFFFF 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Future Begins Here
+              Start Your Journey
             </h1>
-            <p className="text-sm md:text-base leading-relaxed text-foreground/80 font-medium">
-              স্বাগতম অধ্যবসায়-এ। এআই-এর সাহায্যে স্মার্ট শেখা, দ্রুত অগ্রগতি, আর অসাধারণ ফলাফল। আজ থেকেই শুরু হোক তোমার ভবিষ্যৎ গড়ার যাত্রা।
+            <p className="text-base xl:text-lg leading-relaxed" style={{ color: "rgba(181, 191, 238, 0.85)" }}>
+              এআই-এর সাহায্যে স্মার্ট শেখা, দ্রুত অগ্রগতি, আর অসাধারণ ফলাফল।
             </p>
-          </motion.div>
+          </div>
+
+          {/* Buttons */}
+          <div className="w-full space-y-4">
+            <Link to="/login" className="block">
+              <button
+                className="w-full py-4 rounded-2xl text-lg font-bold tracking-wide transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98]"
+                style={{
+                  background: "linear-gradient(135deg, #7C5CBF 0%, #4A3A8A 100%)",
+                  color: "#FFFFFF",
+                  boxShadow: "0 8px 32px rgba(124, 92, 191, 0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
+                }}
+              >
+                লগ ইন
+              </button>
+            </Link>
+
+            <Link to="/signup" className="block">
+              <button
+                className="w-full py-4 rounded-2xl text-lg font-bold tracking-wide transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98]"
+                style={{
+                  background: "linear-gradient(135deg, #9B7FD4 0%, #6B5AAE 100%)",
+                  color: "#FFFFFF",
+                  boxShadow: "0 8px 32px rgba(155, 127, 212, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
+                }}
+              >
+                সাইন আপ
+              </button>
+            </Link>
+          </div>
+
+          {/* Trust line */}
+          <p className="text-xs text-center lg:text-left" style={{ color: "rgba(181, 191, 238, 0.6)" }}>
+            ✓ No credit card required &nbsp;·&nbsp; ✓ Works on any device
+          </p>
         </div>
+      </div>
 
-        {/* Buttons below card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-6 space-y-4"
-        >
-          <Link to="/login" className="block">
-            <button
-              className="w-full py-4 rounded-2xl text-lg font-bold tracking-wide text-primary-foreground transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: "linear-gradient(135deg, hsl(270 40% 55%) 0%, hsl(240 30% 50%) 100%)",
-                boxShadow: "0 8px 24px rgba(100, 60, 160, 0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
-              }}
-            >
-              লগ ইন
-            </button>
-          </Link>
-
-          <Link to="/signup" className="block">
-            <button
-              className="w-full py-4 rounded-2xl text-lg font-bold tracking-wide text-primary-foreground transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: "linear-gradient(135deg, hsl(270 35% 60%) 0%, hsl(240 25% 55%) 100%)",
-                boxShadow: "0 8px 24px rgba(100, 60, 160, 0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
-              }}
-            >
-              সাইন আপ
-            </button>
-          </Link>
-        </motion.div>
-      </motion.div>
-
-      {/* Mascot at bottom */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 mt-6 md:mt-8"
-      >
-        <motion.img
-          src={tugiImg}
-          alt="Tugi mascot"
-          className="h-32 md:h-44 lg:h-52 object-contain drop-shadow-2xl"
-          animate={{ y: [-4, 4, -4] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </motion.div>
+      {/* Tugi mascot - bottom right corner, no animation */}
+      <img
+        src={tugiImg}
+        alt="Tugi mascot"
+        className="absolute bottom-0 right-0 h-28 sm:h-36 md:h-44 lg:h-56 xl:h-64 object-contain z-20"
+      />
     </div>
   );
 };
