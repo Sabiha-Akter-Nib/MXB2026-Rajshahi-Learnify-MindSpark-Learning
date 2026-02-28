@@ -1,8 +1,79 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import welcomeCardImg from "@/assets/welcome-card.png";
 import tugiImg from "@/assets/tugi-mascot.png";
 
 const Welcome = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationId: number;
+    const particles: { x: number; y: number; vx: number; vy: number; r: number; o: number }[] = [];
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    for (let i = 0; i < 60; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2 + 1,
+        o: Math.random() * 0.5 + 0.2,
+      });
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(181, 191, 238, ${p.o})`;
+        ctx.fill();
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const q = particles[j];
+          const dx = p.x - q.x;
+          const dy = p.y - q.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.strokeStyle = `rgba(181, 191, 238, ${0.15 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      animationId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
   return (
     <div
       className="min-h-screen relative flex items-center justify-center overflow-hidden"
@@ -10,24 +81,27 @@ const Welcome = () => {
         background: "linear-gradient(135deg, #1A1F30 0%, #5B4364 28%, #0B065A 47%, #B5BFEE 89%)",
       }}
     >
-      {/* Desktop decorative elements */}
-      <div className="hidden lg:block absolute top-[10%] left-[8%] w-[300px] h-[300px] rounded-full opacity-20 blur-[100px]" style={{ background: "#B5BFEE" }} />
-      <div className="hidden lg:block absolute bottom-[15%] right-[25%] w-[250px] h-[250px] rounded-full opacity-15 blur-[80px]" style={{ background: "#5B4364" }} />
-      <div className="hidden lg:block absolute top-[40%] left-[30%] w-[180px] h-[180px] rounded-full opacity-10 blur-[60px]" style={{ background: "#B5BFEE" }} />
+      {/* Particle canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 z-[1]" />
 
-      {/* Subtle grid pattern for desktop richness */}
+      {/* Grid pattern */}
       <div
-        className="hidden lg:block absolute inset-0 opacity-[0.04]"
+        className="absolute inset-0 z-[2] opacity-[0.08]"
         style={{
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
+          backgroundImage:
+            "linear-gradient(rgba(181,191,238,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(181,191,238,0.4) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
         }}
       />
 
-      {/* Main content area */}
+      {/* Decorative blurs - desktop */}
+      <div className="hidden lg:block absolute top-[10%] left-[8%] w-[300px] h-[300px] rounded-full opacity-20 blur-[100px] z-[3]" style={{ background: "#B5BFEE" }} />
+      <div className="hidden lg:block absolute bottom-[15%] right-[25%] w-[250px] h-[250px] rounded-full opacity-15 blur-[80px] z-[3]" style={{ background: "#5B4364" }} />
+
+      {/* Main content */}
       <div className="relative z-10 w-full max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
         
-        {/* Left side - Welcome card image */}
+        {/* Welcome card image */}
         <div className="w-full max-w-sm lg:max-w-md flex-shrink-0">
           <img
             src={welcomeCardImg}
@@ -36,7 +110,7 @@ const Welcome = () => {
           />
         </div>
 
-        {/* Right side - Buttons & info (desktop) / Below (mobile) */}
+        {/* Buttons & info */}
         <div className="flex flex-col items-center lg:items-start gap-6 lg:gap-8 w-full max-w-sm">
           
           {/* Desktop heading */}
@@ -92,11 +166,11 @@ const Welcome = () => {
         </div>
       </div>
 
-      {/* Tugi mascot - bottom right corner, no animation */}
+      {/* Tugi mascot - bottom right, much larger */}
       <img
         src={tugiImg}
         alt="Tugi mascot"
-        className="absolute bottom-0 right-0 h-28 sm:h-36 md:h-44 lg:h-72 xl:h-80 2xl:h-96 object-contain z-20"
+        className="absolute bottom-0 right-0 h-36 sm:h-44 md:h-52 lg:h-[22rem] xl:h-[26rem] 2xl:h-[30rem] object-contain z-20"
       />
     </div>
   );
