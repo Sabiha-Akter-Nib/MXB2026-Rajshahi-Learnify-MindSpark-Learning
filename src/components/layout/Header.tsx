@@ -69,10 +69,10 @@ export function Header() {
         {/* CTA Buttons */}
         <div className="hidden md:flex items-center gap-3">
           <Button variant="ghost" asChild>
-            <Link to="/login">Log In</Link>
+            <Link to="/welcome">Log In</Link>
           </Button>
           <Button variant="hero" asChild>
-            <Link to="/signup">Start Learning</Link>
+            <Link to="/welcome">Start Learning</Link>
           </Button>
         </div>
 
@@ -113,10 +113,10 @@ export function Header() {
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 <Button variant="outline" asChild>
-                  <Link to="/login">Log In</Link>
+                  <Link to="/welcome">Log In</Link>
                 </Button>
                 <Button variant="hero" asChild>
-                  <Link to="/signup">Start Learning</Link>
+                  <Link to="/welcome">Start Learning</Link>
                 </Button>
               </div>
             </nav>
