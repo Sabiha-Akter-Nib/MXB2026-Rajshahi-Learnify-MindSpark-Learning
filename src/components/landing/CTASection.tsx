@@ -254,7 +254,7 @@ export function CTASection() {
                 asChild
                 className="bg-accent text-accent-foreground hover:bg-accent-light shadow-accent-lg btn-glow group"
               >
-                <Link to="/signup" className="flex items-center gap-2">
+                <Link to="/welcome" className="flex items-center gap-2">
                   <span>Create Free Account</span>
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Link>
