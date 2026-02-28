@@ -21,6 +21,7 @@ import Settings from "./pages/Settings";
 import Achievements from "./pages/Achievements";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
+import Welcome from "./pages/Welcome";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ function AppContent() {
       <Sonner />
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/welcome" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

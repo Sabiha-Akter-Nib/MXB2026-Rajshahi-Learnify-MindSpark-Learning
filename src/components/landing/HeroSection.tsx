@@ -309,7 +309,7 @@ export function HeroSection() {
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <Button variant="hero" size="xl" asChild className="btn-glow group relative overflow-hidden">
-              <Link to="/signup" className="flex items-center gap-2">
+              <Link to="/welcome" className="flex items-center gap-2">
                 <span className="relative z-10">Start Learning Free</span>
                 <ArrowRight className="w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1" />
               </Link>
