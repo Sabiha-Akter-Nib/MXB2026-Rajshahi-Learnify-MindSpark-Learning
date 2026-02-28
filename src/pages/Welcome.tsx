@@ -96,7 +96,7 @@ const Welcome = () => {
       <img
         src={tugiImg}
         alt="Tugi mascot"
-        className="absolute bottom-0 right-0 h-28 sm:h-36 md:h-44 lg:h-56 xl:h-64 object-contain z-20"
+        className="absolute bottom-0 right-0 h-28 sm:h-36 md:h-44 lg:h-72 xl:h-80 2xl:h-96 object-contain z-20"
       />
     </div>
   );
