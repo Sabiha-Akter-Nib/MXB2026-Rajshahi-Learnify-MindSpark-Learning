@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import welcomeCardImg from "@/assets/welcome-card.png";
+import loginLogoImg from "@/assets/login-logo-card.png";
 import tugiImg from "@/assets/tugi-mascot.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -181,7 +181,7 @@ const Login = () => {
           className="w-full max-w-xs sm:max-w-sm"
         >
           <img
-            src={welcomeCardImg}
+            src={loginLogoImg}
             alt="OddhaboshAI - Your AI Study Companion"
             className="w-full h-auto drop-shadow-2xl"
           />
