@@ -166,11 +166,11 @@ const Welcome = () => {
         </div>
       </div>
 
-      {/* Tugi mascot - bottom right, contained */}
+      {/* Tugi mascot - bottom right, much larger */}
       <img
         src={tugiImg}
         alt="Tugi mascot"
-        className="absolute bottom-0 right-0 h-28 sm:h-36 md:h-44 lg:h-64 xl:h-80 2xl:h-[22rem] object-contain z-20 pointer-events-none max-h-[45vh]"
+        className="absolute bottom-0 right-0 h-36 sm:h-44 md:h-52 lg:h-[22rem] xl:h-[26rem] 2xl:h-[30rem] object-contain z-20"
       />
     </div>
   );
