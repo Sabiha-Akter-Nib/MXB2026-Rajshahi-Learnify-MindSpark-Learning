@@ -1,153 +1,224 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, ArrowRight, Loader2, CheckCircle, Mail } from "lucide-react";
-import logoImg from "@/assets/logo.png";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, Eye, EyeOff, ArrowLeft, ChevronRight } from "lucide-react";
+import loginLogoImg from "@/assets/login-logo-card.png";
+import tugiGlassesImg from "@/assets/tugi-glasses.png";
+import tugiOtpImg from "@/assets/tugi-otp.png";
+import tugiMascotImg from "@/assets/tugi-mascot.png";
+import tugiSchoolImg from "@/assets/tugi-school.png";
+import tugiGradesImg from "@/assets/tugi-grades.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
-const classes = [
-  { value: "1", label: "Class 1" },
-  { value: "2", label: "Class 2" },
-  { value: "3", label: "Class 3" },
-  { value: "4", label: "Class 4" },
-  { value: "5", label: "Class 5" },
-  { value: "6", label: "Class 6" },
-  { value: "7", label: "Class 7" },
-  { value: "8", label: "Class 8" },
-  { value: "9", label: "Class 9" },
-  { value: "10", label: "Class 10" },
+// ─── Particle Canvas (same as Login) ───
+const SignupParticleCanvas = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animationId: number;
+    const particles: { x: number; y: number; vx: number; vy: number; r: number; o: number }[] = [];
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize();
+    window.addEventListener("resize", resize);
+    for (let i = 0; i < 60; i++) {
+      particles.push({
+        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2 + 1, o: Math.random() * 0.5 + 0.2,
+      });
+    }
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(181, 191, 238, ${p.o})`; ctx.fill();
+        for (let j = i + 1; j < particles.length; j++) {
+          const q = particles[j];
+          const dx = p.x - q.x, dy = p.y - q.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y);
+            ctx.strokeStyle = `rgba(181, 191, 238, ${0.15 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.5; ctx.stroke();
+          }
+        }
+      }
+      animationId = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(animationId); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={canvasRef} className="absolute inset-0 z-[1]" />;
+};
+
+// ─── Step definitions ───
+const TOTAL_STEPS = 6;
+
+const stepTugiMap: Record<number, string> = {
+  0: tugiGlassesImg,
+  1: tugiOtpImg,
+  2: tugiMascotImg,
+  3: tugiMascotImg,
+  4: tugiSchoolImg,
+  5: tugiGradesImg,
+};
+
+const classesBn = [
+  { value: "1", label: "প্রথম শ্রেণি" },
+  { value: "2", label: "দ্বিতীয় শ্রেণি" },
+  { value: "3", label: "তৃতীয় শ্রেণি" },
+  { value: "4", label: "চতুর্থ শ্রেণি" },
+  { value: "5", label: "পঞ্চম শ্রেণি" },
+  { value: "6", label: "ষষ্ঠ শ্রেণি" },
+  { value: "7", label: "সপ্তম শ্রেণি" },
+  { value: "8", label: "অষ্টম শ্রেণি" },
+  { value: "9", label: "নবম শ্রেণি" },
+  { value: "10", label: "দশম শ্রেণি" },
 ];
 
 const divisions = [
-  { value: "science", label: "Science (বিজ্ঞান)", labelBn: "বিজ্ঞান" },
-  { value: "commerce", label: "Commerce (ব্যবসায় শিক্ষা)", labelBn: "ব্যবসায় শিক্ষা" },
-  { value: "arts", label: "Arts (মানবিক)", labelBn: "মানবিক" },
+  { value: "science", label: "বিজ্ঞান" },
+  { value: "commerce", label: "ব্যবসায় শিক্ষা" },
+  { value: "arts", label: "মানবিক" },
 ];
 
-const signupSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(100),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  school: z.string().min(2, "School name is required").max(200),
-  class: z.string().min(1, "Please select a class"),
-  version: z.enum(["bangla", "english"], { required_error: "Please select a version" }),
-  division: z.string().optional(),
-}).refine((data) => {
-  const classNum = parseInt(data.class);
-  if (classNum >= 9 && classNum <= 10) {
-    return !!data.division;
-  }
-  return true;
-}, {
-  message: "Please select a division for Class 9-10",
-  path: ["division"],
-});
+const inputStyle = {
+  background: "rgba(240, 235, 250, 0.92)",
+  color: "#2D1B4E",
+  boxShadow: "0 4px 12px rgba(160, 130, 200, 0.35), inset 0 -2px 0 rgba(180, 150, 220, 0.4)",
+  border: "2px solid rgba(180, 150, 220, 0.5)",
+};
 
-type Step = "form" | "emailSent" | "success";
+const inputErrorStyle = {
+  ...inputStyle,
+  border: "2px solid #ef4444",
+};
+
+const cardStyle = {
+  background: "linear-gradient(135deg, rgba(91,67,100,0.35) 0%, rgba(11,6,90,0.3) 100%)",
+  backdropFilter: "blur(16px)",
+  border: "1px solid rgba(181, 191, 238, 0.2)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+};
+
+const btnStyle = {
+  background: "rgba(240, 235, 250, 0.92)",
+  color: "#4A3A8A",
+  boxShadow: "0 4px 16px rgba(160, 130, 200, 0.4), inset 0 -2px 0 rgba(180, 150, 220, 0.4)",
+  border: "2px solid rgba(180, 150, 220, 0.5)",
+};
+
+const labelColor = "rgba(181, 191, 238, 0.9)";
 
 const Signup = () => {
-  const [step, setStep] = useState<Step>("form");
-  const [showPassword, setShowPassword] = useState(false);
+  const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
+    name: "",
     school: "",
     class: "",
     version: "",
     division: "",
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  
-  const { signUp, user, loading } = useAuth();
+
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const selectedClass = parseInt(formData.class) || 0;
   const showDivision = selectedClass >= 9 && selectedClass <= 10;
 
-  // Redirect if already logged in
   useEffect(() => {
-    if (!loading && user) {
-      navigate("/dashboard");
-    }
+    if (!loading && user) navigate("/dashboard");
   }, [user, loading, navigate]);
 
-  // Clear division when class changes to non 9-10
-  useEffect(() => {
-    if (!showDivision && formData.division) {
-      setFormData(prev => ({ ...prev, division: "" }));
-    }
-  }, [showDivision, formData.division]);
+  const invokeEdge = async (fn: string, body: Record<string, unknown>) => {
+    const { data, error } = await supabase.functions.invoke(fn, { body });
+    if (error) throw new Error(error.message || "Network error");
+    if (data?.error) throw new Error(data.error);
+    return data;
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    
-    // Validate form
-    const result = signupSchema.safeParse(formData);
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0] as string] = err.message;
-        }
-      });
-      setErrors(fieldErrors);
-      return;
-    }
-
+  const handleNext = async () => {
+    setError("");
     setIsLoading(true);
-    
     try {
-      const { error } = await signUp(
-        formData.email,
-        formData.password,
-        {
-          full_name: formData.name,
-          school_name: formData.school,
-          class: parseInt(formData.class),
-          version: formData.version as "bangla" | "english",
-          ...(showDivision && formData.division ? { division: formData.division } : {}),
+      switch (step) {
+        case 0: {
+          const emailResult = z.string().email("সঠিক ইমেইল দিন").safeParse(formData.email);
+          if (!emailResult.success) { setError(emailResult.error.errors[0].message); break; }
+          await invokeEdge("send-otp", { email: formData.email });
+          toast({ title: "OTP পাঠানো হয়েছে!", description: "আপনার ইমেইল চেক করুন।" });
+          setStep(1);
+          break;
         }
-      );
-
-      if (error) {
-        if (error.message.includes("already registered")) {
-          throw new Error("An account with this email already exists. Please log in instead.");
+        case 1: {
+          if (otpCode.length !== 6) { setError("৬ সংখ্যার কোড দিন"); break; }
+          await invokeEdge("verify-otp", { email: formData.email, code: otpCode });
+          toast({ title: "ভেরিফাই হয়েছে!", description: "আপনার ইমেইল সফলভাবে ভেরিফাই হয়েছে।" });
+          setStep(2);
+          break;
         }
-        throw error;
+        case 2: {
+          const pwResult = z.string().min(6, "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে").safeParse(formData.password);
+          if (!pwResult.success) { setError(pwResult.error.errors[0].message); break; }
+          setStep(3);
+          break;
+        }
+        case 3: {
+          if (formData.name.trim().length < 2) { setError("নাম দিন"); break; }
+          setStep(4);
+          break;
+        }
+        case 4: {
+          if (formData.school.trim().length < 2) { setError("স্কুলের নাম দিন"); break; }
+          setStep(5);
+          break;
+        }
+        case 5: {
+          if (!formData.class) { setError("ক্লাস নির্বাচন করুন"); break; }
+          if (!formData.version) { setError("ভার্সন নির্বাচন করুন"); break; }
+          if (showDivision && !formData.division) { setError("বিভাগ নির্বাচন করুন"); break; }
+          // Complete signup
+          await invokeEdge("complete-signup", {
+            email: formData.email,
+            password: formData.password,
+            full_name: formData.name,
+            school_name: formData.school,
+            class: formData.class,
+            version: formData.version,
+            ...(showDivision && formData.division ? { division: formData.division } : {}),
+          });
+          toast({ title: "অ্যাকাউন্ট তৈরি হয়েছে!", description: "এখন লগ ইন করুন।" });
+          navigate("/login");
+          break;
+        }
       }
-
-      setStep("emailSent");
-      toast({
-        title: "Verification Email Sent",
-        description: "Please check your email to confirm your account.",
-      });
-      
-    } catch (err) {
-      console.error("Signup error:", err);
-      toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : "Failed to create account",
-        variant: "destructive",
-      });
+    } catch (err: any) {
+      setError(err.message || "কিছু সমস্যা হয়েছে");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleBack = () => {
+    setError("");
+    if (step > 0) setStep(step - 1);
   };
 
   if (loading) {
@@ -158,263 +229,294 @@ const Signup = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 flex">
-      {/* Left side - Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
-        >
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 mb-8">
-            <img src={logoImg} alt="OddhaboshAI" className="h-12" />
-          </Link>
+  const currentTugi = stepTugiMap[step];
 
-          {step === "emailSent" ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-8"
-            >
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Mail className="w-10 h-10 text-primary" />
-              </div>
-              <h1 className="font-heading font-bold text-3xl mb-2">
-                Check your email
-              </h1>
-              <p className="text-muted-foreground mb-6">
-                We've sent a confirmation link to <strong>{formData.email}</strong>. 
-                Click the link in the email to activate your account.
-              </p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Didn't receive the email? Check your spam folder or try signing up again.
-              </p>
-              <div className="flex flex-col gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setStep("form")}
-                  className="w-full"
-                >
-                  Back to signup
-                </Button>
-                <Link to="/login" className="text-primary hover:underline text-sm">
-                  Already verified? Log in
-                </Link>
-              </div>
-            </motion.div>
-          ) : (
-            <>
-              <h1 className="font-heading font-bold text-3xl mb-2">
-                Create your account
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                Start your personalized learning journey today
-              </p>
+  // ─── Step Content Renderers ───
+  const renderStepContent = () => {
+    const variants = {
+      initial: { opacity: 0, x: 40 },
+      animate: { opacity: 1, x: 0 },
+      exit: { opacity: 0, x: -40 },
+    };
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="Enter your full name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className={errors.name ? "border-destructive" : ""}
-                  />
-                  {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
-                </div>
-
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className={errors.email ? "border-destructive" : ""}
-                  />
-                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-                </div>
-
-                {/* Password */}
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Create a strong password"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className={errors.password ? "border-destructive" : ""}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                </div>
-
-                {/* School */}
-                <div className="space-y-2">
-                  <Label htmlFor="school">School Name</Label>
-                  <Input
-                    id="school"
-                    placeholder="Enter your school name"
-                    value={formData.school}
-                    onChange={(e) => setFormData({ ...formData, school: e.target.value })}
-                    className={errors.school ? "border-destructive" : ""}
-                  />
-                  {errors.school && <p className="text-sm text-destructive">{errors.school}</p>}
-                </div>
-
-                {/* Class & Version */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Class</Label>
-                    <Select
-                      value={formData.class}
-                      onValueChange={(value) => setFormData({ ...formData, class: value })}
-                    >
-                      <SelectTrigger className={errors.class ? "border-destructive" : ""}>
-                        <SelectValue placeholder="Select class" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {classes.map((cls) => (
-                          <SelectItem key={cls.value} value={cls.value}>
-                            {cls.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.class && <p className="text-sm text-destructive">{errors.class}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Version</Label>
-                    <Select
-                      value={formData.version}
-                      onValueChange={(value) => setFormData({ ...formData, version: value })}
-                    >
-                      <SelectTrigger className={errors.version ? "border-destructive" : ""}>
-                        <SelectValue placeholder="Select version" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="bangla">বাংলা</SelectItem>
-                        <SelectItem value="english">English</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.version && <p className="text-sm text-destructive">{errors.version}</p>}
-                  </div>
-                </div>
-
-                {/* Division (for Class 9-10 only) */}
-                {showDivision && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2"
-                  >
-                    <Label>Division (বিভাগ)</Label>
-                    <Select
-                      value={formData.division}
-                      onValueChange={(value) => setFormData({ ...formData, division: value })}
-                    >
-                      <SelectTrigger className={errors.division ? "border-destructive" : ""}>
-                        <SelectValue placeholder="Select your division" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {divisions.map((div) => (
-                          <SelectItem key={div.value} value={div.value}>
-                            {div.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.division && <p className="text-sm text-destructive">{errors.division}</p>}
-                  </motion.div>
-                )}
-
-                <Button
-                  variant="hero"
-                  size="lg"
-                  className="w-full"
-                  type="submit"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    <>
-                      Create Account
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </Button>
-              </form>
-
-              <p className="text-center text-muted-foreground mt-6">
-                Already have an account?{" "}
-                <Link to="/login" className="text-primary font-medium hover:underline">
-                  Log in
-                </Link>
-              </p>
-            </>
-          )}
-        </motion.div>
-      </div>
-
-      {/* Right side - Illustration */}
-      <div className="hidden lg:flex flex-1 bg-primary items-center justify-center relative overflow-hidden">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-          className="absolute top-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ rotate: -360 }}
-          transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-0 right-0 w-96 h-96 bg-primary-foreground/10 rounded-full blur-3xl"
-        />
-
-        <div className="relative z-10 text-center px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-8">
-              {step === "emailSent" ? (
-                <Mail className="w-12 h-12 text-primary-foreground" />
-              ) : (
-                <img src={logoImg} alt="OddhaboshAI" className="h-20" />
-              )}
-            </div>
-            <h2 className="font-heading font-bold text-3xl text-primary-foreground mb-4">
-              {step === "emailSent" ? "Almost there!" : "Join OddhaboshAI"}
-            </h2>
-            <p className="text-primary-foreground/80 text-lg max-w-sm mx-auto">
-              {step === "emailSent" 
-                ? "Just one more step - confirm your email to start learning."
-                : "Your personalized AI tutor, designed for NCTB curriculum. Learn smarter, not harder."}
-            </p>
+    switch (step) {
+      case 0:
+        return (
+          <motion.div key="step0" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>ইমেইল / মোবাইল</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onKeyDown={(e) => e.key === "Enter" && handleNext()}
+              className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
+              style={error ? inputErrorStyle : inputStyle}
+            />
           </motion.div>
-        </div>
+        );
+      case 1:
+        return (
+          <motion.div key="step1" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>
+              ইমেইল/মোবাইল নম্বরে পাঠানো ৬ সংখ্যার ওটিপি নম্বর
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="● ● ● ● ● ●"
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              onKeyDown={(e) => e.key === "Enter" && handleNext()}
+              className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none text-center tracking-[0.5em] transition-all focus:ring-2"
+              style={error ? inputErrorStyle : inputStyle}
+            />
+          </motion.div>
+        );
+      case 2:
+        return (
+          <motion.div key="step2" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>পাসওয়ার্ড তৈরি করুন</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="কমপক্ষে ৬ অক্ষর"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onKeyDown={(e) => e.key === "Enter" && handleNext()}
+                className="w-full py-3.5 px-5 pr-12 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
+                style={error ? inputErrorStyle : inputStyle}
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-80" style={{ color: "#5B4364" }}>
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </motion.div>
+        );
+      case 3:
+        return (
+          <motion.div key="step3" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>তোমার নাম</label>
+            <input
+              type="text"
+              placeholder="পুরো নাম লিখুন"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onKeyDown={(e) => e.key === "Enter" && handleNext()}
+              className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
+              style={error ? inputErrorStyle : inputStyle}
+            />
+          </motion.div>
+        );
+      case 4:
+        return (
+          <motion.div key="step4" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>তোমার স্কুলের নাম</label>
+            <input
+              type="text"
+              placeholder="স্কুলের নাম লিখুন"
+              value={formData.school}
+              onChange={(e) => setFormData({ ...formData, school: e.target.value })}
+              onKeyDown={(e) => e.key === "Enter" && handleNext()}
+              className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
+              style={error ? inputErrorStyle : inputStyle}
+            />
+          </motion.div>
+        );
+      case 5:
+        return (
+          <motion.div key="step5" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
+            <label className="block text-sm font-semibold mb-3 text-center" style={{ color: labelColor }}>তোমার ক্লাস</label>
+            <div className="max-h-[180px] overflow-y-auto space-y-2 mb-4 pr-1 custom-scrollbar">
+              {classesBn.map((cls) => (
+                <button
+                  key={cls.value}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, class: cls.value, division: "" })}
+                  className="w-full py-3 px-5 rounded-2xl text-sm font-medium transition-all duration-200"
+                  style={formData.class === cls.value ? {
+                    background: "rgba(224, 210, 255, 0.95)",
+                    color: "#4A3A8A",
+                    border: "2px solid rgba(160, 130, 200, 0.8)",
+                    boxShadow: "0 4px 16px rgba(160, 130, 200, 0.5)",
+                  } : {
+                    background: "rgba(181, 191, 238, 0.15)",
+                    color: "rgba(181, 191, 238, 0.8)",
+                    border: "1px solid rgba(181, 191, 238, 0.15)",
+                  }}
+                >
+                  {cls.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Version selection */}
+            <label className="block text-sm font-semibold mb-2 text-center" style={{ color: labelColor }}>ভার্সন</label>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {[{ value: "bangla", label: "বাংলা" }, { value: "english", label: "English" }].map((v) => (
+                <button
+                  key={v.value}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, version: v.value })}
+                  className="py-3 px-4 rounded-2xl text-sm font-medium transition-all duration-200"
+                  style={formData.version === v.value ? {
+                    background: "rgba(224, 210, 255, 0.95)",
+                    color: "#4A3A8A",
+                    border: "2px solid rgba(160, 130, 200, 0.8)",
+                    boxShadow: "0 4px 16px rgba(160, 130, 200, 0.5)",
+                  } : {
+                    background: "rgba(181, 191, 238, 0.15)",
+                    color: "rgba(181, 191, 238, 0.8)",
+                    border: "1px solid rgba(181, 191, 238, 0.15)",
+                  }}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Division (9-10 only) */}
+            {showDivision && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+                <label className="block text-sm font-semibold mb-2 text-center" style={{ color: labelColor }}>বিভাগ</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {divisions.map((d) => (
+                    <button
+                      key={d.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, division: d.value })}
+                      className="py-2.5 px-3 rounded-xl text-xs font-medium transition-all duration-200"
+                      style={formData.division === d.value ? {
+                        background: "rgba(224, 210, 255, 0.95)",
+                        color: "#4A3A8A",
+                        border: "2px solid rgba(160, 130, 200, 0.8)",
+                      } : {
+                        background: "rgba(181, 191, 238, 0.15)",
+                        color: "rgba(181, 191, 238, 0.8)",
+                        border: "1px solid rgba(181, 191, 238, 0.15)",
+                      }}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen relative flex flex-col items-center overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #1A1F30 0%, #5B4364 28%, #0B065A 47%, #B5BFEE 89%)" }}>
+      <SignupParticleCanvas />
+
+      {/* Grid */}
+      <div className="absolute inset-0 z-[2] opacity-[0.08]" style={{
+        backgroundImage: "linear-gradient(rgba(181,191,238,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(181,191,238,0.4) 1px, transparent 1px)",
+        backgroundSize: "48px 48px",
+      }} />
+
+      {/* Decorative blurs */}
+      <div className="hidden lg:block absolute top-[10%] left-[8%] w-[300px] h-[300px] rounded-full opacity-20 blur-[100px] z-[3]" style={{ background: "#B5BFEE" }} />
+      <div className="hidden lg:block absolute bottom-[15%] right-[25%] w-[250px] h-[250px] rounded-full opacity-15 blur-[80px] z-[3]" style={{ background: "#5B4364" }} />
+
+      {/* Main content */}
+      <div className="relative z-10 w-full max-w-md mx-auto px-5 pt-10 pb-40 lg:pt-16 flex flex-col items-center gap-5 lg:gap-6">
+
+        {/* Logo card */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          className="w-full max-w-xs sm:max-w-sm">
+          <img src={loginLogoImg} alt="OddhaboshAI" className="w-full h-auto drop-shadow-2xl" />
+        </motion.div>
+
+        {/* সাইন আপ header */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.4 }} className="w-full">
+          <div className="w-full py-3.5 rounded-2xl text-center text-lg font-bold tracking-wide" style={{
+            background: "linear-gradient(135deg, rgba(91,67,100,0.6) 0%, rgba(11,6,90,0.5) 100%)",
+            color: "rgba(181, 191, 238, 0.9)",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(181, 191, 238, 0.15)",
+          }}>
+            সাইন আপ
+          </div>
+        </motion.div>
+
+        {/* Form card */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }}
+          className="w-full rounded-3xl p-6" style={cardStyle}>
+
+          <AnimatePresence mode="wait">
+            {renderStepContent()}
+          </AnimatePresence>
+
+          {/* Error */}
+          {error && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-medium mt-3 text-center" style={{ color: "#fca5a5" }}>
+              {error}
+            </motion.p>
+          )}
+
+          {/* Step dots */}
+          <div className="flex justify-center gap-1.5 py-4">
+            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+              <div key={i} className="w-2 h-2 rounded-full transition-all duration-300" style={{
+                background: i === step ? "rgba(224, 210, 255, 0.95)" : i < step ? "rgba(181, 191, 238, 0.5)" : "rgba(181, 191, 238, 0.2)",
+                transform: i === step ? "scale(1.3)" : "scale(1)",
+              }} />
+            ))}
+          </div>
+
+          {/* Buttons */}
+          <div className="flex items-center justify-center gap-3">
+            {step > 0 && (
+              <button type="button" onClick={handleBack} disabled={isLoading}
+                className="p-3 rounded-full transition-transform hover:scale-105 active:scale-95"
+                style={{ background: "rgba(181, 191, 238, 0.15)", border: "1px solid rgba(181, 191, 238, 0.2)" }}>
+                <ArrowLeft className="w-4 h-4" style={{ color: "rgba(181, 191, 238, 0.8)" }} />
+              </button>
+            )}
+            <button type="button" onClick={handleNext} disabled={isLoading}
+              className="px-10 py-3 rounded-full text-base font-bold tracking-wide transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98] disabled:opacity-60"
+              style={btnStyle}>
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  অপেক্ষা করুন...
+                </span>
+              ) : step === TOTAL_STEPS - 1 ? "সাইন আপ করুন" : "পরবর্তী"}
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Login link */}
+        <p className="text-sm text-center" style={{ color: "rgba(181, 191, 238, 0.7)" }}>
+          ইতোমধ্যে অ্যাকাউন্ট আছে?{" "}
+          <Link to="/login" className="font-semibold hover:underline" style={{ color: "rgba(224, 210, 255, 0.95)" }}>
+            লগ ইন করুন
+          </Link>
+        </p>
       </div>
+
+      {/* Tugi mascot - changes per step */}
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={step}
+          src={currentTugi}
+          alt="Tugi mascot"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.4 }}
+          className="absolute bottom-0 right-0 h-32 sm:h-36 md:h-44 lg:h-56 xl:h-64 2xl:h-72 object-contain z-20 pointer-events-none"
+        />
+      </AnimatePresence>
     </div>
   );
 };
