@@ -294,7 +294,7 @@ export function HeroSection() {
           <span className="text-primary font-medium">personalized study plans</span>,{" "}
           tracks your progress, and helps you{" "}
           <span className="text-accent font-medium">excel in every subject</span>{" "}
-          from Grades 1-10.
+          from Grades 6-10.
         </motion.p>
 
         {/* CTA Buttons */}

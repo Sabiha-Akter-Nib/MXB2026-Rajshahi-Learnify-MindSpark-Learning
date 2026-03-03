@@ -40,7 +40,7 @@ export function Footer() {
             </Link>
             <p className="text-primary-foreground/60 text-sm mb-4">
               AI-powered personalized learning for Bangladeshi students, 
-              Grades 1-10.
+              Grades 6-10.
             </p>
             <div className="flex items-center gap-4">
               <a href="#" className="text-primary-foreground/60 hover:text-primary transition-colors">
