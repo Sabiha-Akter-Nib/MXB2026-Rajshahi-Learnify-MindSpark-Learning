@@ -150,12 +150,15 @@ const Signup = () => {
   const invokeEdge = async (fn: string, body: Record<string, unknown>) => {
     const { data, error } = await supabase.functions.invoke(fn, { body });
     if (error) {
-      // Try to parse error context from FunctionsHttpError
-      try {
-        const ctx = JSON.parse((error as any).context?.body || "{}");
-        if (ctx.error) throw new Error(ctx.error);
-      } catch (parseErr) {
-        if (parseErr instanceof Error && parseErr.message !== error.message) throw parseErr;
+      // FunctionsHttpError has context as a Response object
+      const ctx = (error as any).context;
+      if (ctx && typeof ctx.json === "function") {
+        try {
+          const parsed = await ctx.json();
+          if (parsed?.error) throw new Error(parsed.error);
+        } catch (parseErr) {
+          if (parseErr instanceof Error && parseErr.message !== error.message) throw parseErr;
+        }
       }
       throw new Error(error.message || "Network error");
     }
