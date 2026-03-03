@@ -24,6 +24,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Fetch the latest OTP for this email, then check expiry in code
     const { data: otpRecords, error } = await supabase
       .from("otp_codes")
       .select("*")
@@ -31,9 +32,19 @@ Deno.serve(async (req) => {
       .eq("type", "signup")
       .eq("code", code)
       .eq("verified", false)
-      .gte("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
       .limit(1);
+
+    // Check expiry manually to avoid timestamp format issues
+    if (otpRecords && otpRecords.length > 0) {
+      const expiry = new Date(otpRecords[0].expires_at);
+      if (expiry < new Date()) {
+        return new Response(
+          JSON.stringify({ error: "কোডের মেয়াদ শেষ হয়ে গেছে। আবার চেষ্টা করুন।" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     if (error) throw error;
 
