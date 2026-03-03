@@ -32,7 +32,7 @@ const features = [
   {
     icon: BookOpen,
     title: "NCTB Curriculum",
-    description: "Complete alignment with Bangladesh's national curriculum from Grades 1-10.",
+    description: "Complete alignment with Bangladesh's national curriculum from Grades 6-10.",
     color: "success",
     glowColor: "shadow-glow",
     animation: "tilt-right",

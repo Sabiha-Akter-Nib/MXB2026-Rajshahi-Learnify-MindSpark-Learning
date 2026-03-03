@@ -1,19 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Eye, EyeOff, ArrowLeft, ChevronRight } from "lucide-react";
+import { Loader2, Eye, EyeOff, ArrowLeft, BookOpen, Globe, Beaker, Briefcase, Palette } from "lucide-react";
 import loginLogoImg from "@/assets/login-logo-card.png";
 import tugiGlassesImg from "@/assets/tugi-glasses.png";
 import tugiOtpImg from "@/assets/tugi-otp.png";
 import tugiMascotImg from "@/assets/tugi-mascot.png";
 import tugiSchoolImg from "@/assets/tugi-school.png";
 import tugiGradesImg from "@/assets/tugi-grades.png";
+import grade6Img from "@/assets/grade-6.png";
+import grade7Img from "@/assets/grade-7.png";
+import grade8Img from "@/assets/grade-8.png";
+import grade9Img from "@/assets/grade-9.png";
+import grade10Img from "@/assets/grade-10.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
-// ─── Particle Canvas (same as Login) ───
+// ─── Particle Canvas ───
 const SignupParticleCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -61,8 +66,8 @@ const SignupParticleCanvas = () => {
   return <canvas ref={canvasRef} className="absolute inset-0 z-[1]" />;
 };
 
-// ─── Step definitions ───
-const TOTAL_STEPS = 6;
+// ─── Steps: 0=email, 1=otp, 2=password, 3=name, 4=school, 5=class+division, 6=version ───
+const TOTAL_STEPS = 7;
 
 const stepTugiMap: Record<number, string> = {
   0: tugiGlassesImg,
@@ -71,25 +76,21 @@ const stepTugiMap: Record<number, string> = {
   3: tugiMascotImg,
   4: tugiSchoolImg,
   5: tugiGradesImg,
+  6: tugiGradesImg,
 };
 
-const classesBn = [
-  { value: "1", label: "প্রথম শ্রেণি" },
-  { value: "2", label: "দ্বিতীয় শ্রেণি" },
-  { value: "3", label: "তৃতীয় শ্রেণি" },
-  { value: "4", label: "চতুর্থ শ্রেণি" },
-  { value: "5", label: "পঞ্চম শ্রেণি" },
-  { value: "6", label: "ষষ্ঠ শ্রেণি" },
-  { value: "7", label: "সপ্তম শ্রেণি" },
-  { value: "8", label: "অষ্টম শ্রেণি" },
-  { value: "9", label: "নবম শ্রেণি" },
-  { value: "10", label: "দশম শ্রেণি" },
+const gradeData = [
+  { value: "6", label: "ষষ্ঠ শ্রেণি", img: grade6Img },
+  { value: "7", label: "সপ্তম শ্রেণি", img: grade7Img },
+  { value: "8", label: "অষ্টম শ্রেণি", img: grade8Img },
+  { value: "9", label: "নবম শ্রেণি", img: grade9Img },
+  { value: "10", label: "দশম শ্রেণি", img: grade10Img },
 ];
 
 const divisions = [
-  { value: "science", label: "বিজ্ঞান" },
-  { value: "commerce", label: "ব্যবসায় শিক্ষা" },
-  { value: "arts", label: "মানবিক" },
+  { value: "science", label: "বিজ্ঞান", icon: Beaker },
+  { value: "commerce", label: "ব্যবসায় শিক্ষা", icon: Briefcase },
+  { value: "arts", label: "মানবিক", icon: Palette },
 ];
 
 const inputStyle = {
@@ -99,10 +100,7 @@ const inputStyle = {
   border: "2px solid rgba(180, 150, 220, 0.5)",
 };
 
-const inputErrorStyle = {
-  ...inputStyle,
-  border: "2px solid #ef4444",
-};
+const inputErrorStyle = { ...inputStyle, border: "2px solid #ef4444" };
 
 const cardStyle = {
   background: "linear-gradient(135deg, rgba(91,67,100,0.35) 0%, rgba(11,6,90,0.3) 100%)",
@@ -120,6 +118,19 @@ const btnStyle = {
 
 const labelColor = "rgba(181, 191, 238, 0.9)";
 
+const selectedChip = {
+  background: "rgba(224, 210, 255, 0.95)",
+  color: "#4A3A8A",
+  border: "2px solid rgba(160, 130, 200, 0.8)",
+  boxShadow: "0 4px 16px rgba(160, 130, 200, 0.5)",
+};
+
+const unselectedChip = {
+  background: "rgba(181, 191, 238, 0.15)",
+  color: "rgba(181, 191, 238, 0.8)",
+  border: "1px solid rgba(181, 191, 238, 0.15)",
+};
+
 const Signup = () => {
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -127,13 +138,8 @@ const Signup = () => {
   const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    school: "",
-    class: "",
-    version: "",
-    division: "",
+    email: "", password: "", name: "", school: "",
+    class: "", version: "", division: "",
   });
 
   const { user, loading } = useAuth();
@@ -150,7 +156,6 @@ const Signup = () => {
   const invokeEdge = async (fn: string, body: Record<string, unknown>) => {
     const { data, error } = await supabase.functions.invoke(fn, { body });
     if (error) {
-      // FunctionsHttpError has context as a Response object
       const ctx = (error as any).context;
       if (ctx && typeof ctx.json === "function") {
         try {
@@ -182,7 +187,7 @@ const Signup = () => {
         case 1: {
           if (otpCode.length !== 6) { setError("৬ সংখ্যার কোড দিন"); break; }
           await invokeEdge("verify-otp", { email: formData.email, code: otpCode });
-          toast({ title: "ভেরিফাই হয়েছে!", description: "আপনার ইমেইল সফলভাবে ভেরিফাই হয়েছে।" });
+          toast({ title: "ভেরিফাই হয়েছে!" });
           setStep(2);
           break;
         }
@@ -204,9 +209,12 @@ const Signup = () => {
         }
         case 5: {
           if (!formData.class) { setError("ক্লাস নির্বাচন করুন"); break; }
-          if (!formData.version) { setError("ভার্সন নির্বাচন করুন"); break; }
           if (showDivision && !formData.division) { setError("বিভাগ নির্বাচন করুন"); break; }
-          // Complete signup
+          setStep(6);
+          break;
+        }
+        case 6: {
+          if (!formData.version) { setError("ভার্সন নির্বাচন করুন"); break; }
           await invokeEdge("complete-signup", {
             email: formData.email,
             password: formData.password,
@@ -228,10 +236,7 @@ const Signup = () => {
     }
   };
 
-  const handleBack = () => {
-    setError("");
-    if (step > 0) setStep(step - 1);
-  };
+  const handleBack = () => { setError(""); if (step > 0) setStep(step - 1); };
 
   if (loading) {
     return (
@@ -242,29 +247,19 @@ const Signup = () => {
   }
 
   const currentTugi = stepTugiMap[step];
+  const variants = { initial: { opacity: 0, x: 40 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -40 } };
 
-  // ─── Step Content Renderers ───
   const renderStepContent = () => {
-    const variants = {
-      initial: { opacity: 0, x: 40 },
-      animate: { opacity: 1, x: 0 },
-      exit: { opacity: 0, x: -40 },
-    };
-
     switch (step) {
       case 0:
         return (
           <motion.div key="step0" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
             <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>ইমেইল / মোবাইল</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={formData.email}
+            <input type="email" placeholder="you@example.com" value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               onKeyDown={(e) => e.key === "Enter" && handleNext()}
               className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
-              style={error ? inputErrorStyle : inputStyle}
-            />
+              style={error ? inputErrorStyle : inputStyle} />
           </motion.div>
         );
       case 1:
@@ -273,17 +268,11 @@ const Signup = () => {
             <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>
               ইমেইল/মোবাইল নম্বরে পাঠানো ৬ সংখ্যার ওটিপি নম্বর
             </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              placeholder="● ● ● ● ● ●"
-              value={otpCode}
+            <input type="text" inputMode="numeric" maxLength={6} placeholder="● ● ● ● ● ●" value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
               onKeyDown={(e) => e.key === "Enter" && handleNext()}
               className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none text-center tracking-[0.5em] transition-all focus:ring-2"
-              style={error ? inputErrorStyle : inputStyle}
-            />
+              style={error ? inputErrorStyle : inputStyle} />
           </motion.div>
         );
       case 2:
@@ -291,15 +280,11 @@ const Signup = () => {
           <motion.div key="step2" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
             <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>পাসওয়ার্ড তৈরি করুন</label>
             <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="কমপক্ষে ৬ অক্ষর"
-                value={formData.password}
+              <input type={showPassword ? "text" : "password"} placeholder="কমপক্ষে ৬ অক্ষর" value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 onKeyDown={(e) => e.key === "Enter" && handleNext()}
                 className="w-full py-3.5 px-5 pr-12 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
-                style={error ? inputErrorStyle : inputStyle}
-              />
+                style={error ? inputErrorStyle : inputStyle} />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-80" style={{ color: "#5B4364" }}>
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -311,80 +296,38 @@ const Signup = () => {
         return (
           <motion.div key="step3" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
             <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>তোমার নাম</label>
-            <input
-              type="text"
-              placeholder="পুরো নাম লিখুন"
-              value={formData.name}
+            <input type="text" placeholder="পুরো নাম লিখুন" value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               onKeyDown={(e) => e.key === "Enter" && handleNext()}
               className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
-              style={error ? inputErrorStyle : inputStyle}
-            />
+              style={error ? inputErrorStyle : inputStyle} />
           </motion.div>
         );
       case 4:
         return (
           <motion.div key="step4" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
             <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>তোমার স্কুলের নাম</label>
-            <input
-              type="text"
-              placeholder="স্কুলের নাম লিখুন"
-              value={formData.school}
+            <input type="text" placeholder="স্কুলের নাম লিখুন" value={formData.school}
               onChange={(e) => setFormData({ ...formData, school: e.target.value })}
               onKeyDown={(e) => e.key === "Enter" && handleNext()}
               className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
-              style={error ? inputErrorStyle : inputStyle}
-            />
+              style={error ? inputErrorStyle : inputStyle} />
           </motion.div>
         );
       case 5:
         return (
           <motion.div key="step5" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
-            <label className="block text-sm font-semibold mb-3 text-center" style={{ color: labelColor }}>তোমার ক্লাস</label>
-            <div className="max-h-[180px] overflow-y-auto space-y-2 mb-4 pr-1 custom-scrollbar">
-              {classesBn.map((cls) => (
-                <button
-                  key={cls.value}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, class: cls.value, division: "" })}
-                  className="w-full py-3 px-5 rounded-2xl text-sm font-medium transition-all duration-200"
-                  style={formData.class === cls.value ? {
-                    background: "rgba(224, 210, 255, 0.95)",
-                    color: "#4A3A8A",
-                    border: "2px solid rgba(160, 130, 200, 0.8)",
-                    boxShadow: "0 4px 16px rgba(160, 130, 200, 0.5)",
-                  } : {
-                    background: "rgba(181, 191, 238, 0.15)",
-                    color: "rgba(181, 191, 238, 0.8)",
-                    border: "1px solid rgba(181, 191, 238, 0.15)",
-                  }}
-                >
-                  {cls.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Version selection */}
-            <label className="block text-sm font-semibold mb-2 text-center" style={{ color: labelColor }}>ভার্সন</label>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {[{ value: "bangla", label: "বাংলা" }, { value: "english", label: "English" }].map((v) => (
-                <button
-                  key={v.value}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, version: v.value })}
-                  className="py-3 px-4 rounded-2xl text-sm font-medium transition-all duration-200"
-                  style={formData.version === v.value ? {
-                    background: "rgba(224, 210, 255, 0.95)",
-                    color: "#4A3A8A",
-                    border: "2px solid rgba(160, 130, 200, 0.8)",
-                    boxShadow: "0 4px 16px rgba(160, 130, 200, 0.5)",
-                  } : {
-                    background: "rgba(181, 191, 238, 0.15)",
-                    color: "rgba(181, 191, 238, 0.8)",
-                    border: "1px solid rgba(181, 191, 238, 0.15)",
-                  }}
-                >
-                  {v.label}
+            <label className="block text-sm font-semibold mb-3 text-center" style={{ color: labelColor }}>তোমার ক্লাস নির্বাচন করো</label>
+            
+            {/* Grade cards - responsive grid, no scroll */}
+            <div className="grid grid-cols-5 gap-2 mb-4">
+              {gradeData.map((g) => (
+                <button key={g.value} type="button"
+                  onClick={() => setFormData({ ...formData, class: g.value, division: "" })}
+                  className="flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all duration-200"
+                  style={formData.class === g.value ? selectedChip : unselectedChip}>
+                  <img src={g.img} alt={g.label} className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover" />
+                  <span className="text-[10px] sm:text-xs font-medium leading-tight text-center">{g.label}</span>
                 </button>
               ))}
             </div>
@@ -394,28 +337,44 @@ const Signup = () => {
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
                 <label className="block text-sm font-semibold mb-2 text-center" style={{ color: labelColor }}>বিভাগ</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {divisions.map((d) => (
-                    <button
-                      key={d.value}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, division: d.value })}
-                      className="py-2.5 px-3 rounded-xl text-xs font-medium transition-all duration-200"
-                      style={formData.division === d.value ? {
-                        background: "rgba(224, 210, 255, 0.95)",
-                        color: "#4A3A8A",
-                        border: "2px solid rgba(160, 130, 200, 0.8)",
-                      } : {
-                        background: "rgba(181, 191, 238, 0.15)",
-                        color: "rgba(181, 191, 238, 0.8)",
-                        border: "1px solid rgba(181, 191, 238, 0.15)",
-                      }}
-                    >
-                      {d.label}
-                    </button>
-                  ))}
+                  {divisions.map((d) => {
+                    const Icon = d.icon;
+                    return (
+                      <button key={d.value} type="button"
+                        onClick={() => setFormData({ ...formData, division: d.value })}
+                        className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl transition-all duration-200"
+                        style={formData.division === d.value ? selectedChip : unselectedChip}>
+                        <Icon className="w-5 h-5" />
+                        <span className="text-xs font-medium">{d.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
+          </motion.div>
+        );
+      case 6:
+        return (
+          <motion.div key="step6" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
+            <label className="block text-sm font-semibold mb-3 text-center" style={{ color: labelColor }}>ভার্সন নির্বাচন করো</label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: "bangla", label: "বাংলা ভার্সন", icon: BookOpen },
+                { value: "english", label: "English Version", icon: Globe },
+              ].map((v) => {
+                const Icon = v.icon;
+                return (
+                  <button key={v.value} type="button"
+                    onClick={() => setFormData({ ...formData, version: v.value })}
+                    className="flex flex-col items-center gap-2 py-5 px-4 rounded-2xl transition-all duration-200"
+                    style={formData.version === v.value ? selectedChip : unselectedChip}>
+                    <Icon className="w-7 h-7" />
+                    <span className="text-sm font-semibold">{v.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </motion.div>
         );
       default:
@@ -424,7 +383,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center overflow-hidden"
+    <div className="min-h-[100dvh] max-h-[100dvh] relative flex flex-col items-center overflow-hidden"
       style={{ background: "linear-gradient(135deg, #1A1F30 0%, #5B4364 28%, #0B065A 47%, #B5BFEE 89%)" }}>
       <SignupParticleCanvas />
 
@@ -438,18 +397,18 @@ const Signup = () => {
       <div className="hidden lg:block absolute top-[10%] left-[8%] w-[300px] h-[300px] rounded-full opacity-20 blur-[100px] z-[3]" style={{ background: "#B5BFEE" }} />
       <div className="hidden lg:block absolute bottom-[15%] right-[25%] w-[250px] h-[250px] rounded-full opacity-15 blur-[80px] z-[3]" style={{ background: "#5B4364" }} />
 
-      {/* Main content */}
-      <div className="relative z-10 w-full max-w-md mx-auto px-5 pt-10 pb-40 lg:pt-16 flex flex-col items-center gap-5 lg:gap-6">
+      {/* Main content - fits viewport */}
+      <div className="relative z-10 w-full max-w-md mx-auto px-5 flex flex-col items-center justify-center flex-1 gap-3 lg:gap-4 py-4">
 
         {/* Logo card */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-          className="w-full max-w-xs sm:max-w-sm">
+          className="w-full max-w-[240px] sm:max-w-xs">
           <img src={loginLogoImg} alt="OddhaboshAI" className="w-full h-auto drop-shadow-2xl" />
         </motion.div>
 
         {/* সাইন আপ header */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.4 }} className="w-full">
-          <div className="w-full py-3.5 rounded-2xl text-center text-lg font-bold tracking-wide" style={{
+          <div className="w-full py-2.5 rounded-2xl text-center text-base font-bold tracking-wide" style={{
             background: "linear-gradient(135deg, rgba(91,67,100,0.6) 0%, rgba(11,6,90,0.5) 100%)",
             color: "rgba(181, 191, 238, 0.9)",
             boxShadow: "0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)",
@@ -462,7 +421,7 @@ const Signup = () => {
 
         {/* Form card */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }}
-          className="w-full rounded-3xl p-6" style={cardStyle}>
+          className="w-full rounded-3xl p-5" style={cardStyle}>
 
           <AnimatePresence mode="wait">
             {renderStepContent()}
@@ -470,13 +429,13 @@ const Signup = () => {
 
           {/* Error */}
           {error && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-medium mt-3 text-center" style={{ color: "#fca5a5" }}>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-medium mt-2 text-center" style={{ color: "#fca5a5" }}>
               {error}
             </motion.p>
           )}
 
           {/* Step dots */}
-          <div className="flex justify-center gap-1.5 py-4">
+          <div className="flex justify-center gap-1.5 py-3">
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div key={i} className="w-2 h-2 rounded-full transition-all duration-300" style={{
                 background: i === step ? "rgba(224, 210, 255, 0.95)" : i < step ? "rgba(181, 191, 238, 0.5)" : "rgba(181, 191, 238, 0.2)",
@@ -516,18 +475,12 @@ const Signup = () => {
         </p>
       </div>
 
-      {/* Tugi mascot - changes per step */}
+      {/* Tugi mascot */}
       <AnimatePresence mode="wait">
-        <motion.img
-          key={step}
-          src={currentTugi}
-          alt="Tugi mascot"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
+        <motion.img key={step} src={currentTugi} alt="Tugi mascot"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.4 }}
-          className="absolute bottom-0 right-0 h-32 sm:h-36 md:h-44 lg:h-56 xl:h-64 2xl:h-72 object-contain z-20 pointer-events-none"
-        />
+          className="absolute bottom-0 right-0 h-28 sm:h-32 md:h-40 lg:h-52 xl:h-60 object-contain z-20 pointer-events-none" />
       </AnimatePresence>
     </div>
   );

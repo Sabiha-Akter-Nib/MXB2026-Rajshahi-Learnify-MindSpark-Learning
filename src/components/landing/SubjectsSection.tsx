@@ -218,7 +218,7 @@ export function SubjectsSection() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
           >
-            All academic subjects from Grades 1-10, aligned with the National Curriculum 
+            All academic subjects from Grades 6-10, aligned with the National Curriculum 
             and Textbook Board of Bangladesh.
           </motion.p>
         </motion.div>
