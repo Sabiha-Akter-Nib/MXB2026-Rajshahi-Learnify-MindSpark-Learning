@@ -24,33 +24,36 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Fetch the latest OTP for this email, then check expiry in code
     const { data: otpRecords, error } = await supabase
       .from("otp_codes")
       .select("*")
       .eq("email", email)
       .eq("type", "signup")
-      .eq("code", code)
       .eq("verified", false)
       .order("created_at", { ascending: false })
       .limit(1);
-
-    // Check expiry manually to avoid timestamp format issues
-    if (otpRecords && otpRecords.length > 0) {
-      const expiry = new Date(otpRecords[0].expires_at);
-      if (expiry < new Date()) {
-        return new Response(
-          JSON.stringify({ error: "কোডের মেয়াদ শেষ হয়ে গেছে। আবার চেষ্টা করুন।" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    }
 
     if (error) throw error;
 
     if (!otpRecords || otpRecords.length === 0) {
       return new Response(
-        JSON.stringify({ error: "ভুল অথবা মেয়াদোত্তীর্ণ কোড। আবার চেষ্টা করুন।" }),
+        JSON.stringify({ error: "কোনো OTP পাওয়া যায়নি। আবার পাঠান।" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const record = otpRecords[0];
+
+    if (record.code !== code) {
+      return new Response(
+        JSON.stringify({ error: "ভুল কোড। আবার চেষ্টা করুন।" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (new Date(record.expires_at) < new Date()) {
+      return new Response(
+        JSON.stringify({ error: "কোডের মেয়াদ শেষ। আবার পাঠান।" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
