@@ -484,14 +484,19 @@ const Dashboard = () => {
         {/* ========== STAT CARDS (2 columns) ========== */}
         <div className="grid grid-cols-2 gap-4">
           {/* Total Study Time */}
-          <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '380/200' }}>
-            <img src={statStudyCardBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="relative z-10 h-full flex flex-col justify-between p-3">
+          <div
+            className="rounded-2xl p-3 flex flex-row items-center gap-2 border border-white/[0.15]"
+            style={{
+              background: "linear-gradient(135deg, #5B3A6B 0%, #3D2244 50%, #4A2850 100%)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)",
+            }}>
+            <img src={statStudy3d} alt="Study time" className="w-16 h-16 flex-shrink-0 object-contain" />
+            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
               <div>
                 <h4 className="text-white font-semibold text-[13px] whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total study time</h4>
-                <p className="text-white/60 text-[10px] whitespace-nowrap">Today you studied for</p>
+                <p className="text-white/50 text-[10px] whitespace-nowrap">Today you studied for</p>
               </div>
-              <div className="self-end px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20">
+              <div className="self-end px-4 py-1 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
                 <span className="text-white font-semibold text-[11px] whitespace-nowrap">
                   {formatStudyTime(weeklyStats.today_study_minutes)}
                 </span>
@@ -500,21 +505,26 @@ const Dashboard = () => {
           </div>
 
           {/* Total XP */}
-          <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '380/200' }}>
-            <img src={statXpCardBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="relative z-10 h-full flex flex-col justify-between p-3">
+          <div
+            className="rounded-2xl p-3 flex flex-row items-center gap-2 border border-white/[0.15]"
+            style={{
+              background: "linear-gradient(135deg, #5B3A6B 0%, #3D2244 50%, #4A2850 100%)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)",
+            }}>
+            <img src={statXp3d} alt="XP" className="w-16 h-16 flex-shrink-0 object-contain" />
+            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
               <div>
                 <h4 className="text-white font-semibold text-[13px] whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP points</h4>
-                <p className="text-white/60 text-[10px] whitespace-nowrap">Your points you have gained</p>
+                <p className="text-white/50 text-[10px] whitespace-nowrap">Your points you have gained</p>
               </div>
               <div className="self-end flex items-center gap-1.5">
-                <div className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20">
+                <div className="px-4 py-1 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
                   <span className="text-white font-semibold text-[11px] whitespace-nowrap">{stats?.total_xp || 0}</span>
                 </div>
-                <div className="relative w-6 h-6 flex items-center justify-center">
-                  <img src={statXp3d} alt="XP" className="w-6 h-6 object-contain" />
+                <div className="relative w-7 h-7 flex items-center justify-center">
+                  <img src={statXp3d} alt="XP" className="w-7 h-7 object-contain opacity-60" />
                   <span
-                    className="absolute inset-0 flex items-center justify-center text-[7px] text-white"
+                    className="absolute inset-0 flex items-center justify-center text-[8px] text-white"
                     style={{
                       fontFamily: "'Black Han Sans', sans-serif",
                       WebkitTextStroke: '0.5px rgba(140,80,220,0.8)',
