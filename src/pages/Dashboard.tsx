@@ -16,8 +16,8 @@ import {
   FlaskConical,
   Leaf,
   Globe,
-  Laptop,
-} from "lucide-react";
+  Laptop } from
+"lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,27 +87,27 @@ const iconMap: Record<string, LucideIcon> = {
   'leaf': Leaf,
   'globe': Globe,
   'laptop': Laptop,
-  'book': BookOpen,
+  'book': BookOpen
 };
 
 const DAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 // Liquid glass card wrapper
-const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "rounded-2xl border border-white/10 backdrop-blur-xl",
-      className
-    )}
-    style={{
-      background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
-    }}
-    {...props}
-  >
+const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
+<div
+  className={cn(
+    "rounded-2xl border border-white/10 backdrop-blur-xl",
+    className
+  )}
+  style={{
+    background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)"
+  }}
+  {...props}>
+  
     {children}
-  </div>
-);
+  </div>;
+
 
 const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -118,7 +118,7 @@ const Dashboard = () => {
     weekly_goal_percent: 0,
     today_study_minutes: 0,
     activeDaysThisWeek: new Set<number>(),
-    isFirstTimeUser: true,
+    isFirstTimeUser: true
   });
   const [subjects, setSubjects] = useState<SubjectWithProgress[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -145,22 +145,22 @@ const Dashboard = () => {
       if (!user) return;
       setIsLoadingData(true);
       try {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("full_name, class, version")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const { data: profileData } = await supabase.
+        from("profiles").
+        select("full_name, class, version").
+        eq("user_id", user.id).
+        maybeSingle();
         if (profileData) setProfile(profileData);
 
-        const { data: statsData } = await supabase
-          .from("student_stats")
-          .select("total_xp, current_streak, total_study_minutes")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const { data: statsData } = await supabase.
+        from("student_stats").
+        select("total_xp, current_streak, total_study_minutes").
+        eq("user_id", user.id).
+        maybeSingle();
         if (statsData) {
           setStats({
             ...statsData,
-            current_streak: streak.currentStreak ?? statsData.current_streak,
+            current_streak: streak.currentStreak ?? statsData.current_streak
           });
         }
 
@@ -174,17 +174,17 @@ const Dashboard = () => {
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
 
-        const { data: weeklySessionsData } = await supabase
-          .from("study_sessions")
-          .select("xp_earned, duration_minutes, created_at")
-          .eq("user_id", user.id)
-          .gte("created_at", weekStartDate.toISOString());
+        const { data: weeklySessionsData } = await supabase.
+        from("study_sessions").
+        select("xp_earned, duration_minutes, created_at").
+        eq("user_id", user.id).
+        gte("created_at", weekStartDate.toISOString());
 
-        const { data: weeklyAssessmentsData } = await supabase
-          .from("assessments")
-          .select("xp_earned")
-          .eq("user_id", user.id)
-          .gte("created_at", weekStartDate.toISOString());
+        const { data: weeklyAssessmentsData } = await supabase.
+        from("assessments").
+        select("xp_earned").
+        eq("user_id", user.id).
+        gte("created_at", weekStartDate.toISOString());
 
         const sessionsXP = weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
         const assessmentsXP = weeklyAssessmentsData?.reduce((sum, a) => sum + (a.xp_earned || 0), 0) || 0;
@@ -195,18 +195,18 @@ const Dashboard = () => {
           return new Date(s.created_at) >= todayStart ? sum + (s.duration_minutes || 0) : sum;
         }, 0) || 0;
 
-        const { data: todayAssessments } = await supabase
-          .from("assessments")
-          .select("id, time_taken_seconds")
-          .eq("user_id", user.id)
-          .gte("completed_at", todayStart.toISOString());
+        const { data: todayAssessments } = await supabase.
+        from("assessments").
+        select("id, time_taken_seconds").
+        eq("user_id", user.id).
+        gte("completed_at", todayStart.toISOString());
 
         const todayAssessmentMinutes = todayAssessments?.reduce((sum, a) => {
           return sum + Math.max(1, Math.round((a.time_taken_seconds || 60) / 60));
         }, 0) || 0;
 
         const todayMinutes = todaySessionMinutes + todayAssessmentMinutes;
-        const weeklyGoalPercent = Math.min(Math.round((weeklyXP / 500) * 100), 100);
+        const weeklyGoalPercent = Math.min(Math.round(weeklyXP / 500 * 100), 100);
 
         const activeDays = new Set<number>();
         weeklySessionsData?.forEach((s) => {
@@ -215,11 +215,11 @@ const Dashboard = () => {
           if (s.duration_minutes >= 1) activeDays.add(bd);
         });
 
-        const { data: weeklyAssessmentDates } = await supabase
-          .from("assessments")
-          .select("completed_at")
-          .eq("user_id", user.id)
-          .gte("completed_at", weekStartDate.toISOString());
+        const { data: weeklyAssessmentDates } = await supabase.
+        from("assessments").
+        select("completed_at").
+        eq("user_id", user.id).
+        gte("completed_at", weekStartDate.toISOString());
 
         weeklyAssessmentDates?.forEach((a) => {
           const d = new Date(a.completed_at);
@@ -227,10 +227,10 @@ const Dashboard = () => {
           activeDays.add(bd);
         });
 
-        const { count } = await supabase
-          .from("study_sessions")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id);
+        const { count } = await supabase.
+        from("study_sessions").
+        select("id", { count: "exact", head: true }).
+        eq("user_id", user.id);
 
         setWeeklyStats({
           weekly_xp: weeklyXP,
@@ -238,20 +238,20 @@ const Dashboard = () => {
           weekly_goal_percent: weeklyGoalPercent,
           today_study_minutes: todayMinutes,
           activeDaysThisWeek: activeDays,
-          isFirstTimeUser: (count || 0) === 0,
+          isFirstTimeUser: (count || 0) === 0
         });
 
         const studentClass = profileData?.class || 6;
-        const { data: subjectsData } = await supabase
-          .from("subjects")
-          .select("*")
-          .lte("min_class", studentClass)
-          .gte("max_class", studentClass);
+        const { data: subjectsData } = await supabase.
+        from("subjects").
+        select("*").
+        lte("min_class", studentClass).
+        gte("max_class", studentClass);
 
-        const { data: progressData } = await supabase
-          .from("student_progress")
-          .select("subject_id, chapters_completed, xp_earned")
-          .eq("user_id", user.id);
+        const { data: progressData } = await supabase.
+        from("student_progress").
+        select("subject_id, chapters_completed, xp_earned").
+        eq("user_id", user.id);
 
         if (subjectsData) {
           const progressMap = new Map((progressData || []).map((p) => [p.subject_id, p]));
@@ -260,9 +260,9 @@ const Dashboard = () => {
             const completed = progress?.chapters_completed || 0;
             return {
               ...subject,
-              progress: Math.round((completed / subject.total_chapters) * 100),
+              progress: Math.round(completed / subject.total_chapters * 100),
               completed,
-              IconComponent: iconMap[subject.icon] || BookOpen,
+              IconComponent: iconMap[subject.icon] || BookOpen
             };
           }));
         }
@@ -303,16 +303,16 @@ const Dashboard = () => {
     return (
       <div
         className="min-h-[100dvh] flex items-center justify-center"
-        style={{ background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)" }}
-      >
+        style={{ background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)" }}>
+        
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
           <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
             <Loader2 className="w-10 h-10 text-white/70" />
           </motion.div>
           <p className="text-white/60 font-poppins font-medium">Loading your dashboard...</p>
         </motion.div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!user) return null;
@@ -322,12 +322,12 @@ const Dashboard = () => {
   const versionText = profile?.version === "bangla" ? "Bangla Version" : "English Version";
 
   const modules = [
-    { label: "AI Tutor", img: aiTutor3d, href: "/tutor" },
-    { label: "Practice", img: practice3d, href: "/practice" },
-    { label: "Assessment", img: assessment3d, href: "/assessment" },
-    { label: "Learning Plan", img: learningPlan3d, href: "/learning-plan" },
-    { label: "Leaderboard", img: leaderboard3d, href: "/leaderboard" },
-  ];
+  { label: "AI Tutor", img: aiTutor3d, href: "/tutor" },
+  { label: "Practice", img: practice3d, href: "/practice" },
+  { label: "Assessment", img: assessment3d, href: "/assessment" },
+  { label: "Learning Plan", img: learningPlan3d, href: "/learning-plan" },
+  { label: "Leaderboard", img: leaderboard3d, href: "/leaderboard" }];
+
 
   // Uniform gap for all sections
   const CARD_GAP = "gap-5";
@@ -335,8 +335,8 @@ const Dashboard = () => {
   return (
     <div
       className="min-h-[100dvh] font-poppins overflow-x-hidden"
-      style={{ background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)" }}
-    >
+      style={{ background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)" }}>
+      
       <div className={cn("w-full max-w-2xl mx-auto px-4 py-6 flex flex-col", CARD_GAP)}>
 
         {/* ========== HEADER ========== */}
@@ -347,7 +347,7 @@ const Dashboard = () => {
             </div>
             <div>
               <h1 className="text-white font-semibold text-base sm:text-lg leading-tight">Hi, {displayName}!</h1>
-              <p className="text-white/50 text-xs">{classText}, {versionText}</p>
+              <p className="text-white/50 text-xs font-normal">{classText}, {versionText}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -363,22 +363,22 @@ const Dashboard = () => {
         {/* ========== NAVIGATION MODULES ========== */}
         <GlassCard className="p-4 sm:p-5">
           <div className="flex items-start justify-between">
-            {modules.map((mod) => (
-              <Link
-                key={mod.label}
-                to={mod.href}
-                className="flex flex-col items-center gap-1.5 group flex-1"
-              >
+            {modules.map((mod) =>
+            <Link
+              key={mod.label}
+              to={mod.href}
+              className="flex flex-col items-center gap-1.5 group flex-1">
+              
                 <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center"
-                >
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center justify-center">
+                
                   <img src={mod.img} alt={mod.label} className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
                 </motion.div>
-                <span className="text-white/80 text-xs sm:text-sm font-medium text-center leading-tight">{mod.label}</span>
+                <span className="text-white/80 text-xs sm:text-sm text-center leading-tight font-normal">{mod.label}</span>
               </Link>
-            ))}
+            )}
           </div>
         </GlassCard>
 
@@ -391,19 +391,19 @@ const Dashboard = () => {
               alt="Streak Fire"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
               animate={currentStreak > 0 ? { scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] } : {}}
-              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
-            />
+              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }} />
+            
             <span className="text-2xl sm:text-3xl font-bold text-white mt-1">{currentStreak}</span>
             <span className="text-[10px] text-white/50 font-medium">Day Streak</span>
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="text-white font-semibold text-base sm:text-xl leading-snug">
-              {currentStreak > 0
-                ? `${currentStreak} day streak!`
-                : "No active streak"}
+            <h3 className="text-white text-base leading-snug font-medium sm:text-2xl">
+              {currentStreak > 0 ?
+              `${currentStreak} day streak!` :
+              "No active streak"}
             </h3>
-            <p className="text-white/50 text-xs mb-3">{streakComment}</p>
+            <p className="text-white/50 mb-3 font-extralight text-base">{streakComment}</p>
             <div className="flex items-center gap-1.5 sm:gap-2">
               {DAYS_EN.map((day, i) => {
                 const bdIndex = dayMapping[i];
@@ -413,16 +413,16 @@ const Dashboard = () => {
                     <div
                       className={cn(
                         "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border transition-all",
-                        isActive
-                          ? "bg-gradient-to-br from-orange-400 to-red-500 border-orange-300/50 shadow-[0_0_8px_rgba(251,146,60,0.4)]"
-                          : "bg-white/5 border-white/10"
-                      )}
-                    >
+                        isActive ?
+                        "bg-gradient-to-br from-orange-400 to-red-500 border-orange-300/50 shadow-[0_0_8px_rgba(251,146,60,0.4)]" :
+                        "bg-white/5 border-white/10"
+                      )}>
+                      
                       {isActive && <Flame className="w-3.5 h-3.5 text-white" />}
                     </div>
                     <span className="text-[9px] text-white/40">{day}</span>
-                  </div>
-                );
+                  </div>);
+
               })}
             </div>
           </div>
@@ -434,15 +434,15 @@ const Dashboard = () => {
             className="rounded-2xl p-4 sm:p-5 flex items-center gap-4 border border-white/10"
             style={{
               background: "linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)",
-              boxShadow: "0 8px 32px rgba(175,45,80,0.3)",
-            }}
-          >
+              boxShadow: "0 8px 32px rgba(175,45,80,0.3)"
+            }}>
+            
             <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
               <img src={aiTutor3d} alt="AI Tutor" className="w-20 h-20 sm:w-24 sm:h-24 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-bold text-lg sm:text-2xl">Practice learning with AI</h3>
-              <p className="text-white/70 text-xs leading-relaxed">
+              <p className="text-white/70 leading-relaxed text-base">
                 Learn with your AI partner for clarity, explanations, and easy doubt-solving
               </p>
             </div>
@@ -498,9 +498,9 @@ const Dashboard = () => {
             <div
               className="flex-1 rounded-xl p-3"
               style={{
-                background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)",
-              }}
-            >
+                background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)"
+              }}>
+              
               <h3 className="text-white font-semibold text-sm sm:text-base">Your subject-wise progress</h3>
               <p className="text-white/50 text-[10px] sm:text-xs">
                 Track your progress and check exam readiness
@@ -509,18 +509,18 @@ const Dashboard = () => {
           </div>
 
           {/* Subject grid */}
-          {subjects.length === 0 ? (
-            <div className="text-center py-8 text-white/40 text-sm">No subjects found for your class.</div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {subjects.map((subject, index) => (
-                <motion.div
-                  key={subject.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="rounded-xl p-3 border border-white/10 bg-white/5 backdrop-blur-sm"
-                >
+          {subjects.length === 0 ?
+          <div className="text-center py-8 text-white/40 text-sm">No subjects found for your class.</div> :
+
+          <div className="grid grid-cols-2 gap-3">
+              {subjects.map((subject, index) =>
+            <motion.div
+              key={subject.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="rounded-xl p-3 border border-white/10 bg-white/5 backdrop-blur-sm">
+              
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
                       <img src={subjectBooks3d} alt="" className="w-5 h-5 object-contain" />
@@ -530,28 +530,28 @@ const Dashboard = () => {
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
                       <motion.div
-                        className="h-full rounded-full"
-                        style={{
-                          background: "linear-gradient(90deg, #E040A0, #A040E0)",
-                        }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${subject.progress}%` }}
-                        transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
-                      />
+                    className="h-full rounded-full"
+                    style={{
+                      background: "linear-gradient(90deg, #E040A0, #A040E0)"
+                    }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${subject.progress}%` }}
+                    transition={{ duration: 1, delay: 0.2 + index * 0.1 }} />
+                  
                     </div>
                     <span className="text-[10px] text-white/40 font-medium">{subject.progress}%</span>
                   </div>
                 </motion.div>
-              ))}
+            )}
             </div>
-          )}
+          }
         </GlassCard>
 
         {/* Daily Notification Trigger (invisible) */}
         <DailyNotificationTrigger />
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Dashboard;
