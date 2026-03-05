@@ -1,62 +1,56 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  Bell,
+  Settings,
   BookOpen,
-  Brain,
-  TrendingUp,
-  Clock,
-  Target,
-  Flame,
   ChevronRight,
-  Play,
-  Calculator,
+  Loader2,
+  Flame,
+  LucideIcon,
   BookText,
+  Languages,
+  Calculator,
   Atom,
   FlaskConical,
   Leaf,
   Globe,
   Laptop,
-  Languages,
-  Sparkles,
-  BarChart3,
-  Calendar,
-  Award,
-  Trophy,
-  Menu,
-  X,
-  LogOut,
-  Settings,
-  User,
-  Loader2,
-  LucideIcon,
-  Zap,
-  RefreshCw,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import QuickActions from "@/components/dashboard/QuickActions";
-import ProgressVisualization from "@/components/dashboard/ProgressVisualization";
-import RevisionReminders from "@/components/dashboard/RevisionReminders";
-import DashboardBackground from "@/components/dashboard/DashboardBackground";
-import MascotStatCard from "@/components/dashboard/MascotStatCard";
-import StreakCard from "@/components/dashboard/StreakCard";
-import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
-import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
-import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
-import WeeklyAchievements from "@/components/dashboard/WeeklyAchievements";
-import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
-import BloomStudyTips from "@/components/dashboard/BloomStudyTips";
-import DailyMotivation from "@/components/dashboard/DailyMotivation";
-
-import logoImg from "@/assets/logo.png";
 import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import DailyNotificationTrigger from "@/components/notifications/DailyNotificationTrigger";
+import { Progress } from "@/components/ui/progress";
+
+// 3D Assets
+import aiTutor3d from "@/assets/module-ai-tutor-3d.png";
+import practice3d from "@/assets/module-practice-3d.webp";
+import assessment3d from "@/assets/module-assessment-3d.webp";
+import learningPlan3d from "@/assets/module-learning-plan-3d.png";
+import leaderboard3d from "@/assets/module-leaderboard-3d.png";
+import streakFlame3d from "@/assets/streak-flame-3d.png";
+import statStudy3d from "@/assets/stat-study-3d.png";
+import statXp3d from "@/assets/stat-xp-3d.png";
+import subjectProgress3d from "@/assets/subject-progress-3d.png";
+
+// Streak mascot assets
+import streakBg1 from "@/assets/streak-bg-1.png";
+import streakBg2 from "@/assets/streak-bg-2.png";
+import streakBg3 from "@/assets/streak-bg-3.png";
+import streakBg4 from "@/assets/streak-bg-4.png";
+import streakBg5 from "@/assets/streak-bg-5.png";
+import streakBg6 from "@/assets/streak-bg-6.png";
+import streakBg7 from "@/assets/streak-bg-7.png";
+import streakBg8 from "@/assets/streak-bg-8.png";
+import streakBgAngry from "@/assets/streak-bg-angry.png";
+import streakBgAngry2 from "@/assets/streak-bg-angry-2.png";
+
+const goodImages = [streakBg1, streakBg2, streakBg3, streakBg4, streakBg5, streakBg6, streakBg7, streakBg8];
+const angryImages = [streakBgAngry, streakBgAngry2];
 
 interface Profile {
   full_name: string;
@@ -75,7 +69,7 @@ interface WeeklyStats {
   weekly_study_minutes: number;
   weekly_goal_percent: number;
   today_study_minutes: number;
-  activeDaysThisWeek: Set<number>; // 0=Sat … 6=Fri (BD week)
+  activeDaysThisWeek: Set<number>;
   isFirstTimeUser: boolean;
 }
 
@@ -100,7 +94,6 @@ interface SubjectWithProgress extends Subject {
   IconComponent: LucideIcon;
 }
 
-// Icon mapping
 const iconMap: Record<string, LucideIcon> = {
   'book-text': BookText,
   'languages': Languages,
@@ -113,16 +106,26 @@ const iconMap: Record<string, LucideIcon> = {
   'book': BookOpen,
 };
 
-// Color mapping
-const colorClasses: Record<string, { bg: string; text: string; border: string }> = {
-  'primary': { bg: 'bg-primary', text: 'text-primary', border: 'border-primary/20' },
-  'accent': { bg: 'bg-accent', text: 'text-accent', border: 'border-accent/20' },
-  'warning': { bg: 'bg-warning', text: 'text-warning', border: 'border-warning/20' },
-  'success': { bg: 'bg-success', text: 'text-success', border: 'border-success/20' },
-};
+const DAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// Liquid glass card wrapper
+const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "rounded-2xl border border-white/10 backdrop-blur-xl",
+      className
+    )}
+    style={{
+      background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+    }}
+    {...props}
+  >
+    {children}
+  </div>
+);
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<StudentStats | null>(null);
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStats>({
@@ -135,21 +138,14 @@ const Dashboard = () => {
   });
   const [subjects, setSubjects] = useState<SubjectWithProgress[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [progressRefreshKey, setProgressRefreshKey] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
-
-  // Ensure streak is updated for “daily visit” (not only after a study session)
   const streak = useStreakTracker(user?.id);
-  // Redirect if not logged in
+
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
+    if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
 
-  // Reflect hook-updated streak into local stats state (so all UI uses the same number)
   useEffect(() => {
     if (!user) return;
     setStats((prev) => {
@@ -164,45 +160,33 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       if (!user) return;
       setIsLoadingData(true);
-
       try {
-        // Fetch profile
         const { data: profileData } = await supabase
           .from("profiles")
           .select("full_name, class, version")
           .eq("user_id", user.id)
           .maybeSingle();
+        if (profileData) setProfile(profileData);
 
-        if (profileData) {
-          setProfile(profileData);
-        }
-
-        // Fetch student stats
         const { data: statsData } = await supabase
           .from("student_stats")
           .select("total_xp, current_streak, total_study_minutes")
           .eq("user_id", user.id)
           .maybeSingle();
-
         if (statsData) {
-          // Prefer the streak computed/updated by the hook (daily-visit aware)
           setStats({
             ...statsData,
             current_streak: streak.currentStreak ?? statsData.current_streak,
           });
         }
 
-        // Compute the start of the current BD week (Saturday 00:00 Asia/Dhaka)
         const now = new Date();
-        const jsDay = now.getDay(); // 0=Sun
-        const bdDayIndex = jsDay === 6 ? 0 : jsDay + 1; // Sat=0
+        const jsDay = now.getDay();
+        const bdDayIndex = jsDay === 6 ? 0 : jsDay + 1;
         const weekStartDate = new Date(now);
         weekStartDate.setDate(weekStartDate.getDate() - bdDayIndex);
         weekStartDate.setHours(0, 0, 0, 0);
 
-        const oneWeekAgo = weekStartDate; // sessions from this week only
-
-        // Get today's start (midnight)
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
 
@@ -210,33 +194,23 @@ const Dashboard = () => {
           .from("study_sessions")
           .select("xp_earned, duration_minutes, created_at")
           .eq("user_id", user.id)
-          .gte("created_at", oneWeekAgo.toISOString());
+          .gte("created_at", weekStartDate.toISOString());
 
         const { data: weeklyAssessmentsData } = await supabase
           .from("assessments")
           .select("xp_earned")
           .eq("user_id", user.id)
-          .gte("created_at", oneWeekAgo.toISOString());
+          .gte("created_at", weekStartDate.toISOString());
 
-        const sessionsXP =
-          weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
-        const assessmentsXP =
-          weeklyAssessmentsData?.reduce((sum, a) => sum + (a.xp_earned || 0), 0) || 0;
+        const sessionsXP = weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
+        const assessmentsXP = weeklyAssessmentsData?.reduce((sum, a) => sum + (a.xp_earned || 0), 0) || 0;
         const weeklyXP = sessionsXP + assessmentsXP;
-        const weeklyMinutes =
-          weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
+        const weeklyMinutes = weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
 
-        // Calculate today's study minutes (sessions + assessments count as 1 min each)
-        const todaySessionMinutes =
-          weeklySessionsData?.reduce((sum, s) => {
-            const sessionDate = new Date(s.created_at);
-            if (sessionDate >= todayStart) {
-              return sum + (s.duration_minutes || 0);
-            }
-            return sum;
-          }, 0) || 0;
+        const todaySessionMinutes = weeklySessionsData?.reduce((sum, s) => {
+          return new Date(s.created_at) >= todayStart ? sum + (s.duration_minutes || 0) : sum;
+        }, 0) || 0;
 
-        // Fetch today's assessments count (each counts as 1 min minimum)
         const { data: todayAssessments } = await supabase
           .from("assessments")
           .select("id, time_taken_seconds")
@@ -248,43 +222,31 @@ const Dashboard = () => {
         }, 0) || 0;
 
         const todayMinutes = todaySessionMinutes + todayAssessmentMinutes;
+        const weeklyGoalPercent = Math.min(Math.round((weeklyXP / 500) * 100), 100);
 
-        const weeklyGoalXP = 500;
-        const weeklyGoalPercent = Math.min(
-          Math.round((weeklyXP / weeklyGoalXP) * 100),
-          100
-        );
-
-        // Compute active days this week (BD week: Sat=0 … Fri=6)
-        // Count both study sessions (≥1min) AND assessments as active days
         const activeDays = new Set<number>();
         weeklySessionsData?.forEach((s) => {
           const d = new Date(s.created_at);
-          const jsDay = d.getDay(); // 0=Sun
-          const bdDay = jsDay === 6 ? 0 : jsDay + 1;
-          if (s.duration_minutes >= 1) activeDays.add(bdDay);
+          const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
+          if (s.duration_minutes >= 1) activeDays.add(bd);
         });
 
-        // Also fetch assessment dates this week and count them as active
         const { data: weeklyAssessmentDates } = await supabase
           .from("assessments")
           .select("completed_at")
           .eq("user_id", user.id)
-          .gte("completed_at", oneWeekAgo.toISOString());
+          .gte("completed_at", weekStartDate.toISOString());
 
         weeklyAssessmentDates?.forEach((a) => {
           const d = new Date(a.completed_at);
-          const jsDay = d.getDay();
-          const bdDay = jsDay === 6 ? 0 : jsDay + 1;
-          activeDays.add(bdDay);
+          const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
+          activeDays.add(bd);
         });
 
-        // Check if first-time user (no sessions at all before this week)
         const { count } = await supabase
           .from("study_sessions")
           .select("id", { count: "exact", head: true })
           .eq("user_id", user.id);
-        const isFirstTime = (count || 0) === 0;
 
         setWeeklyStats({
           weekly_xp: weeklyXP,
@@ -292,47 +254,33 @@ const Dashboard = () => {
           weekly_goal_percent: weeklyGoalPercent,
           today_study_minutes: todayMinutes,
           activeDaysThisWeek: activeDays,
-          isFirstTimeUser: isFirstTime,
+          isFirstTimeUser: (count || 0) === 0,
         });
 
-        // Fetch subjects based on student class
-        const studentClass = profileData?.class || 5;
+        const studentClass = profileData?.class || 6;
         const { data: subjectsData } = await supabase
           .from("subjects")
           .select("*")
           .lte("min_class", studentClass)
           .gte("max_class", studentClass);
 
-        // Fetch student progress for each subject
         const { data: progressData } = await supabase
           .from("student_progress")
           .select("subject_id, chapters_completed, xp_earned")
           .eq("user_id", user.id);
 
-        // Combine subjects with progress
         if (subjectsData) {
-          const progressMap = new Map(
-            (progressData || []).map((p) => [p.subject_id, p])
-          );
-
-          const subjectsWithProgress: SubjectWithProgress[] = subjectsData.map(
-            (subject) => {
-              const progress = progressMap.get(subject.id);
-              const completed = progress?.chapters_completed || 0;
-              const percentage = Math.round(
-                (completed / subject.total_chapters) * 100
-              );
-
-              return {
-                ...subject,
-                progress: percentage,
-                completed,
-                IconComponent: iconMap[subject.icon] || BookOpen,
-              };
-            }
-          );
-
-          setSubjects(subjectsWithProgress);
+          const progressMap = new Map((progressData || []).map((p) => [p.subject_id, p]));
+          setSubjects(subjectsData.map((subject) => {
+            const progress = progressMap.get(subject.id);
+            const completed = progress?.chapters_completed || 0;
+            return {
+              ...subject,
+              progress: Math.round((completed / subject.total_chapters) * 100),
+              completed,
+              IconComponent: iconMap[subject.icon] || BookOpen,
+            };
+          }));
         }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -340,564 +288,274 @@ const Dashboard = () => {
         setIsLoadingData(false);
       }
     };
-
     fetchDashboardData();
   }, [user, streak.currentStreak]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
-  };
-
-  // Format study time
   const formatStudyTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
+    if (hours > 0) return `${hours}h ${mins} min`;
+    return `${mins} min`;
   };
+
+  // Streak mascot logic
+  const currentStreak = streak.currentStreak ?? stats?.current_streak ?? 0;
+  const todayStudyMinutes = weeklyStats.today_study_minutes;
+  const hasStudiedToday = todayStudyMinutes >= 1;
+  const isAngry = !hasStudiedToday && !weeklyStats.isFirstTimeUser;
+
+  const mascotImage = useMemo(() => {
+    if (isAngry) return angryImages[Math.floor(Math.random() * angryImages.length)];
+    return goodImages[Math.floor(Math.random() * goodImages.length)];
+  }, [isAngry]);
+
+  const streakComment = useMemo(() => {
+    if (currentStreak === 0 && !weeklyStats.isFirstTimeUser) return "Your streak broke! Start again!";
+    if (!hasStudiedToday && !weeklyStats.isFirstTimeUser) return "You haven't studied today yet!";
+    if (currentStreak >= 7) return "Amazing progress! well done!";
+    if (currentStreak >= 3) return "Great momentum, keep going!";
+    return "Well done! Keep it up!";
+  }, [currentStreak, hasStudiedToday, weeklyStats.isFirstTimeUser]);
+
+  // Map BD week days to Mon-Sun display
+  // BD: 0=Sat, 1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri
+  // Display: Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+  const dayMapping = [2, 3, 4, 5, 6, 0, 1]; // Mon→bd2, Tue→bd3, ...
 
   if (loading || isLoadingData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <DashboardBackground />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-4"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          >
-            <Loader2 className="w-10 h-10 text-primary" />
+      <div
+        className="min-h-[100dvh] flex items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)" }}
+      >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+            <Loader2 className="w-10 h-10 text-white/70" />
           </motion.div>
-          <p className="text-muted-foreground font-medium">Loading your dashboard...</p>
+          <p className="text-white/60 font-poppins font-medium">Loading your dashboard...</p>
         </motion.div>
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
-  const displayName = profile?.full_name?.split(" ")[0] || "Student";
+  const displayName = profile?.full_name || "Student";
   const classText = profile?.class ? `Class ${profile.class}` : "";
-  const versionText = profile?.version === "bangla" ? "বাংলা" : "English";
+  const versionText = profile?.version === "bangla" ? "Bangla Version" : "English Version";
 
-  const navItems = [
-    { icon: BarChart3, label: "Dashboard", active: true, href: "/dashboard" },
-    { icon: BookOpen, label: "Subjects", href: "/subjects" },
-    { icon: Brain, label: "AI Tutor", href: "/tutor" },
-    { icon: Target, label: "Practice", href: "/practice" },
-    { icon: Award, label: "Achievements", href: "/achievements" },
-    { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
-    { icon: Calendar, label: "Schedule", href: "/learning-plan" },
+  const modules = [
+    { label: "AI Tutor", img: aiTutor3d, href: "/tutor" },
+    { label: "Practice", img: practice3d, href: "/practice" },
+    { label: "Assessment", img: assessment3d, href: "/assessment" },
+    { label: "Learning Plan", img: learningPlan3d, href: "/learning-plan" },
+    { label: "Leaderboard", img: leaderboard3d, href: "/leaderboard" },
   ];
 
   return (
-    <div className="min-h-screen flex relative overflow-x-hidden">
-      <DashboardBackground />
-      
-      {/* Mobile Overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-      
-      {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ 
-          width: sidebarOpen ? 280 : 80
-        }}
-        className={cn(
-          "bg-sidebar/95 backdrop-blur-xl text-sidebar-foreground border-r border-sidebar-border/50 flex flex-col fixed h-screen z-40",
-          "lg:translate-x-0",
-          !sidebarOpen && "max-lg:-translate-x-full"
-        )}
-      >
-        {/* Logo */}
-        <div className="p-4 flex items-center gap-3 border-b border-sidebar-border/50">
-          <AnimatePresence>
-            {sidebarOpen ? (
-              <motion.img
-                src={logoImg}
-                alt="OddhaboshAI"
-                className="h-10"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-              />
-            ) : (
-              <motion.img
-                src={logoImg}
-                alt="OddhaboshAI"
-                className="h-8 w-8 object-contain"
-                whileHover={{ scale: 1.05, rotate: 5 }}
-              />
-            )}
-          </AnimatePresence>
-        </div>
+    <div
+      className="min-h-[100dvh] font-poppins overflow-x-hidden"
+      style={{ background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)" }}
+    >
+      <div className="w-full max-w-lg mx-auto px-4 py-6 space-y-4">
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item, index) => (
-            <motion.div
-              key={item.label}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <Link
-                to={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
-                  item.active
-                    ? "bg-primary/10 text-primary shadow-sm border border-primary/20"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                )}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                </motion.div>
-                <AnimatePresence>
-                  {sidebarOpen && (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="font-medium"
-                    >
-                      {item.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-                {item.active && sidebarOpen && (
-                  <motion.div
-                    className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
-                    layoutId="activeIndicator"
-                  />
-                )}
-              </Link>
-            </motion.div>
-          ))}
-        </nav>
-
-        {/* Bottom Actions */}
-        <div className="p-4 border-t border-sidebar-border/50 space-y-1">
-          <Link
-            to="/settings"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-all duration-200"
-          >
-            <Settings className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">Settings</span>}
-          </Link>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 w-full"
-          >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">Logout</span>}
-          </button>
-        </div>
-      </motion.aside>
-
-      {/* Main Content */}
-      <div className={cn("flex-1 transition-all duration-300 w-full overflow-x-hidden", sidebarOpen ? "lg:ml-[280px]" : "lg:ml-20")}>
-        {/* Top Bar */}
-        <header className="sticky top-0 bg-background/60 backdrop-blur-xl border-b border-border/50 z-30 px-3 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-4">
-              <motion.button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 hover:bg-muted/50 rounded-xl transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </motion.button>
-              <div>
-                <motion.h1 
-                  className="font-heading font-extrabold text-xl sm:text-3xl tracking-tight"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <span className="hidden sm:inline">Welcome back, </span><span className="bg-gradient-to-r from-[hsl(270,65%,55%)] via-[hsl(320,70%,55%)] to-[hsl(35,90%,55%)] bg-clip-text text-transparent drop-shadow-sm">{displayName}</span><span className="hidden sm:inline"> 🚀</span>
-                </motion.h1>
-                <motion.p 
-                  className="text-muted-foreground text-xs sm:text-sm hidden sm:block"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  {classText} • {versionText} Version
-                </motion.p>
-              </div>
+        {/* ========== HEADER ========== */}
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AvatarUpload userId={user.id} userName={displayName} size="sm" showUploadButton={false} />
+            <div>
+              <h1 className="text-white font-semibold text-lg leading-tight">Hi, {displayName.split(" ")[0]}!</h1>
+              <p className="text-white/50 text-xs">{classText}, {versionText}</p>
             </div>
-
-            <div className="flex items-center gap-2 sm:gap-4">
-              {/* Streak Badge */}
-              <motion.div 
-                className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-50 rounded-full border border-amber-200 shadow-md"
-                whileHover={{ scale: 1.05 }}
-                animate={{
-                  boxShadow: [
-                    "0 0 0 0 rgba(var(--accent), 0)",
-                    "0 0 20px 2px rgba(var(--accent), 0.2)",
-                    "0 0 0 0 rgba(var(--accent), 0)",
-                  ],
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <motion.div
-                  animate={{ rotate: [0, -10, 10, 0] }}
-                  transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
-                >
-                  <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-                </motion.div>
-                <span className="font-semibold text-accent text-sm sm:text-base">{streak.currentStreak ?? stats?.current_streak ?? 0} Day Streak</span>
-              </motion.div>
-
-              {/* Mobile Streak */}
-              <motion.div 
-                className="flex sm:hidden items-center gap-1 px-2 py-1 bg-amber-50 rounded-full border border-amber-200"
-              >
-                <Flame className="w-4 h-4 text-accent" />
-                <span className="font-semibold text-accent text-xs">{streak.currentStreak ?? stats?.current_streak ?? 0}</span>
-              </motion.div>
-
-              {/* Profile Avatar */}
-              <AvatarUpload 
-                userId={user.id} 
-                userName={profile?.full_name || ""} 
-                size="sm" 
-                showUploadButton={false}
-              />
-            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link to="/settings" className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/10">
+              <Bell className="w-5 h-5 text-white/70" />
+            </Link>
+            <Link to="/settings" className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/10">
+              <Settings className="w-5 h-5 text-white/70" />
+            </Link>
           </div>
         </header>
 
-        {/* Dashboard Content */}
-        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Welcome Card - Liquid Glass */}
-          {(() => {
-            const hour = new Date().getHours();
-            const isBangla = profile?.version === "bangla";
-            const greeting = isBangla
-              ? (hour < 12 ? "সুপ্রভাত" : hour < 17 ? "শুভ অপরাহ্ণ" : hour < 21 ? "শুভ সন্ধ্যা" : "রাত জেগে পড়ছো?")
-              : (hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : hour < 21 ? "Good Evening" : "Burning the Midnight Oil");
-            const emoji = hour < 12 ? "☀️" : hour < 17 ? "🌤️" : hour < 21 ? "🌙" : "🦉";
-            const fullName = profile?.full_name || displayName;
-
-            return (
-              <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="relative overflow-hidden rounded-3xl border border-white/20 p-5 sm:p-8"
-                style={{
-                  background: "linear-gradient(135deg, hsl(270 60% 30% / 0.15), hsl(250 50% 20% / 0.1), hsl(200 60% 40% / 0.08))",
-                  backdropFilter: "blur(40px) saturate(1.5)",
-                  boxShadow: "0 8px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.1)",
-                }}
+        {/* ========== NAVIGATION MODULES ========== */}
+        <GlassCard className="p-4">
+          <div className="flex items-center justify-between">
+            {modules.map((mod, i) => (
+              <Link
+                key={mod.label}
+                to={mod.href}
+                className="flex flex-col items-center gap-1.5 group"
               >
-                {/* Liquid glass reflections */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-transparent pointer-events-none rounded-3xl" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none" />
                 <motion.div
-                  className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none"
-                  style={{ background: "radial-gradient(circle, hsl(270 55% 55% / 0.2), transparent 70%)" }}
-                  animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <motion.div
-                  className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full pointer-events-none"
-                  style={{ background: "radial-gradient(circle, hsl(200 60% 50% / 0.15), transparent 70%)" }}
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                />
-
-                <div className="relative z-10">
-                  {/* Greeting row */}
-                  <motion.div
-                    className="flex items-center gap-2 mb-2"
-                    initial={{ opacity: 0, x: -15 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.15 }}
-                  >
-                    <span className="text-2xl sm:text-3xl">{emoji}</span>
-                    <span className="text-sm sm:text-base font-medium text-muted-foreground tracking-wide uppercase">
-                      {greeting}
-                    </span>
-                  </motion.div>
-
-                  {/* Name - static gradient, no shimmer */}
-                  <motion.h2
-                    className="font-heading font-black text-3xl sm:text-5xl tracking-tight leading-[1.1] mb-3"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.25 }}
-                  >
-                    <span className="bg-gradient-to-r from-[hsl(270,65%,55%)] via-[hsl(300,60%,50%)] to-[hsl(200,70%,50%)] bg-clip-text text-transparent">
-                      {fullName}
-                    </span>
-                  </motion.h2>
-
-                  {/* Info chips */}
-                  <motion.div
-                    className="flex flex-wrap gap-2"
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.35 }}
-                  >
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-primary/10 text-primary border border-primary/20">
-                      📖 {isBangla ? `শ্রেণি ${profile?.class || ""}` : classText}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-accent/10 text-accent border border-accent/20">
-                      🌐 {isBangla ? "বাংলা সংস্করণ" : `${versionText} Version`}
-                    </span>
-                  </motion.div>
-                </div>
-              </motion.div>
-            );
-          })()}
-
-          {/* Quick Actions */}
-          <QuickActions />
-
-          {/* Streak Card - Full Width */}
-          <StreakCard
-            currentStreak={streak.currentStreak ?? stats?.current_streak ?? 0}
-            totalStudyMinutes={weeklyStats.today_study_minutes}
-            isFirstTimeUser={weeklyStats.isFirstTimeUser}
-            activeDaysThisWeek={weeklyStats.activeDaysThisWeek}
-          />
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            <MascotStatCard
-              type="xp"
-              value={weeklyStats.weekly_xp}
-              index={0}
-            />
-            <MascotStatCard
-              type="goal"
-              value={weeklyStats.weekly_goal_percent}
-              suffix="%"
-              index={1}
-            />
-            <MascotStatCard
-              type="study"
-              value={formatStudyTime(weeklyStats.today_study_minutes)}
-              index={2}
-            />
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden"
+                >
+                  <img src={mod.img} alt={mod.label} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+                </motion.div>
+                <span className="text-white/80 text-[10px] sm:text-xs font-medium text-center leading-tight">{mod.label}</span>
+              </Link>
+            ))}
           </div>
+        </GlassCard>
 
-          {/* Future You Snapshot (single wide layout across all devices) */}
-          <FutureYouSnapshot />
-
-          {/* Study Momentum Engine - NEW World-class Feature */}
-          <StudyMomentumEngine />
-
-          {/* Blind Spot Mirror - Full Width */}
-          <BlindSpotMirror />
-
-          {/* Knowledge Autopsy - Full Width */}
-          <KnowledgeAutopsy />
-
-          {/* Weekly Achievements - Full Width */}
-          <WeeklyAchievements />
-
-          {/* Bloom's Tips & Daily Motivation */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <BloomStudyTips isBangla={profile?.version === "bangla"} />
-            <DailyMotivation isBangla={profile?.version === "bangla"} />
+        {/* ========== STREAK CARD ========== */}
+        <GlassCard className="p-4 flex items-center gap-4">
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+            <img src={mascotImage} alt="Streak mascot" className="w-full h-full object-contain rounded-xl" />
+            <div className="absolute -bottom-1 -left-1 flex items-center">
+              <img src={streakFlame3d} alt="Flame" className="w-8 h-8" />
+              <span className="text-lg font-bold text-blue-300 -ml-1">{currentStreak}</span>
+            </div>
           </div>
-
-
-          {/* Main Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Subjects Progress */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="lg:col-span-2 bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-6 shadow-xl"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <motion.div
-                    className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center"
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <BookOpen className="w-5 h-5 text-primary" />
-                  </motion.div>
-                  <h2 className="font-heading font-semibold text-xl">Your Subjects</h2>
-                </div>
-                <Link to="/subjects" className="text-primary text-sm font-medium flex items-center gap-1 hover:underline group">
-                  View All <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-
-              {subjects.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                  </motion.div>
-                  <p>No subjects found for your class.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {subjects.slice(0, 6).map((subject, index) => {
-                    const IconComponent = subject.IconComponent;
-                    const colors = colorClasses[subject.color] || colorClasses.primary;
-                    return (
-                      <motion.div
-                        key={subject.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.1 + index * 0.05 }}
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        className={cn(
-                          "group bg-muted/30 backdrop-blur-sm rounded-xl p-4 cursor-pointer border transition-all duration-300",
-                          "hover:bg-muted/50 hover:shadow-lg",
-                          colors.border
-                        )}
-                      >
-                        <div className="flex items-center gap-3 mb-3">
-                          <motion.div 
-                            className={cn("w-11 h-11 rounded-xl flex items-center justify-center shadow-sm", colors.bg)}
-                            whileHover={{ rotate: [0, -5, 5, 0] }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <IconComponent className="w-5 h-5 text-primary-foreground" />
-                          </motion.div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{subject.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              NCTB Curriculum
-                            </p>
-                          </div>
-                          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Progress</span>
-                            <span className={cn("font-semibold", colors.text)}>{subject.progress}%</span>
-                          </div>
-                          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                            <motion.div
-                              className={cn("absolute inset-y-0 left-0 rounded-full", colors.bg)}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${subject.progress}%` }}
-                              transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
-                            />
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-            </motion.div>
-
-            {/* Right Column */}
-            <div className="space-y-6">
-
-              {/* Revision Reminders */}
-              <RevisionReminders />
-
-              {/* Continue Learning */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-accent rounded-2xl p-6 text-primary-foreground shadow-xl"
-              >
-                {/* Animated background elements */}
-                <motion.div
-                  className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.3, 0.5, 0.3],
-                  }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                />
-                <motion.div
-                  className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full blur-2xl"
-                  animate={{
-                    scale: [1.2, 1, 1.2],
-                    opacity: [0.2, 0.4, 0.2],
-                  }}
-                  transition={{ duration: 5, repeat: Infinity }}
-                />
-
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <motion.div 
-                      className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm"
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.5 }}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white font-semibold text-sm sm:text-base">
+              {currentStreak} days streak, well done!
+            </h3>
+            <p className="text-white/50 text-xs mb-3">{streakComment}</p>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {DAYS_EN.map((day, i) => {
+                const bdIndex = dayMapping[i];
+                const isActive = weeklyStats.activeDaysThisWeek.has(bdIndex);
+                return (
+                  <div key={day} className="flex flex-col items-center gap-1">
+                    <div
+                      className={cn(
+                        "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border transition-all",
+                        isActive
+                          ? "bg-gradient-to-br from-blue-400 to-purple-500 border-blue-300/50"
+                          : "bg-white/5 border-white/10"
+                      )}
                     >
-                      <Brain className="w-6 h-6" />
-                    </motion.div>
-                    <div>
-                      <p className="text-primary-foreground/80 text-sm">Start Learning</p>
-                      <p className="font-heading font-semibold text-lg">AI Tutor</p>
+                      {isActive && <Flame className="w-3.5 h-3.5 text-white" />}
                     </div>
+                    <span className="text-[9px] text-white/40">{day}</span>
                   </div>
-                  <p className="text-primary-foreground/80 text-sm mb-4">
-                    Ask questions about any NCTB subject
-                  </p>
-                  <Button 
-                    className="w-full bg-white/20 hover:bg-white/30 border-white/30 text-primary-foreground backdrop-blur-sm shadow-lg" 
-                    asChild
-                  >
-                    <Link to="/tutor">
-                      <Play className="w-4 h-4 mr-2" />
-                      Start Session
-                    </Link>
-                  </Button>
-                </div>
-              </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* ========== AI PRACTICE CTA ========== */}
+        <Link to="/tutor">
+          <div
+            className="rounded-2xl p-4 flex items-center gap-4 border border-white/10"
+            style={{
+              background: "linear-gradient(135deg, rgba(180, 50, 100, 0.5) 0%, rgba(200, 60, 120, 0.3) 100%)",
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl bg-purple-900/50 flex items-center justify-center overflow-hidden border border-white/10">
+              <img src={aiTutor3d} alt="AI Tutor" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-white font-semibold text-sm sm:text-base">Practice learning with AI</h3>
+              <p className="text-white/50 text-xs leading-relaxed">
+                Learn with your AI partner for clarity, explanations, and easy doubt-solving
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <div className="px-4 py-2 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-white text-sm font-medium">
+                Start
+              </div>
+            </div>
+          </div>
+        </Link>
+
+        {/* ========== STAT CARDS (2 columns) ========== */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Total Study Time */}
+          <GlassCard className="p-4 flex items-start gap-3">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
+              <img src={statStudy3d} alt="Study time" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-white font-semibold text-xs sm:text-sm">Total study time</h4>
+              <p className="text-white/40 text-[10px] sm:text-xs">Today you studied for</p>
+              <div className="mt-1.5 px-3 py-1 rounded-lg bg-white/10 border border-white/10 inline-block">
+                <span className="text-white font-semibold text-sm">
+                  {formatStudyTime(weeklyStats.today_study_minutes)}
+                </span>
+              </div>
+            </div>
+          </GlassCard>
+
+          {/* Total XP */}
+          <GlassCard className="p-4 flex items-start gap-3">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
+              <img src={statXp3d} alt="XP" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-white font-semibold text-xs sm:text-sm">Total XP points</h4>
+              <p className="text-white/40 text-[10px] sm:text-xs">Your points you have gained</p>
+              <div className="mt-1.5 px-3 py-1 rounded-lg bg-white/10 border border-white/10 inline-flex items-center gap-1">
+                <span className="text-white font-semibold text-sm">{stats?.total_xp || 0}</span>
+                <span className="text-yellow-400 text-sm">⭐</span>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* ========== SUBJECT PROGRESS ========== */}
+        <GlassCard className="p-4">
+          {/* Header with 3D book */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
+              <img src={subjectProgress3d} alt="Subjects" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
+            </div>
+            <div
+              className="flex-1 rounded-xl p-3"
+              style={{
+                background: "linear-gradient(135deg, rgba(220, 50, 100, 0.4) 0%, rgba(180, 40, 80, 0.3) 100%)",
+              }}
+            >
+              <h3 className="text-white font-semibold text-sm sm:text-base">Your total subject-wise progress</h3>
+              <p className="text-white/50 text-[10px] sm:text-xs">
+                See your total subject-wise progress and check if you're ready for your exam or not
+              </p>
             </div>
           </div>
 
-          {/* Progress Visualization Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <ProgressVisualization 
-              refreshKey={progressRefreshKey} 
-              onRefresh={() => {
-                setIsRefreshing(true);
-                setProgressRefreshKey(prev => prev + 1);
-                setTimeout(() => setIsRefreshing(false), 1000);
-              }}
-              isRefreshing={isRefreshing}
-            />
-          </motion.div>
+          {/* Subject grid */}
+          {subjects.length === 0 ? (
+            <div className="text-center py-8 text-white/40 text-sm">No subjects found for your class.</div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2.5">
+              {subjects.map((subject, index) => (
+                <motion.div
+                  key={subject.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="rounded-xl p-3 border border-white/10 bg-white/5 backdrop-blur-sm"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                      <img src={subjectProgress3d} alt="" className="w-6 h-6 object-contain" />
+                    </div>
+                    <span className="text-white text-xs sm:text-sm font-medium truncate">{subject.name}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{
+                        background: "linear-gradient(90deg, #E040A0, #A040E0)",
+                      }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${subject.progress}%` }}
+                      transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </GlassCard>
 
-          {/* Daily Notification Trigger (invisible component) */}
-          <DailyNotificationTrigger />
-        </main>
+        {/* Daily Notification Trigger (invisible) */}
+        <DailyNotificationTrigger />
       </div>
     </div>
   );
