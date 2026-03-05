@@ -485,19 +485,29 @@ const Dashboard = () => {
         <div className="grid grid-cols-2 gap-4">
           {/* Total Study Time */}
           <div
-            className="rounded-2xl p-3 flex flex-row items-center gap-2 border border-white/[0.15]"
+            className="rounded-2xl p-3.5 border border-white/[0.15]"
             style={{
               background: "linear-gradient(135deg, #5B3A6B 0%, #3D2244 50%, #4A2850 100%)",
               boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)",
             }}>
-            <img src={statStudy3d} alt="Study time" className="w-16 h-16 flex-shrink-0 object-contain" />
-            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-              <div>
-                <h4 className="text-white font-semibold text-[13px] whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total study time</h4>
-                <p className="text-white/50 text-[10px] whitespace-nowrap">Today you studied for</p>
+            <div className="flex items-center gap-2 mb-2">
+              {/* Liquid glass behind icon */}
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+                style={{
+                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+                }}>
+                <img src={statStudy3d} alt="Study time" className="w-12 h-12 object-contain" />
               </div>
-              <div className="self-end px-4 py-1 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-                <span className="text-white font-semibold text-[11px] whitespace-nowrap">
+              <div>
+                <h4 className="text-white font-bold text-[15px] leading-tight whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total study time</h4>
+                <p className="text-white/50 text-[11px] whitespace-nowrap">Today you studied for</p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <div className="px-5 py-1.5 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
+                <span className="text-white font-semibold text-[12px] whitespace-nowrap">
                   {formatStudyTime(weeklyStats.today_study_minutes)}
                 </span>
               </div>
@@ -506,33 +516,31 @@ const Dashboard = () => {
 
           {/* Total XP */}
           <div
-            className="rounded-2xl p-3 flex flex-row items-center gap-2 border border-white/[0.15]"
+            className="rounded-2xl p-3.5 border border-white/[0.15]"
             style={{
               background: "linear-gradient(135deg, #5B3A6B 0%, #3D2244 50%, #4A2850 100%)",
               boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)",
             }}>
-            <img src={statXp3d} alt="XP" className="w-16 h-16 flex-shrink-0 object-contain" />
-            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div className="flex items-center gap-2 mb-2">
+              {/* Liquid glass behind icon */}
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+                style={{
+                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+                }}>
+                <img src={statXp3d} alt="XP" className="w-12 h-12 object-contain" />
+              </div>
               <div>
-                <h4 className="text-white font-semibold text-[13px] whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP points</h4>
-                <p className="text-white/50 text-[10px] whitespace-nowrap">Your points you have gained</p>
+                <h4 className="text-white font-bold text-[15px] leading-tight whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP points</h4>
+                <p className="text-white/50 text-[11px]">Your points you have<br/>gained</p>
               </div>
-              <div className="self-end flex items-center gap-1.5">
-                <div className="px-4 py-1 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-                  <span className="text-white font-semibold text-[11px] whitespace-nowrap">{stats?.total_xp || 0}</span>
-                </div>
-                <div className="relative w-7 h-7 flex items-center justify-center">
-                  <img src={statXp3d} alt="XP" className="w-7 h-7 object-contain opacity-60" />
-                  <span
-                    className="absolute inset-0 flex items-center justify-center text-[8px] text-white"
-                    style={{
-                      fontFamily: "'Black Han Sans', sans-serif",
-                      WebkitTextStroke: '0.5px rgba(140,80,220,0.8)',
-                    }}>
-                    XP
-                  </span>
-                </div>
+            </div>
+            <div className="flex justify-end items-center gap-1.5">
+              <div className="px-5 py-1.5 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
+                <span className="text-white font-semibold text-[12px] whitespace-nowrap">{stats?.total_xp || 0}</span>
               </div>
+              <img src={statXp3d} alt="" className="w-6 h-6 object-contain" />
             </div>
           </div>
         </div>
