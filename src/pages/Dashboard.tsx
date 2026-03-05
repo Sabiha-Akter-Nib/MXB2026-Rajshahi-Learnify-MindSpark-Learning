@@ -447,7 +447,7 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <div className="px-4 py-2 rounded-xl bg-white/20 backdrop-blur-sm border border-white/25 text-white text-sm font-medium">
+              <div className="px-5 py-2.5 rounded-full bg-white/25 backdrop-blur-sm border border-white/30 text-white text-sm font-semibold shadow-lg">
                 Start
               </div>
             </div>
