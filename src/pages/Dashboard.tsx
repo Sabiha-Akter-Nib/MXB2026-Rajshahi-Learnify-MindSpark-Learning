@@ -324,8 +324,8 @@ const Dashboard = () => {
   const modules = [
   { label: "AI Tutor", img: aiTutor3d, href: "/tutor" },
   { label: "Practice", img: practice3d, href: "/practice" },
-  { label: "Assessment", img: assessment3d, href: "/assessment" },
   { label: "Learning Plan", img: learningPlan3d, href: "/learning-plan" },
+  { label: "Assessment", img: assessment3d, href: "/assessment" },
   { label: "Leaderboard", img: leaderboard3d, href: "/leaderboard" }];
 
 
@@ -385,15 +385,15 @@ const Dashboard = () => {
         {/* ========== STREAK CARD ========== */}
         <GlassCard className="px-3 py-3 sm:px-4 sm:py-3.5 flex items-center gap-3">
           {/* Fire with overlaid number in rounded container */}
-          <div className="flex-shrink-0 relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+          <div className="flex-shrink-0 relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
             <motion.img
               src={streakFlame3d}
               alt="Streak Fire"
-              className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
               animate={currentStreak > 0 ? { scale: [1, 1.08, 1], rotate: [0, -3, 3, 0] } : {}}
               transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }} />
             <span
-              className="absolute bottom-0.5 text-lg sm:text-2xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+              className="absolute bottom-0 text-2xl sm:text-3xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
               style={{
                 fontFamily: "'Black Han Sans', sans-serif",
                 WebkitTextStroke: '1.5px rgba(140,80,220,0.8)',
@@ -467,7 +467,7 @@ const Dashboard = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-bold text-sm sm:text-lg whitespace-nowrap overflow-hidden text-ellipsis">Practice learning with AI</h3>
-              <p className="text-white/70 leading-snug text-[11px] sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">
+              <p className="text-white/70 leading-snug text-[11px] sm:text-sm">
                 Learn with your AI partner for clarity, explanations, and easy doubt-solving
               </p>
             </div>
