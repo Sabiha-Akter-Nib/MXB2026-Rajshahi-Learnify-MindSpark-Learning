@@ -392,7 +392,14 @@ const Dashboard = () => {
               className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
               animate={currentStreak > 0 ? { scale: [1, 1.08, 1], rotate: [0, -3, 3, 0] } : {}}
               transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }} />
-            <span className="absolute bottom-0.5 text-lg sm:text-2xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" style={{ WebkitTextStroke: '1px rgba(120,60,200,0.6)' }}>{currentStreak}</span>
+            <span
+              className="absolute bottom-0.5 text-lg sm:text-2xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+              style={{
+                fontFamily: "'Black Han Sans', sans-serif",
+                WebkitTextStroke: '1.5px rgba(140,80,220,0.8)',
+              }}>
+              {currentStreak}
+            </span>
           </div>
 
           <div className="flex-1 min-w-0">
@@ -402,25 +409,45 @@ const Dashboard = () => {
               "0 days streak, study to achieve!"}
             </h3>
             <p className="text-white/50 mb-2 font-light text-[11px] sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">{streakComment}</p>
-            <div className="flex items-center gap-1 sm:gap-1.5">
+            <div className="flex items-center gap-2 sm:gap-2.5">
               {DAYS_EN.map((day, i) => {
                 const bdIndex = dayMapping[i];
                 const isActive = weeklyStats.activeDaysThisWeek.has(bdIndex);
+                const now = new Date();
+                const jsDay = now.getDay();
+                const todayBdIndex = jsDay === 6 ? 0 : jsDay + 1;
+                const isToday = bdIndex === todayBdIndex;
+                const isTodayActive = isToday && isActive;
                 return (
                   <div key={day} className="flex flex-col items-center gap-0.5">
+                    {/* Outer circle */}
                     <div
-                      className={cn(
-                        "w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-all",
-                        isActive ?
-                        "bg-gradient-to-br from-purple-300/60 to-purple-500/60 border border-purple-300/40 shadow-[0_0_6px_rgba(168,85,247,0.3)]" :
-                        "bg-white/8 border border-white/10"
-                      )}>
-                      
-                      {isActive && <Flame className="w-3 h-3 text-purple-200" />}
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center relative"
+                      style={{
+                        backgroundColor: isActive
+                          ? 'rgba(187, 167, 253, 0.7)'
+                          : 'rgba(217, 217, 217, 0.7)',
+                      }}>
+                      {/* Inner circle */}
+                      <div
+                        className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center"
+                        style={{
+                          backgroundColor: isActive
+                            ? 'rgba(187, 167, 253, 0.3)'
+                            : 'rgba(217, 217, 217, 0.3)',
+                        }}>
+                      </div>
+                      {/* Flame on top for current active day */}
+                      {isTodayActive && (
+                        <img
+                          src={streakFlame3d}
+                          alt=""
+                          className="absolute -top-1 w-7 h-7 sm:w-8 sm:h-8 object-contain z-10"
+                        />
+                      )}
                     </div>
                     <span className="text-[8px] sm:text-[9px] text-white/40">{day}</span>
                   </div>);
-
               })}
             </div>
           </div>
