@@ -484,12 +484,7 @@ const Dashboard = () => {
         {/* ========== STAT CARDS (2 columns) ========== */}
         <div className="grid grid-cols-2 gap-4">
           {/* Total Study Time */}
-          <div
-            className="rounded-2xl p-3.5 border border-white/[0.15]"
-            style={{
-              background: "linear-gradient(135deg, #5B3A6B 0%, #3D2244 50%, #4A2850 100%)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)",
-            }}>
+          <GlassCard className="p-3.5">
             <div className="flex items-center gap-2 mb-2">
               {/* Liquid glass behind icon */}
               <div
@@ -512,15 +507,10 @@ const Dashboard = () => {
                 </span>
               </div>
             </div>
-          </div>
+          </GlassCard>
 
           {/* Total XP */}
-          <div
-            className="rounded-2xl p-3.5 border border-white/[0.15]"
-            style={{
-              background: "linear-gradient(135deg, #5B3A6B 0%, #3D2244 50%, #4A2850 100%)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)",
-            }}>
+          <GlassCard className="p-3.5">
             <div className="flex items-center gap-2 mb-2">
               {/* Liquid glass behind icon */}
               <div
@@ -542,7 +532,7 @@ const Dashboard = () => {
               </div>
               <img src={statXp3d} alt="" className="w-6 h-6 object-contain" />
             </div>
-          </div>
+          </GlassCard>
         </div>
 
         {/* ========== SUBJECT PROGRESS ========== */}
