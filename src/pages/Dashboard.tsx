@@ -24,7 +24,6 @@ import { supabase } from "@/integrations/supabase/client";
 import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import DailyNotificationTrigger from "@/components/notifications/DailyNotificationTrigger";
-import { Progress } from "@/components/ui/progress";
 
 // 3D Assets
 import aiTutor3d from "@/assets/module-ai-tutor-3d.png";
@@ -35,22 +34,7 @@ import leaderboard3d from "@/assets/module-leaderboard-3d.png";
 import streakFlame3d from "@/assets/streak-flame-3d.png";
 import statStudy3d from "@/assets/stat-study-3d.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
-import subjectProgress3d from "@/assets/subject-progress-3d.png";
-
-// Streak mascot assets
-import streakBg1 from "@/assets/streak-bg-1.png";
-import streakBg2 from "@/assets/streak-bg-2.png";
-import streakBg3 from "@/assets/streak-bg-3.png";
-import streakBg4 from "@/assets/streak-bg-4.png";
-import streakBg5 from "@/assets/streak-bg-5.png";
-import streakBg6 from "@/assets/streak-bg-6.png";
-import streakBg7 from "@/assets/streak-bg-7.png";
-import streakBg8 from "@/assets/streak-bg-8.png";
-import streakBgAngry from "@/assets/streak-bg-angry.png";
-import streakBgAngry2 from "@/assets/streak-bg-angry-2.png";
-
-const goodImages = [streakBg1, streakBg2, streakBg3, streakBg4, streakBg5, streakBg6, streakBg7, streakBg8];
-const angryImages = [streakBgAngry, streakBgAngry2];
+import subjectBooks3d from "@/assets/subject-books-3d.png";
 
 interface Profile {
   full_name: string;
@@ -298,29 +282,22 @@ const Dashboard = () => {
     return `${mins} min`;
   };
 
-  // Streak mascot logic
+  // Streak logic (no more Tugi mascot images — fire only)
   const currentStreak = streak.currentStreak ?? stats?.current_streak ?? 0;
   const todayStudyMinutes = weeklyStats.today_study_minutes;
   const hasStudiedToday = todayStudyMinutes >= 1;
-  const isAngry = !hasStudiedToday && !weeklyStats.isFirstTimeUser;
-
-  const mascotImage = useMemo(() => {
-    if (isAngry) return angryImages[Math.floor(Math.random() * angryImages.length)];
-    return goodImages[Math.floor(Math.random() * goodImages.length)];
-  }, [isAngry]);
 
   const streakComment = useMemo(() => {
-    if (currentStreak === 0 && !weeklyStats.isFirstTimeUser) return "Your streak broke! Start again!";
+    if (currentStreak === 0 && !weeklyStats.isFirstTimeUser) return "Your streak broke! Start studying now!";
     if (!hasStudiedToday && !weeklyStats.isFirstTimeUser) return "You haven't studied today yet!";
-    if (currentStreak >= 7) return "Amazing progress! well done!";
+    if (currentStreak >= 7) return "Amazing streak! Keep the fire burning!";
     if (currentStreak >= 3) return "Great momentum, keep going!";
-    return "Well done! Keep it up!";
+    if (currentStreak >= 1) return "Nice start! Keep it up!";
+    return "Start studying to build your streak!";
   }, [currentStreak, hasStudiedToday, weeklyStats.isFirstTimeUser]);
 
   // Map BD week days to Mon-Sun display
-  // BD: 0=Sat, 1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri
-  // Display: Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
-  const dayMapping = [2, 3, 4, 5, 6, 0, 1]; // Mon→bd2, Tue→bd3, ...
+  const dayMapping = [2, 3, 4, 5, 6, 0, 1];
 
   if (loading || isLoadingData) {
     return (
@@ -352,19 +329,22 @@ const Dashboard = () => {
     { label: "Leaderboard", img: leaderboard3d, href: "/leaderboard" },
   ];
 
+  // Uniform gap for all sections
+  const CARD_GAP = "gap-5";
+
   return (
     <div
       className="min-h-[100dvh] font-poppins overflow-x-hidden"
       style={{ background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)" }}
     >
-      <div className="w-full max-w-lg mx-auto px-4 py-6 space-y-4">
+      <div className={cn("w-full max-w-2xl mx-auto px-4 py-6 flex flex-col", CARD_GAP)}>
 
         {/* ========== HEADER ========== */}
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <AvatarUpload userId={user.id} userName={displayName} size="sm" showUploadButton={false} />
             <div>
-              <h1 className="text-white font-semibold text-lg leading-tight">Hi, {displayName.split(" ")[0]}!</h1>
+              <h1 className="text-white font-semibold text-base sm:text-lg leading-tight">Hi, {displayName}!</h1>
               <p className="text-white/50 text-xs">{classText}, {versionText}</p>
             </div>
           </div>
@@ -379,18 +359,21 @@ const Dashboard = () => {
         </header>
 
         {/* ========== NAVIGATION MODULES ========== */}
-        <GlassCard className="p-4">
-          <div className="flex items-center justify-between">
-            {modules.map((mod, i) => (
+        <GlassCard className="p-4 sm:p-5">
+          <div className="flex items-start justify-between">
+            {modules.map((mod) => (
               <Link
                 key={mod.label}
                 to={mod.href}
-                className="flex flex-col items-center gap-1.5 group"
+                className="flex flex-col items-center gap-1.5 group flex-1"
               >
                 <motion.div
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden"
+                  className="w-14 h-14 sm:w-[72px] sm:h-[72px] rounded-2xl flex items-center justify-center overflow-hidden border border-white/15"
+                  style={{
+                    background: "linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)",
+                  }}
                 >
                   <img src={mod.img} alt={mod.label} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
                 </motion.div>
@@ -400,18 +383,26 @@ const Dashboard = () => {
           </div>
         </GlassCard>
 
-        {/* ========== STREAK CARD ========== */}
-        <GlassCard className="p-4 flex items-center gap-4">
-          <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-            <img src={mascotImage} alt="Streak mascot" className="w-full h-full object-contain rounded-xl" />
-            <div className="absolute -bottom-1 -left-1 flex items-center">
-              <img src={streakFlame3d} alt="Flame" className="w-8 h-8" />
-              <span className="text-lg font-bold text-blue-300 -ml-1">{currentStreak}</span>
-            </div>
+        {/* ========== STREAK CARD (Fire only, no Tugi) ========== */}
+        <GlassCard className="p-4 sm:p-5 flex items-center gap-4">
+          {/* Fire image instead of mascot */}
+          <div className="flex-shrink-0 flex flex-col items-center">
+            <motion.img
+              src={streakFlame3d}
+              alt="Streak Fire"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
+              animate={currentStreak > 0 ? { scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] } : {}}
+              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+            />
+            <span className="text-2xl sm:text-3xl font-bold text-white mt-1">{currentStreak}</span>
+            <span className="text-[10px] text-white/50 font-medium">Day Streak</span>
           </div>
+
           <div className="flex-1 min-w-0">
-            <h3 className="text-white font-semibold text-sm sm:text-base">
-              {currentStreak} days streak, well done!
+            <h3 className="text-white font-semibold text-sm sm:text-base leading-snug">
+              {currentStreak > 0
+                ? `${currentStreak} day streak!`
+                : "No active streak"}
             </h3>
             <p className="text-white/50 text-xs mb-3">{streakComment}</p>
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -424,7 +415,7 @@ const Dashboard = () => {
                       className={cn(
                         "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border transition-all",
                         isActive
-                          ? "bg-gradient-to-br from-blue-400 to-purple-500 border-blue-300/50"
+                          ? "bg-gradient-to-br from-orange-400 to-red-500 border-orange-300/50 shadow-[0_0_8px_rgba(251,146,60,0.4)]"
                           : "bg-white/5 border-white/10"
                       )}
                     >
@@ -441,23 +432,23 @@ const Dashboard = () => {
         {/* ========== AI PRACTICE CTA ========== */}
         <Link to="/tutor">
           <div
-            className="rounded-2xl p-4 flex items-center gap-4 border border-white/10"
+            className="rounded-2xl p-4 sm:p-5 flex items-center gap-4 border border-white/10"
             style={{
-              background: "linear-gradient(135deg, rgba(180, 50, 100, 0.5) 0%, rgba(200, 60, 120, 0.3) 100%)",
-              backdropFilter: "blur(20px)",
+              background: "linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)",
+              boxShadow: "0 8px 32px rgba(175,45,80,0.3)",
             }}
           >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl bg-purple-900/50 flex items-center justify-center overflow-hidden border border-white/10">
-              <img src={aiTutor3d} alt="AI Tutor" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center overflow-hidden border border-white/20">
+              <img src={aiTutor3d} alt="AI Tutor" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-semibold text-sm sm:text-base">Practice learning with AI</h3>
-              <p className="text-white/50 text-xs leading-relaxed">
+              <p className="text-white/70 text-xs leading-relaxed">
                 Learn with your AI partner for clarity, explanations, and easy doubt-solving
               </p>
             </div>
             <div className="flex-shrink-0">
-              <div className="px-4 py-2 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-white text-sm font-medium">
+              <div className="px-4 py-2 rounded-xl bg-white/20 backdrop-blur-sm border border-white/25 text-white text-sm font-medium">
                 Start
               </div>
             </div>
@@ -465,55 +456,55 @@ const Dashboard = () => {
         </Link>
 
         {/* ========== STAT CARDS (2 columns) ========== */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-5">
           {/* Total Study Time */}
-          <GlassCard className="p-4 flex items-start gap-3">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
-              <img src={statStudy3d} alt="Study time" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
+          <GlassCard className="p-4 sm:p-5 flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
+              <img src={statStudy3d} alt="Study time" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
             </div>
-            <div className="min-w-0">
-              <h4 className="text-white font-semibold text-xs sm:text-sm">Total study time</h4>
-              <p className="text-white/40 text-[10px] sm:text-xs">Today you studied for</p>
-              <div className="mt-1.5 px-3 py-1 rounded-lg bg-white/10 border border-white/10 inline-block">
-                <span className="text-white font-semibold text-sm">
-                  {formatStudyTime(weeklyStats.today_study_minutes)}
-                </span>
-              </div>
+            <div>
+              <h4 className="text-white font-semibold text-xs sm:text-sm">Total Study Time</h4>
+              <p className="text-white/40 text-[10px] sm:text-xs">Today</p>
+            </div>
+            <div className="px-4 py-1.5 rounded-lg bg-white/10 border border-white/10">
+              <span className="text-white font-semibold text-sm sm:text-base">
+                {formatStudyTime(weeklyStats.today_study_minutes)}
+              </span>
             </div>
           </GlassCard>
 
           {/* Total XP */}
-          <GlassCard className="p-4 flex items-start gap-3">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
-              <img src={statXp3d} alt="XP" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
+          <GlassCard className="p-4 sm:p-5 flex flex-col items-center text-center gap-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
+              <img src={statXp3d} alt="XP" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
             </div>
-            <div className="min-w-0">
-              <h4 className="text-white font-semibold text-xs sm:text-sm">Total XP points</h4>
-              <p className="text-white/40 text-[10px] sm:text-xs">Your points you have gained</p>
-              <div className="mt-1.5 px-3 py-1 rounded-lg bg-white/10 border border-white/10 inline-flex items-center gap-1">
-                <span className="text-white font-semibold text-sm">{stats?.total_xp || 0}</span>
-                <span className="text-yellow-400 text-sm">⭐</span>
-              </div>
+            <div>
+              <h4 className="text-white font-semibold text-xs sm:text-sm">Total XP Points</h4>
+              <p className="text-white/40 text-[10px] sm:text-xs">All time</p>
+            </div>
+            <div className="px-4 py-1.5 rounded-lg bg-white/10 border border-white/10 inline-flex items-center gap-1">
+              <span className="text-white font-semibold text-sm sm:text-base">{stats?.total_xp || 0}</span>
+              <span className="text-yellow-400 text-sm">⭐</span>
             </div>
           </GlassCard>
         </div>
 
         {/* ========== SUBJECT PROGRESS ========== */}
-        <GlassCard className="p-4">
+        <GlassCard className="p-4 sm:p-5">
           {/* Header with 3D book */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
-              <img src={subjectProgress3d} alt="Subjects" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
+              <img src={subjectBooks3d} alt="Subjects" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
             </div>
             <div
               className="flex-1 rounded-xl p-3"
               style={{
-                background: "linear-gradient(135deg, rgba(220, 50, 100, 0.4) 0%, rgba(180, 40, 80, 0.3) 100%)",
+                background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)",
               }}
             >
-              <h3 className="text-white font-semibold text-sm sm:text-base">Your total subject-wise progress</h3>
+              <h3 className="text-white font-semibold text-sm sm:text-base">Your subject-wise progress</h3>
               <p className="text-white/50 text-[10px] sm:text-xs">
-                See your total subject-wise progress and check if you're ready for your exam or not
+                Track your progress and check exam readiness
               </p>
             </div>
           </div>
@@ -522,7 +513,7 @@ const Dashboard = () => {
           {subjects.length === 0 ? (
             <div className="text-center py-8 text-white/40 text-sm">No subjects found for your class.</div>
           ) : (
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-3">
               {subjects.map((subject, index) => (
                 <motion.div
                   key={subject.id}
@@ -532,21 +523,24 @@ const Dashboard = () => {
                   className="rounded-xl p-3 border border-white/10 bg-white/5 backdrop-blur-sm"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                      <img src={subjectProgress3d} alt="" className="w-6 h-6 object-contain" />
+                    <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+                      <img src={subjectBooks3d} alt="" className="w-5 h-5 object-contain" />
                     </div>
                     <span className="text-white text-xs sm:text-sm font-medium truncate">{subject.name}</span>
                   </div>
-                  <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{
-                        background: "linear-gradient(90deg, #E040A0, #A040E0)",
-                      }}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${subject.progress}%` }}
-                      transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
-                    />
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{
+                          background: "linear-gradient(90deg, #E040A0, #A040E0)",
+                        }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${subject.progress}%` }}
+                        transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-white/40 font-medium">{subject.progress}%</span>
                   </div>
                 </motion.div>
               ))}
