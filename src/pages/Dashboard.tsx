@@ -342,7 +342,9 @@ const Dashboard = () => {
         {/* ========== HEADER ========== */}
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <AvatarUpload userId={user.id} userName={displayName} size="sm" showUploadButton={false} />
+            <div className="[&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0">
+              <AvatarUpload userId={user.id} userName={displayName} size="sm" showUploadButton={false} />
+            </div>
             <div>
               <h1 className="text-white font-semibold text-base sm:text-lg leading-tight">Hi, {displayName}!</h1>
               <p className="text-white/50 text-xs">{classText}, {versionText}</p>
@@ -370,12 +372,9 @@ const Dashboard = () => {
                 <motion.div
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-14 h-14 sm:w-[72px] sm:h-[72px] rounded-2xl flex items-center justify-center overflow-hidden border border-white/15"
-                  style={{
-                    background: "linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)",
-                  }}
+                  className="flex items-center justify-center"
                 >
-                  <img src={mod.img} alt={mod.label} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+                  <img src={mod.img} alt={mod.label} className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
                 </motion.div>
                 <span className="text-white/80 text-[10px] sm:text-xs font-medium text-center leading-tight">{mod.label}</span>
               </Link>
