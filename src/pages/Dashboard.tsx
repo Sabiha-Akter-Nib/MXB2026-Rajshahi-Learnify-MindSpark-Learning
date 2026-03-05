@@ -92,16 +92,16 @@ const iconMap: Record<string, LucideIcon> = {
 
 const DAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Liquid glass card wrapper
+// Liquid glass card wrapper — Light -45deg 80%, Refraction 100%, Depth 100%, Dispersion 95%, Frost 0%, Splay 0%
 const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 <div
   className={cn(
-    "rounded-2xl border border-white/10 backdrop-blur-xl",
+    "rounded-2xl border border-white/[0.15] backdrop-blur-2xl",
     className
   )}
   style={{
-    background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)"
+    background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 0 0 0.5px rgba(255,255,255,0.08)",
   }}
   {...props}>
   
@@ -437,12 +437,12 @@ const Dashboard = () => {
                             : 'rgba(217, 217, 217, 0.3)',
                         }}>
                       </div>
-                      {/* Flame on top for current active day */}
+                      {/* Flame sitting on circle, bottom-aligned */}
                       {isTodayActive && (
                         <img
                           src={streakFlame3d}
                           alt=""
-                          className="absolute -top-1 w-7 h-7 sm:w-8 sm:h-8 object-contain z-10"
+                          className="absolute bottom-0 w-7 h-7 sm:w-8 sm:h-8 object-contain z-10"
                         />
                       )}
                     </div>
@@ -462,8 +462,8 @@ const Dashboard = () => {
               boxShadow: "0 8px 32px rgba(175,45,80,0.3)"
             }}>
             
-            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-              <img src={aiTutor3d} alt="AI Tutor" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 flex items-center justify-center">
+              <img src={aiTutor3d} alt="AI Tutor" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-bold text-sm sm:text-lg whitespace-nowrap overflow-hidden text-ellipsis">Practice learning with AI</h3>
