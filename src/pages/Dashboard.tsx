@@ -437,8 +437,8 @@ const Dashboard = () => {
               boxShadow: "0 8px 32px rgba(175,45,80,0.3)",
             }}
           >
-            <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center overflow-hidden border border-white/20">
-              <img src={aiTutor3d} alt="AI Tutor" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+            <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
+              <img src={aiTutor3d} alt="AI Tutor" className="w-20 h-20 sm:w-24 sm:h-24 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-semibold text-sm sm:text-base">Practice learning with AI</h3>
