@@ -401,7 +401,7 @@ const Dashboard = () => {
             <h3 className="text-white text-base leading-snug font-medium sm:text-2xl">
               {currentStreak > 0 ?
               `${currentStreak} day streak!` :
-              "No active streak"}
+              "0 days streak, study to achieve!"}
             </h3>
             <p className="text-white/50 mb-3 font-extralight text-base">{streakComment}</p>
             <div className="flex items-center gap-1.5 sm:gap-2">
