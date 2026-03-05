@@ -34,6 +34,8 @@ import leaderboard3d from "@/assets/module-leaderboard-3d.png";
 import streakFlame3d from "@/assets/streak-flame-3d.png";
 import statStudy3d from "@/assets/stat-study-3d.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
+import statStudyCardBg from "@/assets/stat-study-card-bg.png";
+import statXpCardBg from "@/assets/stat-xp-card-bg.png";
 import subjectBooks3d from "@/assets/subject-books-3d.png";
 
 interface Profile {
@@ -482,35 +484,47 @@ const Dashboard = () => {
         {/* ========== STAT CARDS (2 columns) ========== */}
         <div className="grid grid-cols-2 gap-4">
           {/* Total Study Time */}
-          <GlassCard className="px-3 py-3 sm:px-4 sm:py-3.5 flex flex-col items-center text-center gap-1.5">
-            <div className="w-11 h-11 sm:w-14 sm:h-14 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
-              <img src={statStudy3d} alt="Study time" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+          <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '380/200' }}>
+            <img src={statStudyCardBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="relative z-10 h-full flex flex-col justify-between p-3">
+              <div>
+                <h4 className="text-white font-semibold text-[13px] whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total study time</h4>
+                <p className="text-white/60 text-[10px] whitespace-nowrap">Today you studied for</p>
+              </div>
+              <div className="self-end px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20">
+                <span className="text-white font-semibold text-[11px] whitespace-nowrap">
+                  {formatStudyTime(weeklyStats.today_study_minutes)}
+                </span>
+              </div>
             </div>
-            <div>
-              <h4 className="text-white font-semibold text-[11px] sm:text-sm whitespace-nowrap">Total Study Time</h4>
-              <p className="text-white/40 text-[9px] sm:text-xs">Today</p>
-            </div>
-            <div className="px-3 py-1 rounded-lg bg-white/10 border border-white/10">
-              <span className="text-white font-semibold text-xs sm:text-sm whitespace-nowrap">
-                {formatStudyTime(weeklyStats.today_study_minutes)}
-              </span>
-            </div>
-          </GlassCard>
+          </div>
 
           {/* Total XP */}
-          <GlassCard className="px-3 py-3 sm:px-4 sm:py-3.5 flex flex-col items-center text-center gap-1.5">
-            <div className="w-11 h-11 sm:w-14 sm:h-14 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
-              <img src={statXp3d} alt="XP" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+          <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '380/200' }}>
+            <img src={statXpCardBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="relative z-10 h-full flex flex-col justify-between p-3">
+              <div>
+                <h4 className="text-white font-semibold text-[13px] whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP points</h4>
+                <p className="text-white/60 text-[10px] whitespace-nowrap">Your points you have gained</p>
+              </div>
+              <div className="self-end flex items-center gap-1.5">
+                <div className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20">
+                  <span className="text-white font-semibold text-[11px] whitespace-nowrap">{stats?.total_xp || 0}</span>
+                </div>
+                <div className="relative w-6 h-6 flex items-center justify-center">
+                  <img src={statXp3d} alt="XP" className="w-6 h-6 object-contain" />
+                  <span
+                    className="absolute inset-0 flex items-center justify-center text-[7px] text-white"
+                    style={{
+                      fontFamily: "'Black Han Sans', sans-serif",
+                      WebkitTextStroke: '0.5px rgba(140,80,220,0.8)',
+                    }}>
+                    XP
+                  </span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h4 className="text-white font-semibold text-[11px] sm:text-sm whitespace-nowrap">Total XP Points</h4>
-              <p className="text-white/40 text-[9px] sm:text-xs">All time</p>
-            </div>
-            <div className="px-3 py-1 rounded-lg bg-white/10 border border-white/10 inline-flex items-center gap-1">
-              <span className="text-white font-semibold text-xs sm:text-sm">{stats?.total_xp || 0}</span>
-              <span className="text-yellow-400 text-xs">⭐</span>
-            </div>
-          </GlassCard>
+          </div>
         </div>
 
         {/* ========== SUBJECT PROGRESS ========== */}
