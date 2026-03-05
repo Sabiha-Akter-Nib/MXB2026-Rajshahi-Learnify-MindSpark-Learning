@@ -484,53 +484,53 @@ const Dashboard = () => {
         {/* ========== STAT CARDS (2 columns) ========== */}
         <div className="grid grid-cols-2 gap-4">
           {/* Total Study Time */}
-          <GlassCard className="p-3.5">
-            <div className="flex items-center gap-2 mb-2">
-              {/* Liquid glass behind icon */}
-              <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
-                style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
-                }}>
-                <img src={statStudy3d} alt="Study time" className="w-12 h-12 object-contain" />
-              </div>
+          <GlassCard className="p-3.5 flex flex-row items-center gap-3">
+            {/* Liquid glass behind icon - left, vertically centered */}
+            <div
+              className="w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+              style={{
+                background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+              }}>
+              <img src={statStudy3d} alt="Study time" className="w-16 h-16 object-contain" />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
               <div>
                 <h4 className="text-white font-bold text-[15px] leading-tight whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total study time</h4>
                 <p className="text-white/50 text-[11px] whitespace-nowrap">Today you studied for</p>
               </div>
-            </div>
-            <div className="flex justify-start pl-16">
-              <div className="px-5 py-1.5 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-                <span className="text-white font-semibold text-[12px] whitespace-nowrap">
-                  {formatStudyTime(weeklyStats.today_study_minutes)}
-                </span>
+              <div className="flex justify-start">
+                <div className="px-5 py-1.5 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
+                  <span className="text-white font-semibold text-[12px] whitespace-nowrap">
+                    {formatStudyTime(weeklyStats.today_study_minutes)}
+                  </span>
+                </div>
               </div>
             </div>
           </GlassCard>
 
           {/* Total XP */}
-          <GlassCard className="p-3.5">
-            <div className="flex items-center gap-2 mb-2">
-              {/* Liquid glass behind icon */}
-              <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
-                style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
-                }}>
-                <img src={statXp3d} alt="XP" className="w-12 h-12 object-contain" />
-              </div>
+          <GlassCard className="p-3.5 flex flex-row items-center gap-3">
+            {/* Liquid glass behind icon - left, vertically centered */}
+            <div
+              className="w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+              style={{
+                background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+              }}>
+              <img src={statXp3d} alt="XP" className="w-16 h-16 object-contain" />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
               <div>
                 <h4 className="text-white font-bold text-[15px] leading-tight whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP points</h4>
-                <p className="text-white/50 text-[11px]">Your points you have<br/>gained</p>
+                <p className="text-white/50 text-[11px]">Your points you have gained</p>
               </div>
-            </div>
-            <div className="flex justify-start pl-16 items-center gap-1.5">
-              <div className="px-5 py-1.5 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-                <span className="text-white font-semibold text-[12px] whitespace-nowrap">{stats?.total_xp || 0}</span>
+              <div className="flex justify-start items-center gap-1.5">
+                <div className="px-5 py-1.5 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
+                  <span className="text-white font-semibold text-[12px] whitespace-nowrap">{stats?.total_xp || 0}</span>
+                </div>
+                <img src={statXp3d} alt="" className="w-6 h-6 object-contain" />
               </div>
-              <img src={statXp3d} alt="" className="w-6 h-6 object-contain" />
             </div>
           </GlassCard>
         </div>
