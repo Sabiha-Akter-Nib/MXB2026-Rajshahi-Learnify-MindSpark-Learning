@@ -505,7 +505,7 @@ const Dashboard = () => {
                 <p className="text-white/50 text-[11px] whitespace-nowrap">Today you studied for</p>
               </div>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-start pl-16">
               <div className="px-5 py-1.5 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
                 <span className="text-white font-semibold text-[12px] whitespace-nowrap">
                   {formatStudyTime(weeklyStats.today_study_minutes)}
@@ -536,7 +536,7 @@ const Dashboard = () => {
                 <p className="text-white/50 text-[11px]">Your points you have<br/>gained</p>
               </div>
             </div>
-            <div className="flex justify-end items-center gap-1.5">
+            <div className="flex justify-start pl-16 items-center gap-1.5">
               <div className="px-5 py-1.5 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
                 <span className="text-white font-semibold text-[12px] whitespace-nowrap">{stats?.total_xp || 0}</span>
               </div>
