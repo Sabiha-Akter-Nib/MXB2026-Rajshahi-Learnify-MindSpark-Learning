@@ -398,7 +398,7 @@ const Dashboard = () => {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="text-white font-semibold text-sm sm:text-base leading-snug">
+            <h3 className="text-white font-semibold text-base sm:text-xl leading-snug">
               {currentStreak > 0
                 ? `${currentStreak} day streak!`
                 : "No active streak"}
