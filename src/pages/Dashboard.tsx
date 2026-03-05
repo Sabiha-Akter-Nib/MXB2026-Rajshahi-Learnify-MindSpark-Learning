@@ -441,7 +441,7 @@ const Dashboard = () => {
               <img src={aiTutor3d} alt="AI Tutor" className="w-20 h-20 sm:w-24 sm:h-24 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-white font-semibold text-sm sm:text-base">Practice learning with AI</h3>
+              <h3 className="text-white font-bold text-lg sm:text-2xl">Practice learning with AI</h3>
               <p className="text-white/70 text-xs leading-relaxed">
                 Learn with your AI partner for clarity, explanations, and easy doubt-solving
               </p>
