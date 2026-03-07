@@ -417,7 +417,7 @@ const Analytics = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-bold text-base sm:text-xl">Total XP points</h3>
-              <p className="text-white/70 text-xs sm:text-sm mb-3">Your points you have gained</p>
+              <p className="text-white/70 text-xs sm:text-sm mb-1.5">Your points you have gained</p>
               <div
                 className="inline-flex items-center gap-2 px-5 py-2 rounded-full"
                 style={{
