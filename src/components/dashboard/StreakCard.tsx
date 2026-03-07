@@ -60,10 +60,8 @@ const StreakCard = ({
   // Effective streak: what we display
   const effectiveStreak = currentStreak;
 
-  // If streak is broken (0), don't show any lit circles even if there were sessions this week
-  const effectiveActiveDays = currentStreak === 0 && !todayStudied
-    ? new Set<number>()
-    : activeDaysThisWeek;
+  // Always show actual activity days regardless of streak status
+  const effectiveActiveDays = activeDaysThisWeek;
 
   // Pick a random image – stable per render via useMemo
   const backgroundImage = useMemo(() => {
