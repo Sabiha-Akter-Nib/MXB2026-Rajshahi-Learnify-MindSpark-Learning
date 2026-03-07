@@ -400,7 +400,7 @@ const Analytics = () => {
 
           {/* ========== TOTAL XP CARD ========== */}
           <div
-            className="rounded-2xl p-4 sm:p-5 flex items-center gap-4 border border-white/10 overflow-hidden relative"
+            className="rounded-2xl px-4 py-3 sm:px-5 sm:py-3 flex items-center gap-3 border border-white/10 overflow-hidden relative"
             style={{
               background: "linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)",
               boxShadow: "0 8px 32px rgba(175,45,80,0.3)",
