@@ -525,9 +525,7 @@ const Dashboard = () => {
         <GlassCard className="p-4 sm:p-5">
           {/* Header with 3D book */}
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 rounded-xl bg-white/5 flex items-center justify-center">
-              <img src={subjectBooks3d} alt="Subjects" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
-            </div>
+            <img src={subjectBooks3dNew} alt="Subjects" className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 object-contain" />
             <div
               className="flex-1 rounded-xl p-3"
               style={{
@@ -545,20 +543,18 @@ const Dashboard = () => {
           {subjects.length === 0 ?
           <div className="text-center py-8 text-white/40 text-sm">No subjects found for your class.</div> :
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {subjects.map((subject, index) =>
             <motion.div
               key={subject.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="rounded-xl p-3 border border-white/10 bg-white/5 backdrop-blur-sm">
+              className="rounded-xl px-2.5 py-2.5 sm:px-3 sm:py-3 border border-white/10 bg-white/5 backdrop-blur-sm">
               
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
-                      <img src={subjectBooks3d} alt="" className="w-5 h-5 object-contain" />
-                    </div>
-                    <span className="text-white text-xs sm:text-sm font-medium truncate">{subject.name}</span>
+                    <subject.IconComponent className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0" style={{ color: subject.color }} />
+                    <span className="text-white text-[11px] sm:text-sm font-medium truncate">{subject.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
