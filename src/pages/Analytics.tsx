@@ -328,7 +328,7 @@ const Analytics = () => {
             </div>
 
             {/* Day labels */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="grid grid-cols-7 gap-px mb-1">
               {DAYS_EN.map((day) => (
                 <div key={day} className="text-center text-[10px] sm:text-xs text-white/50 font-medium">
                   {day}
