@@ -20,6 +20,7 @@ import LearningPlan from "./pages/LearningPlan";
 import Settings from "./pages/Settings";
 import Achievements from "./pages/Achievements";
 import Leaderboard from "./pages/Leaderboard";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import Welcome from "./pages/Welcome";
 
@@ -47,6 +48,7 @@ function AppContent() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/analytics" element={<Analytics />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
