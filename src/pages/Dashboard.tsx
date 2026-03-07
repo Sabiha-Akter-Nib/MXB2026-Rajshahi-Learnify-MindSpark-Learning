@@ -36,7 +36,7 @@ import statStudy3d from "@/assets/stat-study-3d.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
 import statStudyCardBg from "@/assets/stat-study-card-bg.png";
 import statXpCardBg from "@/assets/stat-xp-card-bg.png";
-import subjectBooks3d from "@/assets/subject-books-3d.png";
+import subjectBooks3dNew from "@/assets/subject-books-3d-new.png";
 
 interface Profile {
   full_name: string;
