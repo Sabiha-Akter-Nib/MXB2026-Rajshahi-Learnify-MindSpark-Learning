@@ -212,56 +212,37 @@ const Dashboard = () => {
         const todayMinutes = todaySessionMinutes + todayAssessmentMinutes;
         const weeklyGoalPercent = Math.min(Math.round(weeklyXP / 500 * 100), 100);
 
+        // Rolling 7-day window for activity circles (always shows last 7 days)
         const activeDays = new Set<number>();
-        weeklySessionsData?.forEach((s) => {
-          const d = new Date(s.created_at);
-          const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
-          if (s.duration_minutes >= 1) activeDays.add(bd);
+        const sevenDaysAgo = new Date(now);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+
+        const { data: rolling7Sessions } = await supabase
+          .from("study_sessions")
+          .select("created_at, duration_minutes")
+          .eq("user_id", user.id)
+          .gte("created_at", sevenDaysAgo.toISOString());
+
+        rolling7Sessions?.forEach((s) => {
+          if (s.duration_minutes >= 1) {
+            const d = new Date(s.created_at);
+            const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
+            activeDays.add(bd);
+          }
         });
 
-        const { data: weeklyAssessmentDates } = await supabase.
-        from("assessments").
-        select("completed_at").
-        eq("user_id", user.id).
-        gte("completed_at", weekStartDate.toISOString());
+        const { data: rolling7Assessments } = await supabase
+          .from("assessments")
+          .select("completed_at")
+          .eq("user_id", user.id)
+          .gte("completed_at", sevenDaysAgo.toISOString());
 
-        weeklyAssessmentDates?.forEach((a) => {
+        rolling7Assessments?.forEach((a) => {
           const d = new Date(a.completed_at);
           const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
           activeDays.add(bd);
         });
-
-        // If current week has no activity, show previous week's activity circles
-        if (activeDays.size === 0) {
-          const prevWeekStart = new Date(weekStartDate);
-          prevWeekStart.setDate(prevWeekStart.getDate() - 7);
-
-          const { data: prevSessions } = await supabase
-            .from("study_sessions")
-            .select("created_at, duration_minutes")
-            .eq("user_id", user.id)
-            .gte("created_at", prevWeekStart.toISOString())
-            .lt("created_at", weekStartDate.toISOString());
-
-          prevSessions?.forEach((s) => {
-            const d = new Date(s.created_at);
-            const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
-            if (s.duration_minutes >= 1) activeDays.add(bd);
-          });
-
-          const { data: prevAssessments } = await supabase
-            .from("assessments")
-            .select("completed_at")
-            .eq("user_id", user.id)
-            .gte("completed_at", prevWeekStart.toISOString())
-            .lt("completed_at", weekStartDate.toISOString());
-
-          prevAssessments?.forEach((a) => {
-            const d = new Date(a.completed_at);
-            const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
-            activeDays.add(bd);
-          });
-        }
 
         const { count } = await supabase.
         from("study_sessions").
