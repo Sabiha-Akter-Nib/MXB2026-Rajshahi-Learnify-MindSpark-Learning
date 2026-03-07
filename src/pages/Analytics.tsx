@@ -400,14 +400,14 @@ const Analytics = () => {
 
           {/* ========== TOTAL XP CARD ========== */}
           <div
-            className="rounded-2xl p-4 sm:p-5 flex items-center gap-4 border border-white/10 overflow-hidden relative"
+            className="rounded-2xl px-4 py-3 sm:px-5 sm:py-3 flex items-center gap-3 border border-white/10 overflow-hidden relative"
             style={{
               background: "linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)",
               boxShadow: "0 8px 32px rgba(175,45,80,0.3)",
             }}
           >
-            <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center relative">
-              <img src={statXp3d} alt="XP Star" className="w-24 h-24 sm:w-32 sm:h-32 object-contain drop-shadow-[0_4px_20px_rgba(168,85,247,0.5)]" />
+            <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center relative">
+              <img src={statXp3d} alt="XP Star" className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_4px_20px_rgba(168,85,247,0.5)]" />
               <span
                 className="absolute bottom-2 text-white font-bold text-sm sm:text-base drop-shadow-lg"
                 style={{ fontFamily: "'Black Han Sans', sans-serif" }}
@@ -417,7 +417,7 @@ const Analytics = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-bold text-base sm:text-xl">Total XP points</h3>
-              <p className="text-white/70 text-xs sm:text-sm mb-3">Your points you have gained</p>
+              <p className="text-white/70 text-xs sm:text-sm mb-1.5">Your points you have gained</p>
               <div
                 className="inline-flex items-center gap-2 px-5 py-2 rounded-full"
                 style={{
