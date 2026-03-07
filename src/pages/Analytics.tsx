@@ -383,12 +383,12 @@ const Analytics = () => {
                         }}
                       />
                       <span className="relative z-10">{day.getDate()}</span>
-                      {/* Flame on today if active */}
-                      {isToday && isActive && (
+                      {/* Flame centered on today */}
+                      {isToday && (
                         <img
                           src={streakFlame3d}
                           alt=""
-                          className="absolute -top-3 w-5 h-5 object-contain z-20"
+                          className="absolute left-1/2 -translate-x-1/2 -top-3.5 w-5 h-5 object-contain z-20"
                         />
                       )}
                     </div>
