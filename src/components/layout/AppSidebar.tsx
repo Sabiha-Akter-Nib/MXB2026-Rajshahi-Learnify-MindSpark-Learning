@@ -87,11 +87,11 @@ export function AppSidebar() {
             <img 
               src={oddhaboshLogo} 
               alt="OddhaboshAI" 
-              className="h-14 object-contain object-left" 
+              className="max-h-20 w-auto max-w-[80%] object-contain" 
             />
             <button
               onClick={toggleSidebar}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all shrink-0"
             >
               <PanelLeftClose className="w-4 h-4" />
             </button>
