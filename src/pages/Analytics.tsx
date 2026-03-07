@@ -406,8 +406,8 @@ const Analytics = () => {
               boxShadow: "0 8px 32px rgba(175,45,80,0.3)",
             }}
           >
-            <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center relative">
-              <img src={statXp3d} alt="XP Star" className="w-24 h-24 sm:w-32 sm:h-32 object-contain drop-shadow-[0_4px_20px_rgba(168,85,247,0.5)]" />
+            <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center relative">
+              <img src={statXp3d} alt="XP Star" className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_4px_20px_rgba(168,85,247,0.5)]" />
               <span
                 className="absolute bottom-2 text-white font-bold text-sm sm:text-base drop-shadow-lg"
                 style={{ fontFamily: "'Black Han Sans', sans-serif" }}
