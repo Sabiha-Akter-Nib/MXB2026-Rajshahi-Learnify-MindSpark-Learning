@@ -1,49 +1,48 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Clock, 
-  Zap, 
-  BookOpen,
-  Calendar
+import {
+  Bell,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, Tooltip, AreaChart, Area } from "recharts";
+import { useStreakTracker } from "@/hooks/useStreakTracker";
+import AvatarUpload from "@/components/avatar/AvatarUpload";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
 import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
 import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
-import { Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { format, subDays } from "date-fns";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
+import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isAfter, isBefore } from "date-fns";
 
-interface DailyData {
-  date: string;
-  label: string;
-  xp: number;
-  minutes: number;
-}
+import streakFlame3d from "@/assets/streak-flame-3d.png";
+import statXp3d from "@/assets/stat-xp-3d.png";
+import analytics3d from "@/assets/analytics-3d.png";
+import tugiWave from "@/assets/tugi-wave.png";
 
-interface SubjectXP {
-  name: string;
-  xp: number;
-  color: string;
+interface Profile {
+  full_name: string;
+  class: number;
+  version: string;
+  created_at: string;
 }
 
 // Liquid glass card
 const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "rounded-2xl border border-white/[0.12] backdrop-blur-2xl",
+      "rounded-2xl border border-white/[0.15] backdrop-blur-2xl",
       className
     )}
     style={{
-      background: "linear-gradient(-45deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.07) 100%)",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15)",
+      background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 0 0 0.5px rgba(255,255,255,0.08)",
     }}
     {...props}
   >
@@ -51,13 +50,36 @@ const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLD
   </div>
 );
 
+const DAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// Custom star dot for chart
+const StarDot = (props: any) => {
+  const { cx, cy } = props;
+  if (cx == null || cy == null) return null;
+  return (
+    <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z"
+        fill="#BBA7FD"
+        stroke="#9B87F5"
+        strokeWidth="1"
+      />
+    </svg>
+  );
+};
+
 const Analytics = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const streak = useStreakTracker(user?.id);
+
   const [isLoading, setIsLoading] = useState(true);
-  const [dailyData, setDailyData] = useState<DailyData[]>([]);
-  const [subjectXP, setSubjectXP] = useState<SubjectXP[]>([]);
-  const [totalStats, setTotalStats] = useState({ xp: 0, minutes: 0, sessions: 0 });
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [totalXP, setTotalXP] = useState(0);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [activeDates, setActiveDates] = useState<Set<string>>(new Set());
+  const [registrationDate, setRegistrationDate] = useState<Date | null>(null);
+  const [weeklyChartData, setWeeklyChartData] = useState<{ label: string; xp: number }[]>([]);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
@@ -66,102 +88,89 @@ const Analytics = () => {
   useEffect(() => {
     if (!user) return;
 
-    const fetchAnalytics = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Fetch last 14 days of study sessions
-        const fourteenDaysAgo = subDays(new Date(), 14);
-        
-        const [{ data: sessions }, { data: assessments }, { data: subjects }, { data: progress }] = await Promise.all([
-          supabase
-            .from("study_sessions")
-            .select("created_at, duration_minutes, xp_earned, subject_id")
-            .eq("user_id", user.id)
-            .gte("created_at", fourteenDaysAgo.toISOString())
-            .order("created_at", { ascending: true }),
-          supabase
-            .from("assessments")
-            .select("completed_at, xp_earned, time_taken_seconds, subject_id")
-            .eq("user_id", user.id)
-            .gte("completed_at", fourteenDaysAgo.toISOString()),
-          supabase
-            .from("subjects")
-            .select("id, name, color"),
-          supabase
-            .from("student_progress")
-            .select("subject_id, xp_earned")
-            .eq("user_id", user.id),
-        ]);
-
-        // Build daily chart data
-        const dayMap = new Map<string, { xp: number; minutes: number }>();
-        for (let i = 13; i >= 0; i--) {
-          const d = subDays(new Date(), i);
-          const key = format(d, "yyyy-MM-dd");
-          dayMap.set(key, { xp: 0, minutes: 0 });
+        // Profile
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("full_name, class, version, created_at")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (profileData) {
+          setProfile(profileData);
+          setRegistrationDate(new Date(profileData.created_at));
         }
 
+        // Total XP
+        const { data: statsData } = await supabase
+          .from("student_stats")
+          .select("total_xp")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        setTotalXP(statsData?.total_xp || 0);
+
+        // All activity dates (for calendar)
+        const { data: sessions } = await supabase
+          .from("study_sessions")
+          .select("created_at, duration_minutes")
+          .eq("user_id", user.id);
+
+        const { data: assessments } = await supabase
+          .from("assessments")
+          .select("completed_at")
+          .eq("user_id", user.id);
+
+        const dates = new Set<string>();
         sessions?.forEach((s) => {
-          const key = format(new Date(s.created_at), "yyyy-MM-dd");
-          const entry = dayMap.get(key);
-          if (entry) {
-            entry.xp += s.xp_earned || 0;
-            entry.minutes += s.duration_minutes || 0;
+          if ((s.duration_minutes || 0) >= 1) {
+            dates.add(format(new Date(s.created_at), "yyyy-MM-dd"));
           }
         });
-
         assessments?.forEach((a) => {
-          const key = format(new Date(a.completed_at), "yyyy-MM-dd");
-          const entry = dayMap.get(key);
-          if (entry) {
-            entry.xp += a.xp_earned || 0;
-            entry.minutes += Math.round((a.time_taken_seconds || 0) / 60);
+          dates.add(format(new Date(a.completed_at), "yyyy-MM-dd"));
+        });
+        setActiveDates(dates);
+
+        // Weekly XP chart (last 7 days)
+        const weekData: { label: string; xp: number }[] = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = subDays(new Date(), i);
+          const key = format(d, "yyyy-MM-dd");
+          const dayLabel = format(d, "EEE");
+          const dateLabel = format(d, "dd, MMM");
+          weekData.push({ label: `${dayLabel}\n${dateLabel}`, xp: 0 });
+        }
+
+        // Sum XP per day
+        const sevenDaysAgo = subDays(new Date(), 6);
+        const { data: recentSessions } = await supabase
+          .from("study_sessions")
+          .select("created_at, xp_earned")
+          .eq("user_id", user.id)
+          .gte("created_at", sevenDaysAgo.toISOString());
+
+        const { data: recentAssessments } = await supabase
+          .from("assessments")
+          .select("completed_at, xp_earned")
+          .eq("user_id", user.id)
+          .gte("completed_at", sevenDaysAgo.toISOString());
+
+        recentSessions?.forEach((s) => {
+          const dayIndex = 6 - Math.floor((new Date().getTime() - new Date(s.created_at).getTime()) / (1000 * 60 * 60 * 24));
+          if (dayIndex >= 0 && dayIndex < 7) {
+            weekData[dayIndex].xp += s.xp_earned || 0;
           }
         });
 
-        const daily: DailyData[] = [];
-        dayMap.forEach((val, key) => {
-          daily.push({
-            date: key,
-            label: format(new Date(key), "dd MMM"),
-            xp: val.xp,
-            minutes: val.minutes,
-          });
-        });
-        setDailyData(daily);
-
-        // Build subject XP breakdown
-        const subjectMap = new Map<string, string>();
-        const subjectColors: Record<string, string> = {
-          emerald: "#34D399", green: "#22C55E", blue: "#3B82F6",
-          sky: "#38BDF8", purple: "#A855F7", cyan: "#06B6D4",
-          amber: "#F59E0B", indigo: "#6366F1",
-        };
-        subjects?.forEach((s) => subjectMap.set(s.id, s.name));
-
-        const xpBySubject = new Map<string, number>();
-        progress?.forEach((p) => {
-          const name = subjectMap.get(p.subject_id) || "Unknown";
-          xpBySubject.set(name, (xpBySubject.get(name) || 0) + (p.xp_earned || 0));
+        recentAssessments?.forEach((a) => {
+          const dayIndex = 6 - Math.floor((new Date().getTime() - new Date(a.completed_at).getTime()) / (1000 * 60 * 60 * 24));
+          if (dayIndex >= 0 && dayIndex < 7) {
+            weekData[dayIndex].xp += a.xp_earned || 0;
+          }
         });
 
-        const subXP: SubjectXP[] = [];
-        xpBySubject.forEach((xp, name) => {
-          const subject = subjects?.find((s) => s.name === name);
-          subXP.push({
-            name: name.length > 12 ? name.substring(0, 12) + "..." : name,
-            xp,
-            color: subjectColors[subject?.color || "purple"] || "#A855F7",
-          });
-        });
-        setSubjectXP(subXP.sort((a, b) => b.xp - a.xp).slice(0, 8));
-
-        // Total stats
-        const totalXP = daily.reduce((s, d) => s + d.xp, 0);
-        const totalMin = daily.reduce((s, d) => s + d.minutes, 0);
-        const totalSessions = (sessions?.length || 0) + (assessments?.length || 0);
-        setTotalStats({ xp: totalXP, minutes: totalMin, sessions: totalSessions });
-
+        setWeeklyChartData(weekData);
       } catch (err) {
         console.error("Analytics fetch error:", err);
       } finally {
@@ -169,8 +178,30 @@ const Analytics = () => {
       }
     };
 
-    fetchAnalytics();
+    fetchData();
   }, [user]);
+
+  // Calendar logic
+  const calendarDays = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+    // getDay: 0=Sun, need Mon=0: (getDay()+6)%7
+    const startDayOfWeek = (getDay(monthStart) + 6) % 7;
+    const paddingBefore = Array(startDayOfWeek).fill(null);
+
+    return { paddingBefore, days };
+  }, [currentMonth]);
+
+  const currentStreak = streak.currentStreak ?? 0;
+
+  const streakComment = useMemo(() => {
+    if (currentStreak >= 7) return "Amazing progress! well done!";
+    if (currentStreak >= 3) return "Great momentum, keep going!";
+    if (currentStreak >= 1) return "Nice start! Keep it up!";
+    return "Start studying to build your streak!";
+  }, [currentStreak]);
 
   if (loading || isLoading) {
     return (
@@ -189,109 +220,269 @@ const Analytics = () => {
 
   if (!user) return null;
 
+  const displayName = profile?.full_name || "Student";
+  const classText = profile?.class ? `Class ${profile.class}` : "";
+  const versionText = profile?.version === "bangla" ? "Bangla Version" : "English Version";
+  const monthLabel = format(currentMonth, "MMMM");
+
+  // Weekly chart date range label
+  const chartStartDate = subDays(new Date(), 6);
+  const chartEndDate = new Date();
+  const chartRangeLabel = `Showing points from ${format(chartStartDate, "MMMM dd")} to ${format(chartEndDate, "MMMM dd")}`;
+
   return (
     <DashboardLayout>
       <div className="min-h-[100dvh] font-poppins overflow-x-hidden">
-        <div className="w-full max-w-4xl mx-auto px-4 py-6 flex flex-col gap-5">
+        <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-5">
 
-          {/* Header */}
-          <header className="pl-14 md:pl-0">
-            <h1 className="text-white font-bold text-xl sm:text-2xl">Analytics</h1>
-            <p className="text-white/50 text-xs sm:text-sm">Deep insights into your learning journey</p>
+          {/* ========== HEADER (same as Dashboard) ========== */}
+          <header className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="[&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0">
+                <AvatarUpload userId={user.id} userName={displayName} size="sm" showUploadButton={false} />
+              </div>
+              <div>
+                <h1 className="text-white font-semibold text-base sm:text-lg leading-tight">Hi, {displayName}!</h1>
+                <p className="text-white/50 text-xs font-normal">{classText}, {versionText}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link to="/settings" className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/10">
+                <Bell className="w-5 h-5 text-white/70" />
+              </Link>
+              <Link to="/settings" className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/10">
+                <Settings className="w-5 h-5 text-white/70" />
+              </Link>
+            </div>
           </header>
 
-          {/* Quick Stats Row */}
-          <div className="grid grid-cols-3 gap-3">
-            <GlassCard className="p-3 sm:p-4 flex flex-col items-center text-center gap-1">
-              <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
-              <span className="text-white font-bold text-lg sm:text-xl">{totalStats.xp}</span>
-              <span className="text-white/40 text-[10px] sm:text-xs">XP (14 days)</span>
-            </GlassCard>
-            <GlassCard className="p-3 sm:p-4 flex flex-col items-center text-center gap-1">
-              <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
-              <span className="text-white font-bold text-lg sm:text-xl">{totalStats.minutes}m</span>
-              <span className="text-white/40 text-[10px] sm:text-xs">Study Time</span>
-            </GlassCard>
-            <GlassCard className="p-3 sm:p-4 flex flex-col items-center text-center gap-1">
-              <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
-              <span className="text-white font-bold text-lg sm:text-xl">{totalStats.sessions}</span>
-              <span className="text-white/40 text-[10px] sm:text-xs">Sessions</span>
-            </GlassCard>
+          {/* ========== MOTIVATIONAL CTA CARD ========== */}
+          <GlassCard className="px-4 py-3 sm:px-5 sm:py-4 relative overflow-hidden" style={{ height: '130px' }}>
+            <div className="flex items-center gap-3 h-full">
+              <div
+                className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+                style={{
+                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+                }}>
+                <img src={analytics3d} alt="Analytics" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
+              </div>
+              <div className="flex-1 min-w-0 max-w-[50%] sm:max-w-[55%]">
+                <h3 className="text-white font-bold text-xs sm:text-lg leading-tight">Hey, you've been doing great recently!</h3>
+                <p className="text-white/60 text-[9px] sm:text-xs leading-snug mt-0.5 line-clamp-2">
+                  Keep up the momentum and track your learning insights here
+                </p>
+              </div>
+            </div>
+            <img
+              src={tugiWave}
+              alt="Tugi"
+              className="absolute -bottom-4 -right-10 h-[140px] w-auto object-contain pointer-events-none"
+            />
+          </GlassCard>
+
+          {/* ========== STREAK CALENDAR CARD ========== */}
+          <GlassCard className="p-4 sm:p-5">
+            {/* Streak header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-shrink-0 relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <motion.img
+                  src={streakFlame3d}
+                  alt="Streak Fire"
+                  className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                  animate={currentStreak > 0 ? { scale: [1, 1.08, 1], rotate: [0, -3, 3, 0] } : {}}
+                  transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+                />
+                <span
+                  className="absolute bottom-0 text-xl sm:text-2xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                  style={{
+                    fontFamily: "'Black Han Sans', sans-serif",
+                    WebkitTextStroke: '1.5px rgba(140,80,220,0.8)',
+                  }}>
+                  {currentStreak}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white text-sm sm:text-lg font-semibold leading-snug">
+                  {currentStreak > 0 ? `${currentStreak} days streak, well done!` : "0 days streak, study to achieve!"}
+                </h3>
+                <p className="text-white/50 text-[11px] sm:text-sm font-light">{streakComment}</p>
+              </div>
+            </div>
+
+            {/* Month navigation */}
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 text-white/70" />
+              </button>
+              <h4 className="text-white font-semibold text-sm sm:text-base">{monthLabel}</h4>
+              <button
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <ChevronRight className="w-4 h-4 text-white/70" />
+              </button>
+            </div>
+
+            {/* Day labels */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {DAYS_EN.map((day) => (
+                <div key={day} className="text-center text-[10px] sm:text-xs text-white/50 font-medium">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {/* Padding before first day */}
+              {calendarDays.paddingBefore.map((_, i) => (
+                <div key={`pad-${i}`} className="aspect-square" />
+              ))}
+
+              {/* Actual days */}
+              {calendarDays.days.map((day) => {
+                const dateKey = format(day, "yyyy-MM-dd");
+                const isActive = activeDates.has(dateKey);
+                const isToday = isSameDay(day, new Date());
+                const isFuture = isAfter(day, new Date());
+                const isBeforeRegistration = registrationDate ? isBefore(day, registrationDate) : false;
+
+                return (
+                  <div
+                    key={dateKey}
+                    className="aspect-square flex items-center justify-center"
+                  >
+                    <div
+                      className={cn(
+                        "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-medium transition-all relative",
+                        isActive && "text-white",
+                        !isActive && !isFuture && !isBeforeRegistration && "text-white/40",
+                        isFuture && "text-white/20",
+                        isBeforeRegistration && "text-white/15",
+                        isToday && !isActive && "ring-1 ring-white/40",
+                      )}
+                      style={{
+                        backgroundColor: isActive
+                          ? 'rgba(187, 167, 253, 0.7)'
+                          : isFuture || isBeforeRegistration
+                            ? 'rgba(217, 217, 217, 0.15)'
+                            : 'rgba(217, 217, 217, 0.3)',
+                      }}
+                    >
+                      {/* Inner circle for depth */}
+                      <div
+                        className="absolute inset-1.5 rounded-full"
+                        style={{
+                          backgroundColor: isActive
+                            ? 'rgba(187, 167, 253, 0.3)'
+                            : 'rgba(217, 217, 217, 0.15)',
+                        }}
+                      />
+                      <span className="relative z-10">{day.getDate()}</span>
+                      {/* Flame on today if active */}
+                      {isToday && isActive && (
+                        <img
+                          src={streakFlame3d}
+                          alt=""
+                          className="absolute -top-3 w-5 h-5 object-contain z-20"
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </GlassCard>
+
+          {/* ========== TOTAL XP CARD ========== */}
+          <div
+            className="rounded-2xl p-4 sm:p-5 flex items-center gap-4 border border-white/10 overflow-hidden relative"
+            style={{
+              background: "linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)",
+              boxShadow: "0 8px 32px rgba(175,45,80,0.3)",
+            }}
+          >
+            <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center relative">
+              <img src={statXp3d} alt="XP Star" className="w-24 h-24 sm:w-32 sm:h-32 object-contain drop-shadow-[0_4px_20px_rgba(168,85,247,0.5)]" />
+              <span
+                className="absolute bottom-2 text-white font-bold text-sm sm:text-base drop-shadow-lg"
+                style={{ fontFamily: "'Black Han Sans', sans-serif" }}
+              >
+                XP
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-white font-bold text-base sm:text-xl">Total XP points</h3>
+              <p className="text-white/70 text-xs sm:text-sm mb-3">Your points you have gained</p>
+              <div
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full"
+                style={{
+                  background: "rgba(255,255,255,0.2)",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
+                <span className="text-white font-bold text-lg sm:text-xl">{totalXP}</span>
+                <img src={statXp3d} alt="" className="w-5 h-5 object-contain" />
+              </div>
+            </div>
           </div>
 
-          {/* XP Over Time Chart */}
+          {/* ========== WEEKLY XP CHART ========== */}
           <GlassCard className="p-4 sm:p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-purple-400" />
-              <h3 className="text-white font-semibold text-sm sm:text-base">XP Over Time</h3>
-              <span className="text-white/30 text-xs ml-auto">Last 14 days</span>
-            </div>
-            <div className="h-48 sm:h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={dailyData}>
-                  <defs>
-                    <linearGradient id="xpGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#A855F7" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#A855F7" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="label" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} width={30} />
-                  <Tooltip
-                    contentStyle={{ background: "rgba(30,15,45,0.95)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff", fontSize: 12 }}
-                    labelStyle={{ color: "rgba(255,255,255,0.6)" }}
-                  />
-                  <Area type="monotone" dataKey="xp" stroke="#A855F7" strokeWidth={2} fill="url(#xpGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </GlassCard>
+            <h3 className="text-white font-bold text-sm sm:text-base text-center mb-1">Weekly XP Points History</h3>
+            <p className="text-white/40 text-[10px] sm:text-xs text-center mb-4">{chartRangeLabel}</p>
 
-          {/* Study Time Chart */}
-          <GlassCard className="p-4 sm:p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-5 h-5 text-blue-400" />
-              <h3 className="text-white font-semibold text-sm sm:text-base">Study Time (minutes)</h3>
-              <span className="text-white/30 text-xs ml-auto">Last 14 days</span>
-            </div>
-            <div className="h-48 sm:h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailyData}>
-                  <XAxis dataKey="label" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} width={30} />
-                  <Tooltip
-                    contentStyle={{ background: "rgba(30,15,45,0.95)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff", fontSize: 12 }}
-                    labelStyle={{ color: "rgba(255,255,255,0.6)" }}
-                  />
-                  <Bar dataKey="minutes" fill="#3B82F6" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </GlassCard>
-
-          {/* Subject XP Breakdown */}
-          {subjectXP.length > 0 && (
-            <GlassCard className="p-4 sm:p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <BarChart3 className="w-5 h-5 text-amber-400" />
-                <h3 className="text-white font-semibold text-sm sm:text-base">XP by Subject</h3>
-              </div>
+            <div
+              className="rounded-xl p-3 sm:p-4"
+              style={{
+                background: "linear-gradient(180deg, rgba(253,145,217,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+              }}
+            >
               <div className="h-48 sm:h-56">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={subjectXP} layout="vertical">
-                    <XAxis type="number" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis dataKey="name" type="category" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} axisLine={false} tickLine={false} width={100} />
-                    <Tooltip
-                      contentStyle={{ background: "rgba(30,15,45,0.95)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff", fontSize: 12 }}
+                  <LineChart data={weeklyChartData}>
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 9 }}
+                      axisLine={false}
+                      tickLine={false}
+                      interval={0}
                     />
-                    <Bar dataKey="xp" fill="#F59E0B" radius={[0, 6, 6, 0]} />
-                  </BarChart>
+                    <YAxis
+                      tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={30}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "rgba(30,15,45,0.95)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: 12,
+                        color: "#fff",
+                        fontSize: 12,
+                      }}
+                      labelStyle={{ color: "rgba(255,255,255,0.6)" }}
+                    />
+                    <Line
+                      type="linear"
+                      dataKey="xp"
+                      stroke="#9B87F5"
+                      strokeWidth={2}
+                      dot={<StarDot />}
+                      activeDot={{ r: 6, fill: "#BBA7FD", stroke: "#fff", strokeWidth: 2 }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
-            </GlassCard>
-          )}
+            </div>
+          </GlassCard>
 
-          {/* Advanced Panels */}
+          {/* ========== ADVANCED PANELS ========== */}
           <div className="flex flex-col gap-5">
             <StudyMomentumEngine />
             <FutureYouSnapshot />
