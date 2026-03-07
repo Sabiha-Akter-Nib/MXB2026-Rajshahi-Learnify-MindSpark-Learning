@@ -578,7 +578,7 @@ const Dashboard = () => {
 
         {/* ========== ANALYTICS CTA CARD ========== */}
         <Link to="/analytics">
-          <GlassCard className="px-4 py-4 sm:px-5 sm:py-5 flex items-start gap-3 relative overflow-hidden min-h-[160px] sm:min-h-[200px]">
+          <GlassCard className="px-4 py-4 sm:px-5 sm:py-5 flex items-start gap-3 relative overflow-hidden min-h-[130px] sm:min-h-[150px]">
             {/* 3D Analytics icon in glass container */}
             <div
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
@@ -606,7 +606,7 @@ const Dashboard = () => {
             <img
               src={tugiWave}
               alt="Tugi"
-              className="absolute bottom-0 right-0 h-[150px] sm:h-[190px] w-auto object-contain object-right-bottom"
+              className="absolute -bottom-6 -right-4 sm:-bottom-8 sm:-right-5 h-[160px] sm:h-[200px] w-auto object-contain"
             />
           </GlassCard>
         </Link>
