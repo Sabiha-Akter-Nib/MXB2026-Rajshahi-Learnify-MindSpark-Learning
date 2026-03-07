@@ -337,10 +337,10 @@ const Analytics = () => {
             </div>
 
             {/* Calendar grid */}
-            <div className="grid grid-cols-7 gap-px">
+            <div className="grid grid-cols-7 gap-x-0 gap-y-0">
               {/* Padding before first day */}
               {calendarDays.paddingBefore.map((_, i) => (
-                <div key={`pad-${i}`} className="aspect-square" />
+                <div key={`pad-${i}`} className="h-10 sm:h-11" />
               ))}
 
               {/* Actual days */}
@@ -354,7 +354,7 @@ const Analytics = () => {
                 return (
                   <div
                     key={dateKey}
-                    className="aspect-square flex items-center justify-center"
+                    className="h-10 sm:h-11 flex items-center justify-center"
                   >
                     <div
                       className={cn(
@@ -375,7 +375,7 @@ const Analytics = () => {
                     >
                       {/* Inner circle for depth */}
                       <div
-                        className="absolute inset-1.5 rounded-full"
+                        className="absolute inset-[5px] rounded-full"
                         style={{
                           backgroundColor: isActive
                             ? 'rgba(187, 167, 253, 0.3)'
@@ -383,12 +383,12 @@ const Analytics = () => {
                         }}
                       />
                       <span className="relative z-10">{day.getDate()}</span>
-                      {/* Flame centered on today */}
+                      {/* Flame exactly centered and sized to inner circle */}
                       {isToday && (
                         <img
                           src={streakFlame3d}
                           alt=""
-                          className="absolute left-1/2 -translate-x-1/2 -top-3.5 w-5 h-5 object-contain z-20"
+                          className="absolute inset-[5px] w-auto h-auto object-contain z-20 pointer-events-none"
                         />
                       )}
                     </div>
