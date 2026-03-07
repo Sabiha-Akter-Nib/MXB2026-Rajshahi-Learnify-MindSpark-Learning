@@ -606,7 +606,7 @@ const Dashboard = () => {
             <img
               src={tugiWave}
               alt="Tugi"
-              className="absolute bottom-0 right-0 h-[150px] sm:h-[190px] w-auto object-contain object-right-bottom"
+              className="absolute -bottom-6 -right-4 sm:-bottom-8 sm:-right-5 h-[160px] sm:h-[200px] w-auto object-contain"
             />
           </GlassCard>
         </Link>
