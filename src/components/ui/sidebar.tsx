@@ -207,6 +207,13 @@ const Sidebar = React.forwardRef<
         <div
           data-sidebar="sidebar"
           className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+          style={{
+            background: "linear-gradient(-45deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 100%)",
+            backdropFilter: "blur(40px) saturate(1.4)",
+            WebkitBackdropFilter: "blur(40px) saturate(1.4)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.08), 1px 0 24px rgba(0,0,0,0.2)",
+            borderRight: "1px solid rgba(255,255,255,0.06)",
+          }}
         >
           {children}
         </div>
