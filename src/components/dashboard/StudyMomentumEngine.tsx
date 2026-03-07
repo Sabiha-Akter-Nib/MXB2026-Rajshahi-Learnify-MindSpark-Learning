@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { format, subDays } from "date-fns";
 
-import tugiGlasses from "@/assets/tugi-glasses.png";
+import rocket3d from "@/assets/rocket-3d.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
 import lightning3d from "@/assets/lightning-3d.png";
 
@@ -157,7 +157,7 @@ const StudyMomentumEngine = () => {
             boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
           }}
         >
-          <img src={tugiGlasses} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+          <img src={rocket3d} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
         </div>
 
         <div className="flex-1 min-w-0">
