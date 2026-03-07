@@ -525,7 +525,7 @@ const Dashboard = () => {
         <GlassCard className="p-4 sm:p-5">
           {/* Header with 3D book */}
           <div className="flex items-center gap-3 mb-5">
-            <img src={subjectBooks3dNew} alt="Subjects" className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 object-contain" />
+            <img src={subjectBooks3dNew} alt="Subjects" className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 object-contain" />
             <div
               className="flex-1 rounded-xl p-3"
               style={{
