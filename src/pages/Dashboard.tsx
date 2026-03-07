@@ -39,6 +39,8 @@ import statStudyCardBg from "@/assets/stat-study-card-bg.png";
 import statXpCardBg from "@/assets/stat-xp-card-bg.png";
 import subjectBooks3dNew from "@/assets/subject-books-3d-new.png";
 import subjectIcon3d from "@/assets/subject-icon-3d.png";
+import analytics3d from "@/assets/analytics-3d.png";
+import tugiWave from "@/assets/tugi-wave.png";
 
 interface Profile {
   full_name: string;
