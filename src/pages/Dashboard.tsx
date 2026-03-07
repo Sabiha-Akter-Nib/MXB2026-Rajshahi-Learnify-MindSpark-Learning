@@ -363,22 +363,22 @@ const Dashboard = () => {
         </header>
 
         {/* ========== NAVIGATION MODULES ========== */}
-        <GlassCard className="px-3 py-3 sm:px-4 sm:py-3.5">
+        <GlassCard className="px-4 py-4 sm:px-5 sm:py-5">
           <div className="flex items-start justify-between">
             {modules.map((mod) =>
             <Link
               key={mod.label}
               to={mod.href}
-              className="flex flex-col items-center gap-1 group flex-1">
+              className="flex flex-col items-center gap-1.5 group flex-1">
               
                 <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex items-center justify-center">
                 
-                  <img src={mod.img} alt={mod.label} className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+                  <img src={mod.img} alt={mod.label} className="w-14 h-14 sm:w-20 sm:h-20 object-contain" />
                 </motion.div>
-                <span className="text-white/80 text-[10px] sm:text-xs text-center leading-tight font-normal whitespace-nowrap">{mod.label}</span>
+                <span className="text-white/80 text-[11px] sm:text-sm text-center leading-tight font-normal whitespace-nowrap">{mod.label}</span>
               </Link>
             )}
           </div>
