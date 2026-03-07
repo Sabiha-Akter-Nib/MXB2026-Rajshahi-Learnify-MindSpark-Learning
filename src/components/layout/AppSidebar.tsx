@@ -81,7 +81,7 @@ export function AppSidebar() {
       } as React.CSSProperties}
     >
       {/* Header with OddhaboshAI branding */}
-      <SidebarHeader className="px-3 pt-5 pb-3">
+      <SidebarHeader className={collapsed ? "px-1 pt-3 pb-2" : "px-3 pt-5 pb-3"}>
         {!collapsed ? (
           <div className="flex items-center justify-between">
             <img 
@@ -97,12 +97,19 @@ export function AppSidebar() {
             </button>
           </div>
         ) : (
-          <button
-            onClick={toggleSidebar}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all mx-auto"
-          >
-            <PanelLeftOpen className="w-4 h-4" />
-          </button>
+          <div className="flex flex-col items-center gap-2">
+            <img 
+              src={smallLogo} 
+              alt="OddhaboshAI" 
+              className="w-8 h-8 object-contain" 
+            />
+            <button
+              onClick={toggleSidebar}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all"
+            >
+              <PanelLeftOpen className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
       </SidebarHeader>
 
