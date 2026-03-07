@@ -249,7 +249,7 @@ const StudyMomentumEngine = () => {
             boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1)",
           }}
         >
-          <p className="text-white/70 text-[9px] sm:text-xs font-medium mb-1.5">Best time to study</p>
+          <p className="text-white/70 text-[11px] sm:text-sm font-semibold mb-1.5">Best time to study</p>
 
           <div
             className="w-full rounded-full py-1.5 text-center"
