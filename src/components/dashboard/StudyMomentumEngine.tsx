@@ -167,17 +167,6 @@ const StudyMomentumEngine = () => {
           </p>
         </div>
 
-        <Link
-          to="/tutor"
-          className="flex-shrink-0 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-white font-semibold text-xs sm:text-sm"
-          style={{
-            background: "rgba(255,255,255,0.2)",
-            backdropFilter: "blur(10px)",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)",
-          }}
-        >
-          Start
-        </Link>
       </div>
 
       {/* ===== 3 STAT CARDS ===== */}
