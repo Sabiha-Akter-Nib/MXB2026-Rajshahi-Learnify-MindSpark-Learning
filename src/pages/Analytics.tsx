@@ -328,7 +328,7 @@ const Analytics = () => {
             </div>
 
             {/* Day labels */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="grid grid-cols-7 gap-px mb-1">
               {DAYS_EN.map((day) => (
                 <div key={day} className="text-center text-[10px] sm:text-xs text-white/50 font-medium">
                   {day}
@@ -337,7 +337,7 @@ const Analytics = () => {
             </div>
 
             {/* Calendar grid */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-px">
               {/* Padding before first day */}
               {calendarDays.paddingBefore.map((_, i) => (
                 <div key={`pad-${i}`} className="aspect-square" />
@@ -383,12 +383,12 @@ const Analytics = () => {
                         }}
                       />
                       <span className="relative z-10">{day.getDate()}</span>
-                      {/* Flame on today if active */}
-                      {isToday && isActive && (
+                      {/* Flame centered on today */}
+                      {isToday && (
                         <img
                           src={streakFlame3d}
                           alt=""
-                          className="absolute -top-3 w-5 h-5 object-contain z-20"
+                          className="absolute left-1/2 -translate-x-1/2 -top-3.5 w-5 h-5 object-contain z-20"
                         />
                       )}
                     </div>
