@@ -231,7 +231,7 @@ const StudyMomentumEngine = () => {
             className="w-full rounded-full py-1 mt-1 text-center"
             style={{ background: "linear-gradient(135deg, #D1CAE9 0%, #BC96F0 100%)" }}
           >
-            <span className="text-white text-[8px] sm:text-[10px] font-semibold leading-tight">
+            <span className="text-white text-[10px] sm:text-xs font-semibold leading-tight">
               Estimated Weekly XP
             </span>
           </div>
