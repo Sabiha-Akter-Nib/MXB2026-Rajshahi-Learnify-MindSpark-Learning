@@ -484,37 +484,39 @@ const Dashboard = () => {
         {/* ========== STAT CARDS (2 columns) ========== */}
         <div className="grid grid-cols-2 gap-4">
           {/* Total Study Time */}
-          <GlassCard className="p-4 sm:p-5 flex flex-col items-center text-center gap-2">
+          <GlassCard className="p-3 sm:p-4 flex flex-row items-center gap-2.5 sm:gap-3">
             <div
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
               style={{
                 background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
                 boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
               }}>
-              <img src={statStudy3d} alt="Study time" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+              <img src={statStudy3d} alt="Study time" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
             </div>
-            <h4 className="text-white font-bold text-sm sm:text-base leading-tight whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total Study Time</h4>
-            <div className="px-5 py-1.5 sm:py-2 rounded-full border border-white/20" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-              <span className="text-white font-bold text-lg sm:text-2xl whitespace-nowrap">
+            <div className="flex-1 min-w-0 flex flex-col gap-1">
+              <h4 className="text-white font-bold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis" style={{ fontFamily: "'Poppins', sans-serif" }}>Total Study Time</h4>
+              <span className="text-white font-bold text-xl sm:text-3xl leading-none whitespace-nowrap overflow-hidden text-ellipsis">
                 {formatStudyTime(weeklyStats.today_study_minutes)}
               </span>
             </div>
           </GlassCard>
 
           {/* Total XP */}
-          <GlassCard className="p-4 sm:p-5 flex flex-col items-center text-center gap-2">
+          <GlassCard className="p-3 sm:p-4 flex flex-row items-center gap-2.5 sm:gap-3">
             <div
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
               style={{
                 background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
                 boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
               }}>
-              <img src={statXp3d} alt="XP" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+              <img src={statXp3d} alt="XP" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
             </div>
-            <h4 className="text-white font-bold text-sm sm:text-base leading-tight whitespace-nowrap" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP Points</h4>
-            <div className="px-5 py-1.5 sm:py-2 rounded-full border border-white/20 flex items-center gap-1.5" style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-              <span className="text-white font-bold text-lg sm:text-2xl whitespace-nowrap">{stats?.total_xp || 0}</span>
-              <img src={statXp3d} alt="" className="w-5 h-5 sm:w-6 sm:h-6 object-contain flex-shrink-0" />
+            <div className="flex-1 min-w-0 flex flex-col gap-1">
+              <h4 className="text-white font-bold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP Points</h4>
+              <div className="flex items-center gap-1">
+                <span className="text-white font-bold text-xl sm:text-3xl leading-none whitespace-nowrap">{stats?.total_xp || 0}</span>
+                <img src={statXp3d} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain flex-shrink-0" />
+              </div>
             </div>
           </GlassCard>
         </div>
