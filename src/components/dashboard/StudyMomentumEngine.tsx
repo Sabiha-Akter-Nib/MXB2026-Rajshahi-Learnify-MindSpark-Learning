@@ -249,27 +249,27 @@ const StudyMomentumEngine = () => {
             boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1)",
           }}
         >
-          <p className="text-white/70 text-[11px] sm:text-sm font-semibold mb-1.5">Best time to study</p>
+          <p className="text-white/70 text-xs sm:text-sm font-semibold mb-2">Best time to study</p>
 
           <div
-            className="w-full rounded-full py-1.5 text-center"
+            className="w-full rounded-full py-2 text-center"
             style={{ background: "linear-gradient(135deg, #E9CAE4 0%, #F096D2 100%)" }}
           >
-            <span className="text-white text-[9px] sm:text-xs font-bold whitespace-nowrap">
+            <span className="text-white text-[11px] sm:text-sm font-bold whitespace-nowrap">
               {data.optimalStart} - {data.optimalEnd}
             </span>
           </div>
 
-          <p className="text-white/60 text-[10px] sm:text-xs mt-2 text-center leading-tight font-medium">
+          <p className="text-white/60 text-[11px] sm:text-xs mt-2 text-center leading-tight font-medium">
             Your best performance was on
           </p>
 
           <div
-            className="w-full rounded-full py-1.5 mt-1 text-center"
+            className="w-full rounded-full py-2 mt-1.5 text-center"
             style={{ background: "linear-gradient(135deg, #E9CAE4 0%, #F096D2 100%)" }}
           >
             <span
-              className="text-white text-sm sm:text-base"
+              className="text-white text-base sm:text-lg"
               style={{
                 fontFamily: "'Black Han Sans', sans-serif",
                 WebkitTextStroke: "1px rgba(140,80,220,0.6)",
