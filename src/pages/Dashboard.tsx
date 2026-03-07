@@ -551,25 +551,22 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="rounded-xl px-2.5 py-2.5 sm:px-3 sm:py-3 border border-white/10 bg-white/5 backdrop-blur-sm">
+              className="rounded-xl px-2.5 py-2.5 sm:px-3 sm:py-3 border border-white/10 bg-white/5 backdrop-blur-sm flex flex-row items-center gap-2.5">
               
-                  <div className="flex items-center gap-2 mb-2">
-                    <img src={subjectIcon3d} alt="" className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 object-contain" />
+                  <img src={subjectIcon3d} alt="" className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 object-contain" />
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
                     <span className="text-white text-[11px] sm:text-sm font-medium truncate">{subject.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                      <motion.div
-                    className="h-full rounded-full"
-                    style={{
-                      background: "linear-gradient(90deg, #E040A0, #A040E0)"
-                    }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${subject.progress}%` }}
-                    transition={{ duration: 1, delay: 0.2 + index * 0.1 }} />
-                  
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ background: "linear-gradient(90deg, #E040A0, #A040E0)" }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${subject.progress}%` }}
+                          transition={{ duration: 1, delay: 0.2 + index * 0.1 }} />
+                      </div>
+                      <span className="text-[10px] text-white/40 font-medium">{subject.progress}%</span>
                     </div>
-                    <span className="text-[10px] text-white/40 font-medium">{subject.progress}%</span>
                   </div>
                 </motion.div>
             )}
