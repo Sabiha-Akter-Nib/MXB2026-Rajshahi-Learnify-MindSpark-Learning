@@ -551,7 +551,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="rounded-xl px-2.5 py-2.5 sm:px-3 sm:py-3 border border-white/10 bg-white/5 backdrop-blur-sm flex flex-row items-center gap-2.5">
+              className="rounded-xl px-2 py-1.5 sm:px-3 sm:py-3 border border-white/10 bg-white/5 backdrop-blur-sm flex flex-row items-center gap-2 sm:gap-2.5">
               
                   <img src={subjectIcon3d} alt="" className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 object-contain" />
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
