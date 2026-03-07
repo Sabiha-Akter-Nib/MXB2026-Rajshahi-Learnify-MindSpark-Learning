@@ -8,11 +8,12 @@ import {
   Settings, 
   LayoutDashboard,
   BookOpen,
-  Sparkles
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import logo from "@/assets/logo.png";
+import oddhaboshLogo from "@/assets/oddhaboshai-logo.png";
 import {
   Sidebar,
   SidebarContent,
@@ -46,7 +47,7 @@ const bottomItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
@@ -57,8 +58,8 @@ export function AppSidebar() {
         <NavLink
           to={item.url}
           end
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/[0.06] transition-all duration-200"
-          activeClassName="!bg-gradient-to-r !from-purple-500/20 !to-pink-500/15 !text-white !font-semibold !border !border-white/10 !shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-white/80 hover:bg-white/[0.04] transition-all duration-200"
+          activeClassName="!bg-gradient-to-r !from-[hsl(270,60%,50%)]/20 !to-[hsl(330,60%,50%)]/10 !text-white !font-semibold"
         >
           <item.icon className="w-[18px] h-[18px] shrink-0" />
           {!collapsed && <span className="text-sm">{item.title}</span>}
@@ -70,32 +71,48 @@ export function AppSidebar() {
   return (
     <Sidebar 
       collapsible="icon"
-      className="border-r-0 z-50"
+      className="border-r-0 z-50 [&_[data-sidebar=sidebar]]:border-r-0"
       style={{
-        "--sidebar-background": "rgba(18, 10, 28, 0.98)",
+        "--sidebar-background": "rgba(12, 6, 20, 0.97)",
         "--sidebar-foreground": "rgba(255, 255, 255, 0.85)",
         "--sidebar-accent": "rgba(168, 85, 247, 0.12)",
         "--sidebar-accent-foreground": "rgba(255, 255, 255, 0.95)",
-        "--sidebar-border": "rgba(255, 255, 255, 0.04)",
+        "--sidebar-border": "transparent",
       } as React.CSSProperties}
     >
-      {/* Header with logo */}
-      <SidebarHeader className="px-4 py-5">
-        <div className="flex items-center gap-2.5">
-          <img src={logo} alt="MindSpark" className="w-8 h-8 object-contain" />
-          {!collapsed && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-white font-bold text-base tracking-tight">MindSpark</span>
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            </div>
-          )}
-        </div>
+      {/* Header with OddhaboshAI branding */}
+      <SidebarHeader className="px-3 pt-5 pb-3">
+        {!collapsed ? (
+          <div className="flex items-center justify-between">
+            <img 
+              src={oddhaboshLogo} 
+              alt="OddhaboshAI" 
+              className="h-9 object-contain object-left" 
+            />
+            <button
+              onClick={toggleSidebar}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={toggleSidebar}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all mx-auto"
+          >
+            <PanelLeftOpen className="w-4 h-4" />
+          </button>
+        )}
       </SidebarHeader>
 
-      <SidebarContent className="px-2 gap-1">
+      {/* Subtle divider */}
+      <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+      <SidebarContent className="px-2 pt-3 gap-1">
         {/* Main Nav */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/30 text-[10px] uppercase tracking-[0.15em] font-semibold px-3 mb-1">
+          <SidebarGroupLabel className="text-white/25 text-[10px] uppercase tracking-[0.15em] font-semibold px-3 mb-1">
             {!collapsed ? "Main" : ""}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -107,7 +124,7 @@ export function AppSidebar() {
 
         {/* Insights */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/30 text-[10px] uppercase tracking-[0.15em] font-semibold px-3 mb-1">
+          <SidebarGroupLabel className="text-white/25 text-[10px] uppercase tracking-[0.15em] font-semibold px-3 mb-1">
             {!collapsed ? "Insights" : ""}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -120,11 +137,10 @@ export function AppSidebar() {
 
       {/* Footer with settings */}
       <SidebarFooter className="px-2 pb-4">
-        <div className="border-t border-white/[0.06] pt-3">
-          <SidebarMenu className="gap-0.5">
-            {bottomItems.map(renderItem)}
-          </SidebarMenu>
-        </div>
+        <div className="mx-1 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent mb-3" />
+        <SidebarMenu className="gap-0.5">
+          {bottomItems.map(renderItem)}
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
