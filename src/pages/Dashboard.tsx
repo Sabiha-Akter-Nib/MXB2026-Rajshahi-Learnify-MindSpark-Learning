@@ -37,6 +37,7 @@ import statXp3d from "@/assets/stat-xp-3d.png";
 import statStudyCardBg from "@/assets/stat-study-card-bg.png";
 import statXpCardBg from "@/assets/stat-xp-card-bg.png";
 import subjectBooks3dNew from "@/assets/subject-books-3d-new.png";
+import subjectIcon3d from "@/assets/subject-icon-3d.png";
 
 interface Profile {
   full_name: string;
@@ -553,7 +554,7 @@ const Dashboard = () => {
               className="rounded-xl px-2.5 py-2.5 sm:px-3 sm:py-3 border border-white/10 bg-white/5 backdrop-blur-sm">
               
                   <div className="flex items-center gap-2 mb-2">
-                    <subject.IconComponent className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0" style={{ color: subject.color }} />
+                    <img src={subjectIcon3d} alt="" className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 object-contain" />
                     <span className="text-white text-[11px] sm:text-sm font-medium truncate">{subject.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
