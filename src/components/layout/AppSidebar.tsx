@@ -87,7 +87,7 @@ export function AppSidebar() {
             <img 
               src={oddhaboshLogo} 
               alt="OddhaboshAI" 
-              className="h-9 object-contain object-left" 
+              className="h-14 object-contain object-left" 
             />
             <button
               onClick={toggleSidebar}
