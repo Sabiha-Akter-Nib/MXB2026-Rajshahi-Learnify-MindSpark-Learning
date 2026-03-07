@@ -71,9 +71,9 @@ export function AppSidebar() {
   return (
     <Sidebar 
       collapsible="icon"
-      className="border-r-0 z-50 [&_[data-sidebar=sidebar]]:border-r-0"
+      className="border-r-0 z-50 [&_[data-sidebar=sidebar]]:border-r-0 [&_[data-sidebar=sidebar]]:backdrop-blur-2xl [&_[data-sidebar=sidebar]]:bg-transparent"
       style={{
-        "--sidebar-background": "rgba(12, 6, 20, 0.97)",
+        "--sidebar-background": "transparent",
         "--sidebar-foreground": "rgba(255, 255, 255, 0.85)",
         "--sidebar-accent": "rgba(168, 85, 247, 0.12)",
         "--sidebar-accent-foreground": "rgba(255, 255, 255, 0.95)",
