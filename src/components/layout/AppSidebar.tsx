@@ -14,6 +14,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import oddhaboshLogo from "@/assets/oddhaboshai-logo.png";
+import smallLogo from "@/assets/logo.png";
 import {
   Sidebar,
   SidebarContent,
