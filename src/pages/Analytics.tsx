@@ -337,7 +337,7 @@ const Analytics = () => {
             </div>
 
             {/* Calendar grid */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-px">
               {/* Padding before first day */}
               {calendarDays.paddingBefore.map((_, i) => (
                 <div key={`pad-${i}`} className="aspect-square" />
