@@ -590,7 +590,7 @@ const Dashboard = () => {
             </div>
 
             {/* Text content */}
-            <div className="flex-1 min-w-0 pr-24 sm:pr-32">
+            <div className="flex-1 min-w-0 pr-28 sm:pr-36">
               <h3 className="text-white font-bold text-sm sm:text-lg leading-tight">See your analytics now</h3>
               <p className="text-white/60 text-[11px] sm:text-sm leading-snug mt-0.5">
                 See the analytics of your improvements, performance, and blind spots that needs to be improved
