@@ -236,7 +236,7 @@ const StudyMomentumEngine = () => {
             </span>
           </div>
 
-          <p className="text-white/50 text-[8px] sm:text-[10px] mt-1.5 text-center leading-tight">
+          <p className="text-white/50 text-[10px] sm:text-xs mt-1.5 text-center leading-tight">
             At Current Pace
           </p>
         </div>
