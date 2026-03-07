@@ -578,20 +578,20 @@ const Dashboard = () => {
 
         {/* ========== ANALYTICS CTA CARD ========== */}
         <Link to="/analytics">
-          <GlassCard className="px-4 py-4 sm:px-5 sm:py-5 flex items-center gap-3 relative overflow-hidden">
+          <GlassCard className="px-4 py-4 sm:px-5 sm:py-5 flex items-start gap-3 relative overflow-hidden min-h-[140px] sm:min-h-[160px]">
             {/* 3D Analytics icon in glass container */}
             <div
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
               style={{
                 background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
                 boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
               }}>
-              <img src={analytics3d} alt="Analytics" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+              <img src={analytics3d} alt="Analytics" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
             </div>
 
             {/* Text content */}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-white font-bold text-sm sm:text-lg leading-tight whitespace-nowrap overflow-hidden text-ellipsis">See your analytics now</h3>
+            <div className="flex-1 min-w-0 pr-24 sm:pr-32">
+              <h3 className="text-white font-bold text-sm sm:text-lg leading-tight">See your analytics now</h3>
               <p className="text-white/60 text-[11px] sm:text-sm leading-snug mt-0.5">
                 See the analytics of your improvements, performance, and blind spots that needs to be improved
               </p>
@@ -602,11 +602,11 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Tugi mascot on right */}
+            {/* Tugi mascot — bottom right, attached to edges */}
             <img
               src={tugiWave}
               alt="Tugi"
-              className="w-20 h-20 sm:w-28 sm:h-28 object-contain flex-shrink-0 -mr-1 sm:-mr-2"
+              className="absolute bottom-0 right-0 w-28 h-28 sm:w-40 sm:h-40 object-contain object-bottom"
             />
           </GlassCard>
         </Link>
