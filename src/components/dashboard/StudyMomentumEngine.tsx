@@ -194,7 +194,7 @@ const StudyMomentumEngine = () => {
 
           <div
             className="w-full rounded-full py-1.5 text-center"
-            style={{ background: "linear-gradient(135deg, #6BC5C8 0%, #4FA8AB 100%)" }}
+            style={{ background: "linear-gradient(135deg, #AED0FF 0%, #2F6B81 100%)" }}
           >
             <span
               className="text-white text-lg sm:text-2xl"
@@ -206,7 +206,7 @@ const StudyMomentumEngine = () => {
 
           <div
             className="w-full rounded-full py-1 mt-1 text-center"
-            style={{ background: "rgba(187, 167, 253, 0.5)" }}
+            style={{ background: "linear-gradient(135deg, #AED0FF 0%, #2F6B81 100%)" }}
           >
             <span className="text-white text-[10px] sm:text-xs font-semibold">XP/hr</span>
           </div>
@@ -228,7 +228,7 @@ const StudyMomentumEngine = () => {
 
           <div
             className="w-full rounded-full py-1.5 text-center"
-            style={{ background: "rgba(187, 167, 253, 0.6)" }}
+            style={{ background: "linear-gradient(135deg, #D1CAE9 0%, #BC96F0 100%)" }}
           >
             <span
               className="text-white text-lg sm:text-2xl"
@@ -240,7 +240,7 @@ const StudyMomentumEngine = () => {
 
           <div
             className="w-full rounded-full py-1 mt-1 text-center"
-            style={{ background: "rgba(187, 167, 253, 0.35)" }}
+            style={{ background: "linear-gradient(135deg, #D1CAE9 0%, #BC96F0 100%)" }}
           >
             <span className="text-white text-[8px] sm:text-[10px] font-semibold leading-tight">
               Estimated Weekly XP
@@ -264,7 +264,7 @@ const StudyMomentumEngine = () => {
 
           <div
             className="w-full rounded-full py-1.5 text-center"
-            style={{ background: "rgba(187, 167, 253, 0.5)" }}
+            style={{ background: "linear-gradient(135deg, #E9CAE4 0%, #F096D2 100%)" }}
           >
             <span className="text-white text-[9px] sm:text-xs font-bold whitespace-nowrap">
               {data.optimalStart} - {data.optimalEnd}
@@ -277,7 +277,7 @@ const StudyMomentumEngine = () => {
 
           <div
             className="w-full rounded-full py-1.5 mt-1 text-center"
-            style={{ background: "rgba(187, 167, 253, 0.5)" }}
+            style={{ background: "linear-gradient(135deg, #E9CAE4 0%, #F096D2 100%)" }}
           >
             <span
               className="text-white text-sm sm:text-base"
