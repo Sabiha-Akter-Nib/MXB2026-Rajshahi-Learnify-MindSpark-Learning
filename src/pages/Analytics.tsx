@@ -445,7 +445,7 @@ const Analytics = () => {
             <div
               className="rounded-xl p-2 sm:p-3"
               style={{
-                background: "linear-gradient(180deg, rgba(253,145,217,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+                background: "rgba(255, 255, 255, 0.95)",
               }}
             >
               <div className="h-44 sm:h-52">
