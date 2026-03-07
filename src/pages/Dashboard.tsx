@@ -578,35 +578,37 @@ const Dashboard = () => {
 
         {/* ========== ANALYTICS CTA CARD ========== */}
         <Link to="/analytics">
-          <GlassCard className="px-4 py-4 sm:px-5 sm:py-5 flex items-start gap-3 relative overflow-hidden min-h-[130px] sm:min-h-[150px]">
-            {/* 3D Analytics icon in glass container */}
-            <div
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
-              style={{
-                background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
-              }}>
-              <img src={analytics3d} alt="Analytics" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
-            </div>
+          <GlassCard className="px-4 py-3 sm:px-5 sm:py-4 relative overflow-hidden" style={{ height: '130px' }}>
+            <div className="flex items-start gap-3 h-full">
+              {/* 3D Analytics icon in glass container */}
+              <div
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+                style={{
+                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+                }}>
+                <img src={analytics3d} alt="Analytics" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+              </div>
 
-            {/* Text content */}
-            <div className="flex-1 min-w-0 pr-28 sm:pr-36">
-              <h3 className="text-white font-bold text-sm sm:text-lg leading-tight">See your analytics now</h3>
-              <p className="text-white/60 text-[11px] sm:text-sm leading-snug mt-0.5">
-                See the analytics of your improvements, performance, and blind spots that needs to be improved
-              </p>
-              <div className="mt-2.5">
-                <span className="inline-block px-5 py-1.5 sm:px-6 sm:py-2 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs sm:text-sm font-semibold">
-                  Let's see
-                </span>
+              {/* Text content — takes ~60% width, never overlaps Tugi */}
+              <div className="flex-1 min-w-0 max-w-[55%]">
+                <h3 className="text-white font-bold text-sm sm:text-lg leading-tight whitespace-nowrap overflow-hidden text-ellipsis">See your analytics now</h3>
+                <p className="text-white/60 text-[10px] sm:text-xs leading-snug mt-0.5 line-clamp-2">
+                  See the analytics of your improvements, performance, and blind spots
+                </p>
+                <div className="mt-2">
+                  <span className="inline-block px-4 py-1 sm:px-5 sm:py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white text-[11px] sm:text-sm font-semibold">
+                    Let's see
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Tugi mascot — bottom right, attached to edges */}
+            {/* Tugi mascot — absolute, cropped at bottom-right */}
             <img
               src={tugiWave}
               alt="Tugi"
-              className="absolute -bottom-6 -right-16 sm:-bottom-8 sm:-right-20 h-[160px] sm:h-[200px] w-auto object-contain"
+              className="absolute -bottom-4 -right-10 h-[140px] w-auto object-contain pointer-events-none"
             />
           </GlassCard>
         </Link>
