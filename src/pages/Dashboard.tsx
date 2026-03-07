@@ -316,20 +316,7 @@ const Dashboard = () => {
   // Map BD week days to Mon-Sun display
   const dayMapping = [2, 3, 4, 5, 6, 0, 1];
 
-  if (loading || isLoadingData) {
-    return (
-      <DashboardLayout>
-        <div className="min-h-[100dvh] flex items-center justify-center">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
-              <Loader2 className="w-10 h-10 text-white/70" />
-            </motion.div>
-            <p className="text-white/60 font-poppins font-medium">Loading your dashboard...</p>
-          </motion.div>
-        </div>
-      </DashboardLayout>);
-
-  }
+  if (loading) return null;
 
   if (!user) return null;
 
