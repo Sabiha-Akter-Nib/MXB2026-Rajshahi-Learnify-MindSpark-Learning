@@ -230,6 +230,38 @@ const Dashboard = () => {
           activeDays.add(bd);
         });
 
+        // If current week has no activity, show previous week's activity circles
+        if (activeDays.size === 0) {
+          const prevWeekStart = new Date(weekStartDate);
+          prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+
+          const { data: prevSessions } = await supabase
+            .from("study_sessions")
+            .select("created_at, duration_minutes")
+            .eq("user_id", user.id)
+            .gte("created_at", prevWeekStart.toISOString())
+            .lt("created_at", weekStartDate.toISOString());
+
+          prevSessions?.forEach((s) => {
+            const d = new Date(s.created_at);
+            const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
+            if (s.duration_minutes >= 1) activeDays.add(bd);
+          });
+
+          const { data: prevAssessments } = await supabase
+            .from("assessments")
+            .select("completed_at")
+            .eq("user_id", user.id)
+            .gte("completed_at", prevWeekStart.toISOString())
+            .lt("completed_at", weekStartDate.toISOString());
+
+          prevAssessments?.forEach((a) => {
+            const d = new Date(a.completed_at);
+            const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
+            activeDays.add(bd);
+          });
+        }
+
         const { count } = await supabase.
         from("study_sessions").
         select("id", { count: "exact", head: true }).
