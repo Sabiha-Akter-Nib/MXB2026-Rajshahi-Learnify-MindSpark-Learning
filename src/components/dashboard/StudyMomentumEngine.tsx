@@ -260,7 +260,7 @@ const StudyMomentumEngine = () => {
             </span>
           </div>
 
-          <p className="text-white/60 text-[8px] sm:text-[10px] mt-2 text-center leading-tight">
+          <p className="text-white/60 text-[10px] sm:text-xs mt-2 text-center leading-tight font-medium">
             Your best performance was on
           </p>
 
