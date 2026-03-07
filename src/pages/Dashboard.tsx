@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import DailyNotificationTrigger from "@/components/notifications/DailyNotificationTrigger";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 // 3D Assets
 import aiTutor3d from "@/assets/module-ai-tutor-3d.png";
@@ -336,17 +337,16 @@ const Dashboard = () => {
 
   if (loading || isLoadingData) {
     return (
-      <div
-        className="min-h-[100dvh] flex items-center justify-center"
-        style={{ background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)" }}>
-        
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
-          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
-            <Loader2 className="w-10 h-10 text-white/70" />
+      <DashboardLayout>
+        <div className="min-h-[100dvh] flex items-center justify-center">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+              <Loader2 className="w-10 h-10 text-white/70" />
+            </motion.div>
+            <p className="text-white/60 font-poppins font-medium">Loading your dashboard...</p>
           </motion.div>
-          <p className="text-white/60 font-poppins font-medium">Loading your dashboard...</p>
-        </motion.div>
-      </div>);
+        </div>
+      </DashboardLayout>);
 
   }
 
@@ -368,9 +368,9 @@ const Dashboard = () => {
   const CARD_GAP = "gap-5";
 
   return (
+    <DashboardLayout>
     <div
-      className="min-h-[100dvh] font-poppins overflow-x-hidden"
-      style={{ background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)" }}>
+      className="min-h-[100dvh] font-poppins overflow-x-hidden">
       
       <div className={cn("w-full max-w-2xl mx-auto px-4 py-6 flex flex-col", CARD_GAP)}>
 
@@ -609,7 +609,8 @@ const Dashboard = () => {
         {/* Daily Notification Trigger (invisible) */}
         <DailyNotificationTrigger />
       </div>
-    </div>);
+    </div>
+    </DashboardLayout>);
 
 };
 
