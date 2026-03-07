@@ -66,14 +66,25 @@ export const useStreakTracker = (userId: string | undefined) => {
         const yesterday = dhakaDate(new Date(Date.now() - 86400000));
 
         let displayStreak = stats.current_streak;
+        let needsReset = false;
         if (
           stats.last_activity_date &&
           stats.last_activity_date !== today &&
           stats.last_activity_date !== yesterday
         ) {
           displayStreak = 0;
+          needsReset = stats.current_streak !== 0;
         } else if (!stats.last_activity_date) {
           displayStreak = 0;
+          needsReset = stats.current_streak !== 0;
+        }
+
+        // Sync DB if streak broke but DB still has old value
+        if (needsReset) {
+          await supabase
+            .from("student_stats")
+            .update({ current_streak: 0 })
+            .eq("user_id", userId);
         }
 
         setStreakData({
