@@ -213,6 +213,7 @@ const Profile = () => {
         setEditName(profileData.full_name);
         setEditUsername(profileData.username || "");
         setEditSchool(profileData.school_name);
+        setEditCoverColor((profileData as any).cover_color || "#6A68DF");
       }
 
       // Stats
