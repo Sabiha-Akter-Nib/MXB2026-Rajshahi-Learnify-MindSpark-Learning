@@ -134,13 +134,13 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
             whileHover={{ scale: 1.06, y: -5 }}
             whileTap={{ scale: 0.93 }}
             onClick={() => onQuickAction(isBangla ? s.promptBn : s.prompt)}
-            className="group relative flex flex-col items-center gap-3 p-5 rounded-3xl overflow-hidden"
+            className="group relative flex flex-col items-center gap-2 p-3 sm:p-4 rounded-2xl overflow-hidden"
             style={{
               background: "linear-gradient(-45deg, rgba(254,254,254,0.92) 0%, rgba(254,254,254,0.7) 100%)",
               backdropFilter: "blur(24px) saturate(1.5)",
               WebkitBackdropFilter: "blur(24px) saturate(1.5)",
               border: "1.5px solid rgba(255,255,255,0.6)",
-              boxShadow: `0 8px 32px ${s.shadow}, 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)`,
+              boxShadow: `0 6px 24px ${s.shadow}, 0 2px 6px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.8)`,
             }}
           >
             {/* Gradient icon */}
