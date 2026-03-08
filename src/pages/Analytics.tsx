@@ -538,7 +538,7 @@ const Analytics = () => {
           </GlassCard>
 
           {/* ========== PROFILE STAT CARDS (2x2 grid) ========== */}
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-4 gap-2">
             {[
               { img: statStreak3d, value: String(currentStreak), label: "Total Streak", grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", bg: "linear-gradient(150deg, rgba(187,167,253,0.25) 0%, rgba(155,135,245,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(155,135,245,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
               { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Leaderboard Rank", grad: "linear-gradient(135deg, #6A68DF, #9B87F5)", bg: "linear-gradient(150deg, rgba(106,104,223,0.25) 0%, rgba(88,80,200,0.15) 50%, rgba(155,135,245,0.1) 100%)", shadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
