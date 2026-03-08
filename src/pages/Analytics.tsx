@@ -862,8 +862,8 @@ const Analytics = () => {
                 </div>
                 <p className="text-white/60 text-[10px] sm:text-xs font-medium mb-1">Problem<br/>Solving Rate</p>
                 <p
-                  className="text-white text-2xl sm:text-3xl font-bold leading-none"
-                  style={{ fontFamily: "'Black Han Sans', sans-serif" }}
+                  className="text-white text-3xl sm:text-4xl font-extrabold leading-none tracking-tight"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
                 >
                   <span style={{ background: "linear-gradient(135deg, #FD91D9, #EFB995)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                     {problemSolvingRate}%
