@@ -174,6 +174,7 @@ const Profile = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ProfileData[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
 
   // Subject progress
   const [subjectProgress, setSubjectProgress] = useState<{ name: string; correct: number; wrong: number; skipped: number }[]>([]);
@@ -304,11 +305,33 @@ const Profile = () => {
 
   const handleSaveProfile = async () => {
     if (!user) return;
-    await supabase
+    setUsernameError("");
+
+    // Validate username uniqueness if provided
+    if (editUsername.trim()) {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("username", editUsername.trim())
+        .neq("user_id", user.id)
+        .maybeSingle();
+      if (existing) {
+        setUsernameError("This username is already taken");
+        return;
+      }
+    }
+
+    const { error } = await supabase
       .from("profiles")
-      .update({ full_name: editName, username: editUsername || null, school_name: editSchool })
+      .update({ full_name: editName, username: editUsername.trim() || null, school_name: editSchool })
       .eq("user_id", user.id);
-    setProfile((p) => (p ? { ...p, full_name: editName, username: editUsername, school_name: editSchool } : p));
+
+    if (error?.message?.includes("unique")) {
+      setUsernameError("This username is already taken");
+      return;
+    }
+
+    setProfile((p) => (p ? { ...p, full_name: editName, username: editUsername.trim(), school_name: editSchool } : p));
     setIsEditing(false);
   };
 
@@ -638,10 +661,11 @@ const Profile = () => {
               <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1 block">Username</label>
               <Input
                 value={editUsername}
-                onChange={(e) => setEditUsername(e.target.value)}
+                onChange={(e) => { setEditUsername(e.target.value); setUsernameError(""); }}
                 placeholder="Choose a username"
                 className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30"
               />
+              {usernameError && <p className="text-red-400 text-xs mt-1 font-medium">{usernameError}</p>}
             </div>
             <div>
               <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1 block">School</label>
