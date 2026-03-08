@@ -505,6 +505,7 @@ const Practice = () => {
                   <Sparkles className="w-5 h-5" />
                   {isBangla ? `${questionCount}টি প্রশ্ন তৈরি করো` : `Generate ${questionCount} Questions`}
                 </motion.button>
+              </motion.div>
 
               {/* Quick Topics */}
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5, duration: 0.5 }} className="mt-6">
