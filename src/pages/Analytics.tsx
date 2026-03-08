@@ -19,9 +19,8 @@ import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
 import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
 import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { format, subDays, subWeeks, subMonths as subMonthsFn, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isAfter, isBefore, startOfWeek, startOfQuarter, startOfYear } from "date-fns";
-import { BarChart, Bar, ResponsiveContainer as BarResponsiveContainer, XAxis as BarXAxis, YAxis as BarYAxis, Tooltip as BarTooltip } from "recharts";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar } from "recharts";
+import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isAfter, isBefore, startOfWeek, startOfQuarter, startOfYear, subMonths as subMonthsFn } from "date-fns";
 
 import streakFlame3d from "@/assets/streak-flame-3d.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
@@ -760,16 +759,16 @@ const Analytics = () => {
 
               {/* Bar chart */}
               <div className="h-28 sm:h-32 mb-3">
-                <BarResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={monthlyBarData} barSize={8}>
-                    <BarXAxis
+                    <XAxis
                       dataKey="label"
                       tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
                     />
-                    <BarYAxis hide />
-                    <BarTooltip
+                    <YAxis hide />
+                    <Tooltip
                       contentStyle={{
                         background: "rgba(30,15,45,0.95)",
                         border: "1px solid rgba(255,255,255,0.1)",
@@ -785,7 +784,7 @@ const Analytics = () => {
                       fill="rgba(188,150,240,0.6)"
                     />
                   </BarChart>
-                </BarResponsiveContainer>
+                </ResponsiveContainer>
               </div>
 
               {/* Time range pills */}
