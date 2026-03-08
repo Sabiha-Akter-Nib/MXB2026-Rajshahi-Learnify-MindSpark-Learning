@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import AvatarUpload from "@/components/avatar/AvatarUpload";
+import VerifiedBadge, { isVerifiedEmail } from "@/components/VerifiedBadge";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
