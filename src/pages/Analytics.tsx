@@ -604,9 +604,8 @@ const Analytics = () => {
               }}
             />
             <div className="relative z-10 p-4 sm:p-5">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2.5">
+            {/* Header */}
+              <div className="flex items-center gap-2.5 mb-3">
                   <div
                     className="w-9 h-9 rounded-xl flex items-center justify-center"
                     style={{
@@ -624,18 +623,6 @@ const Analytics = () => {
                       {profile?.version === "bangla" ? "AI দ্বারা তৈরি" : "AI-generated insight"}
                     </p>
                   </div>
-                </div>
-                <button
-                  onClick={fetchWeeklySummary}
-                  disabled={summaryLoading}
-                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                  style={{
-                    background: "rgba(255,255,255,0.1)",
-                    border: "1.5px solid rgba(255,255,255,0.15)",
-                  }}
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 text-white/70 ${summaryLoading ? "animate-spin" : ""}`} />
-                </button>
               </div>
 
               {/* Content */}
@@ -681,45 +668,11 @@ const Analytics = () => {
                     animate={{ opacity: 1 }}
                     className="text-center py-4"
                   >
-                    <p className="text-white/40 text-xs mb-2">Could not generate summary</p>
-                    <button
-                      onClick={fetchWeeklySummary}
-                      className="text-xs font-semibold px-4 py-1.5 rounded-full"
-                      style={{
-                        background: "rgba(255,255,255,0.1)",
-                        color: "rgba(255,255,255,0.7)",
-                        border: "1px solid rgba(255,255,255,0.15)",
-                      }}
-                    >
-                      Try Again
-                    </button>
+                    <p className="text-white/40 text-xs">
+                      {profile?.version === "bangla" ? "সারাংশ তৈরি করা যায়নি" : "Could not generate summary"}
+                    </p>
                   </motion.div>
-                ) : (
-                  <motion.button
-                    key="generate"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onClick={fetchWeeklySummary}
-                    className="w-full py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02]"
-                    style={{
-                      background: "linear-gradient(135deg, rgba(106,104,223,0.2), rgba(253,145,217,0.15), rgba(239,185,149,0.1))",
-                      border: "1.5px solid rgba(254,254,254,0.12)",
-                      boxShadow: "0 4px 16px rgba(106,104,223,0.12)",
-                    }}
-                  >
-                    <Sparkles className="w-4 h-4 text-white/60" />
-                    <span
-                      className="text-xs sm:text-sm font-bold"
-                      style={{
-                        background: "linear-gradient(90deg, #FEFEFE, #FD91D9, #6A68DF, #EFB995)",
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                      }}
-                    >
-                      {profile?.version === "bangla" ? "সাপ্তাহিক সারাংশ তৈরি করো" : "Generate Weekly Summary"}
-                    </span>
-                  </motion.button>
-                )}
+                ) : null}
               </AnimatePresence>
             </div>
           </div>

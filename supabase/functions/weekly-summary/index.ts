@@ -118,10 +118,12 @@ serve(async (req) => {
 
     const isBangla = profile?.version === "bangla";
 
+    const studentName = profile?.full_name || "Student";
     const systemPrompt = `You are OddhaboshAI, a friendly and encouraging AI tutor for Bangladeshi students. 
 Generate a concise weekly performance summary (3-5 sentences max) for the student.
+IMPORTANT: Address the student by their name "${studentName}" at the start of the summary.
 Be specific with numbers. Be encouraging but honest. If performance is low, gently motivate.
-${isBangla ? "Respond in Bangla (Bengali script)." : "Respond in English."}
+${isBangla ? "Respond ENTIRELY in Bangla (Bengali script). Use the student's name as-is." : "Respond ENTIRELY in English."}
 Do NOT use markdown formatting. Just plain text with emoji.`;
 
     const userPrompt = `Student: ${profile?.full_name || "Student"}, Class ${profile?.class || "?"} (${profile?.version || "bangla"} version)
