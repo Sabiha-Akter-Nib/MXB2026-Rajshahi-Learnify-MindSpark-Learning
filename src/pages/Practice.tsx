@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Brain, Sparkles, CheckCircle2, XCircle, ChevronRight, ChevronLeft,
-  Loader2, RefreshCw, Trophy, Target, Lightbulb, BookOpen, Zap, Star, Clock, Award,
+  Loader2, RefreshCw, Trophy, Target, Lightbulb, BookOpen, Zap, Star, Clock, Award, Plus, X,
+
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -55,6 +56,12 @@ const quickTopics = [
 
 const questionCountOptions = [5, 10, 15, 20, 25];
 
+interface TopicEntry {
+  subjectId: string;
+  subjectName: string;
+  topic: string;
+}
+
 const Practice = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
@@ -75,6 +82,12 @@ const Practice = () => {
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [sessionEndTime, setSessionEndTime] = useState<Date | null>(null);
   const [resultsConfettiDone, setResultsConfettiDone] = useState(false);
+  const [additionalTopics, setAdditionalTopics] = useState<TopicEntry[]>([]);
+  const [showAddTopic, setShowAddTopic] = useState(false);
+  const [addTopicText, setAddTopicText] = useState("");
+  const [addSubjectId, setAddSubjectId] = useState("");
+  const [addSubjectName, setAddSubjectName] = useState("");
+  const [showAddSubjectSelector, setShowAddSubjectSelector] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { user } = useAuth();
@@ -96,6 +109,19 @@ const Practice = () => {
     if (subjectParam) setSelectedSubjectId(subjectParam);
     if (topicParam) setTopic(topicParam);
   }, [user, navigate, searchParams]);
+
+  const handleAddTopic = () => {
+    if (!addTopicText.trim()) return;
+    setAdditionalTopics(prev => [...prev, { subjectId: addSubjectId, subjectName: addSubjectName, topic: addTopicText.trim() }]);
+    setAddTopicText("");
+    setAddSubjectId("");
+    setAddSubjectName("");
+    setShowAddTopic(false);
+  };
+
+  const removeAdditionalTopic = (idx: number) => {
+    setAdditionalTopics(prev => prev.filter((_, i) => i !== idx));
+  };
 
   // ── Scoring logic: 1 XP correct, -0.25 wrong ──
   const calculateScore = () => {
@@ -137,11 +163,14 @@ const Practice = () => {
     setSessionEndTime(null);
     setResultsConfettiDone(false);
     try {
+      // Combine main topic with additional topics
+      const allTopics = [topic, ...additionalTopics.map(at => at.topic)].join(", ");
+      const allSubjects = [selectedSubjectName, ...additionalTopics.map(at => at.subjectName).filter(Boolean)].filter(Boolean).join(", ");
       const { data, error: invokeError } = await supabase.functions.invoke("generate-practice", {
         body: {
-          topic, studentClass: profile?.class || 5, version: profile?.version || "bangla",
+          topic: allTopics, studentClass: profile?.class || 5, version: profile?.version || "bangla",
           count: questionCount, bloomLevel: selectedBloomLevel !== "all" ? selectedBloomLevel : undefined,
-          subjectName: selectedSubjectName,
+          subjectName: allSubjects || undefined,
         },
       });
       if (invokeError) throw new Error(invokeError.message || "Failed to generate questions");
@@ -412,6 +441,65 @@ const Practice = () => {
                     </button>
                   ))}
                 </div>
+
+                {/* Additional Topics */}
+                {additionalTopics.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-muted-foreground text-xs text-center font-heading">{isBangla ? "অতিরিক্ত টপিক" : "Additional Topics"}</p>
+                    {additionalTopics.map((at, idx) => (
+                      <div key={idx} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{
+                        background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))",
+                        backdropFilter: "blur(16px)", border: "1.5px solid rgba(255,255,255,0.5)",
+                      }}>
+                        <div className="flex-1 text-xs font-heading text-foreground">
+                          {at.subjectName && <span className="font-bold" style={{ color: "hsl(270, 60%, 45%)" }}>{at.subjectName} • </span>}
+                          {at.topic}
+                        </div>
+                        <button onClick={() => removeAdditionalTopic(idx)} className="text-muted-foreground hover:text-destructive transition-colors">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Another Topic */}
+                <AnimatePresence>
+                  {showAddTopic && profile && user && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-2 overflow-hidden">
+                      <button onClick={() => setShowAddSubjectSelector(!showAddSubjectSelector)}
+                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                        style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))", backdropFilter: "blur(16px)", border: "1.5px solid rgba(255,255,255,0.5)", color: addSubjectName ? "hsl(270, 60%, 45%)" : "hsl(0, 0%, 55%)" }}>
+                        <span>{addSubjectName || (isBangla ? "বিষয় (ঐচ্ছিক)" : "Subject (optional)")}</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                      {showAddSubjectSelector && (
+                        <div className="rounded-xl p-2 border border-border/30" style={{ background: "linear-gradient(-45deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75))", backdropFilter: "blur(20px)" }}>
+                          <SubjectSelector userId={user.id} studentClass={profile.class} selectedSubject={addSubjectId}
+                            onSubjectChange={(id, name) => { setAddSubjectId(id || ""); setAddSubjectName(name || ""); setShowAddSubjectSelector(false); }} isBangla={isBangla} />
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <input type="text" value={addTopicText} onChange={(e) => setAddTopicText(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter" && addTopicText.trim()) handleAddTopic(); }}
+                          placeholder={isBangla ? "টপিক লেখো..." : "Enter topic..."}
+                          className="flex-1 px-3 py-2.5 rounded-xl bg-transparent text-xs text-foreground placeholder:text-muted-foreground/60 outline-none font-heading"
+                          style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))", backdropFilter: "blur(16px)", border: "1.5px solid rgba(255,255,255,0.5)" }} />
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddTopic} disabled={!addTopicText.trim()}
+                          className="px-3 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-40"
+                          style={{ background: GRADIENT }}>{isBangla ? "যোগ করো" : "Add"}</motion.button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {!showAddTopic && (
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowAddTopic(true)}
+                    className="w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold font-heading transition-all"
+                    style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.85), rgba(254,254,254,0.6))", backdropFilter: "blur(16px)", border: "1.5px solid rgba(255,255,255,0.4)", color: "hsl(270, 60%, 45%)" }}>
+                    <Plus className="w-4 h-4" />{isBangla ? "আরেকটি বিষয় ও টপিক যোগ করো" : "Add another subject + topic"}
+                  </motion.button>
+                )}
 
                 {/* Generate Button */}
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generateQuestions} disabled={!topic.trim()}
