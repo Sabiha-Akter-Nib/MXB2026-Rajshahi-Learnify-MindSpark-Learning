@@ -260,20 +260,33 @@ const Profile = () => {
         setIsFollowing(!!followCheck);
       }
 
-      // Subject progress (from assessments)
-      const { data: subjects } = await supabase.from("subjects").select("id, name");
-      const subjectMap: Record<string, string> = {};
-      subjects?.forEach((s) => (subjectMap[s.id] = s.name));
+      // Subject progress - fetch actual subjects for student's class, then map assessment data
+      const studentClass = profileData?.class || 6;
+      const { data: subjectsData } = await supabase
+        .from("subjects")
+        .select("id, name, name_bn, icon, color")
+        .lte("min_class", studentClass)
+        .gte("max_class", studentClass);
 
-      const progressMap: Record<string, { correct: number; wrong: number; skipped: number }> = {};
+      // Build assessment stats per subject
+      const assessmentMap: Record<string, { correct: number; wrong: number; skipped: number }> = {};
       exams?.forEach((a) => {
-        const subName = a.subject_id ? subjectMap[a.subject_id] || "Other" : "Other";
-        if (!progressMap[subName]) progressMap[subName] = { correct: 0, wrong: 0, skipped: 0 };
-        progressMap[subName].correct += a.correct_answers || 0;
-        const wrong = (a.total_questions || 0) - (a.correct_answers || 0);
-        progressMap[subName].wrong += wrong > 0 ? wrong : 0;
+        if (a.subject_id) {
+          if (!assessmentMap[a.subject_id]) assessmentMap[a.subject_id] = { correct: 0, wrong: 0, skipped: 0 };
+          assessmentMap[a.subject_id].correct += a.correct_answers || 0;
+          const wrong = (a.total_questions || 0) - (a.correct_answers || 0);
+          assessmentMap[a.subject_id].wrong += wrong > 0 ? wrong : 0;
+        }
       });
-      setSubjectProgress(Object.entries(progressMap).map(([name, v]) => ({ name, ...v })));
+
+      if (subjectsData) {
+        setSubjectProgress(subjectsData.map((s) => ({
+          name: s.name,
+          correct: assessmentMap[s.id]?.correct || 0,
+          wrong: assessmentMap[s.id]?.wrong || 0,
+          skipped: assessmentMap[s.id]?.skipped || 0,
+        })));
+      }
 
       // Bloom levels
       const bloomMap: Record<string, number> = {};
@@ -606,18 +619,20 @@ const Profile = () => {
           </div>
 
           {/* ── Subject Progress ── */}
-          {subjectProgress.length > 0 && (
-            <GlassCard className="p-4 sm:p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <img src={subjectBooks3dNew} alt="Subjects" className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 object-contain" />
-                <div
-                  className="flex-1 rounded-xl p-3"
-                  style={{ background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)" }}
-                >
-                  <h3 className="text-white font-semibold text-sm sm:text-base">Subject Progress</h3>
-                  <p className="text-white/50 text-[10px] sm:text-xs">Your performance across subjects</p>
-                </div>
+          <GlassCard className="p-4 sm:p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <img src={subjectBooks3dNew} alt="Subjects" className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 object-contain" />
+              <div
+                className="flex-1 rounded-xl p-3"
+                style={{ background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)" }}
+              >
+                <h3 className="text-white font-semibold text-sm sm:text-base">Subject Progress</h3>
+                <p className="text-white/50 text-[10px] sm:text-xs">Your performance across subjects</p>
               </div>
+            </div>
+            {subjectProgress.length === 0 ? (
+              <div className="text-center py-8 text-white/40 text-sm">No subjects found for your class.</div>
+            ) : (
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 {subjectProgress.map((sub, index) => {
                   const total = sub.correct + sub.wrong + sub.skipped;
@@ -655,8 +670,8 @@ const Profile = () => {
                   );
                 })}
               </div>
-            </GlassCard>
-          )}
+            )}
+          </GlassCard>
 
           {/* ── Bloom Level Progress ── */}
           {bloomLevels.length > 0 && (
