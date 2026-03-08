@@ -162,6 +162,7 @@ const Profile = () => {
   const [totalXP, setTotalXP] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [totalExams, setTotalExams] = useState(0);
+  const [totalCorrect, setTotalCorrect] = useState(0);
   const [leaderboardRank, setLeaderboardRank] = useState<number | null>(null);
 
   // Follow
