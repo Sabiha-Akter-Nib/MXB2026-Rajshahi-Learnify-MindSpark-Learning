@@ -25,6 +25,7 @@ import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import DailyNotificationTrigger from "@/components/notifications/DailyNotificationTrigger";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import StreakCard from "@/components/dashboard/StreakCard";
 
 // 3D Assets
 import aiTutor3d from "@/assets/module-ai-tutor-3d.png";
