@@ -319,8 +319,9 @@ const Profile = () => {
           const d = subDays(new Date(), i);
           const key = format(d, "yyyy-MM-dd");
           const dayLabel = format(d, "EEE");
+          const dateLabel = format(d, "dd, MMM");
           keyMap[key] = data.length;
-          data.push({ label: dayLabel, xp: 0 });
+          data.push({ label: `${dayLabel}\n${dateLabel}`, xp: 0 });
         }
         return { data, keyMap };
       };
