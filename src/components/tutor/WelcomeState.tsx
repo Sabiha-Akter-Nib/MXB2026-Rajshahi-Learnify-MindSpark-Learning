@@ -57,7 +57,7 @@ const suggestions = [
 ];
 
 const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProps) => {
-  const firstName = studentName?.split(" ")[0] || "";
+  const displayName = studentName || "";
 
   return (
     <div className="flex flex-col items-center justify-center px-4 h-full">
