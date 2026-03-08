@@ -823,6 +823,67 @@ const Profile = () => {
             </GlassCard>
           )}
 
+          {/* ── Weekly XP Chart ── */}
+          <GlassCard className="p-4 sm:p-5">
+            <h3 className="text-white font-bold text-sm sm:text-base text-center mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
+              Weekly XP Points
+            </h3>
+            <p className="text-white/40 text-[10px] sm:text-xs text-center mb-3">Last 7 days</p>
+
+            {/* Legend */}
+            {!isOwnProfile && weeklyXpSelf.length > 0 && (
+              <div className="flex items-center gap-4 mb-3 px-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "rgba(255,255,255,0.35)" }} />
+                  <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">{profile?.full_name || "User"}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#9B87F5" }} />
+                  <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">You</span>
+                </div>
+              </div>
+            )}
+
+            <div
+              className="rounded-xl p-3 sm:p-4"
+              style={{ background: "linear-gradient(180deg, rgba(253,145,217,0.15) 0%, rgba(255,255,255,0.05) 100%)" }}
+            >
+              <div className="h-48 sm:h-56 overflow-visible">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={weeklyXpTarget.map((d, i) => ({
+                      label: d.label,
+                      targetXp: d.xp,
+                      selfXp: weeklyXpSelf[i]?.xp ?? 0,
+                    }))}
+                    margin={{ top: 20, right: 10, left: 0, bottom: 0 }}
+                  >
+                    <XAxis dataKey="label" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} width={30} />
+                    <Tooltip content={() => null} />
+                    {/* Target user's line - gray when viewing others, purple when own */}
+                    <Line
+                      type="monotone"
+                      dataKey="targetXp"
+                      stroke={isOwnProfile ? "#9B87F5" : "rgba(255,255,255,0.35)"}
+                      strokeWidth={2}
+                      dot={{ r: 4, fill: isOwnProfile ? "#9B87F5" : "rgba(255,255,255,0.35)", stroke: "none" }}
+                    />
+                    {/* Self line when viewing other profile */}
+                    {!isOwnProfile && weeklyXpSelf.length > 0 && (
+                      <Line
+                        type="monotone"
+                        dataKey="selfXp"
+                        stroke="#9B87F5"
+                        strokeWidth={2}
+                        dot={{ r: 4, fill: "#9B87F5", stroke: "none" }}
+                      />
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </GlassCard>
 
         </div>
       </div>
