@@ -70,7 +70,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         transition={{ delay: 0.2, duration: 0.5 }}
         className="text-center mb-6"
       >
-        <h2 className="text-2xl md:text-3xl font-bold font-heading text-foreground mb-2.5 tracking-tight">
+        <h2 className="text-xl md:text-2xl font-bold font-heading text-foreground mb-1.5 tracking-tight">
           {isBangla 
             ? `আসসালামু আলাইকুম${firstName ? `, ${firstName}` : ""}! 👋`
             : `Assalamu Alaikum${firstName ? `, ${firstName}` : ""}! 👋`
