@@ -448,7 +448,7 @@ const Profile = () => {
                 <div className="flex-1 min-w-0 pb-1">
                   <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight">{displayName}</h2>
                   {profile.username && (
-                    <p className="text-white/60 text-base sm:text-lg font-semibold truncate">@{profile.username}</p>
+                    <p className="text-white/60 text-sm sm:text-base font-semibold truncate">@{profile.username}</p>
                   )}
                   <p className="text-white/40 text-xs sm:text-sm truncate mt-0.5 flex items-center gap-1">
                     <GraduationCap className="w-3.5 h-3.5 shrink-0" />
