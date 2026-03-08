@@ -35,6 +35,7 @@ import statStreak3d from "@/assets/stat-streak-glass.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
 import statRank3d from "@/assets/stat-rank-3d.png";
 import statExams3d from "@/assets/stat-exams-3d.png";
+import coverStar3d from "@/assets/cover-star-3d.png";
 
 // ── Glass Card ──
 const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
