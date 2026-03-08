@@ -29,6 +29,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
+import VerifiedBadge, { isVerifiedEmail } from "@/components/VerifiedBadge";
 
 interface LeaderboardEntry {
   rank: number;
