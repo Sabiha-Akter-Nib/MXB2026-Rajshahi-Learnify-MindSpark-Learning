@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import TutorBackground from "@/components/tutor/TutorBackground";
 import mascotImg from "@/assets/ai-mascot-3d.png";
 import tugiImg from "@/assets/tugi-wave.png";
+import subjectIcon3d from "@/assets/subject-icon-3d.png";
 
 // ── Types ──
 interface Question {
@@ -58,14 +59,14 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const subjectCardColors = [
-  { bg: "hsla(300, 65%, 52%, 0.08)", border: "hsla(300, 65%, 52%, 0.2)", icon: "hsl(300, 65%, 52%)", shadow: "hsla(300, 65%, 52%, 0.15)" },
-  { bg: "hsla(270, 60%, 55%, 0.08)", border: "hsla(270, 60%, 55%, 0.2)", icon: "hsl(270, 60%, 55%)", shadow: "hsla(270, 60%, 55%, 0.15)" },
-  { bg: "hsla(330, 70%, 55%, 0.08)", border: "hsla(330, 70%, 55%, 0.2)", icon: "hsl(330, 70%, 55%)", shadow: "hsla(330, 70%, 55%, 0.15)" },
-  { bg: "hsla(30, 78%, 60%, 0.08)", border: "hsla(30, 78%, 60%, 0.2)", icon: "hsl(30, 78%, 55%)", shadow: "hsla(30, 78%, 60%, 0.15)" },
-  { bg: "hsla(200, 65%, 52%, 0.08)", border: "hsla(200, 65%, 52%, 0.2)", icon: "hsl(200, 65%, 52%)", shadow: "hsla(200, 65%, 52%, 0.15)" },
-  { bg: "hsla(145, 60%, 45%, 0.08)", border: "hsla(145, 60%, 45%, 0.2)", icon: "hsl(145, 60%, 45%)", shadow: "hsla(145, 60%, 45%, 0.15)" },
-  { bg: "hsla(350, 65%, 55%, 0.08)", border: "hsla(350, 65%, 55%, 0.2)", icon: "hsl(350, 65%, 55%)", shadow: "hsla(350, 65%, 55%, 0.15)" },
-  { bg: "hsla(45, 80%, 50%, 0.08)", border: "hsla(45, 80%, 50%, 0.2)", icon: "hsl(45, 80%, 45%)", shadow: "hsla(45, 80%, 50%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(300, 65%, 52%, 0.25), hsla(300, 65%, 52%, 0.08))", border: "hsla(300, 65%, 52%, 0.3)", icon: "hsl(300, 65%, 52%)", shadow: "hsla(300, 65%, 52%, 0.2)", glow: "hsla(300, 65%, 52%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(270, 60%, 55%, 0.25), hsla(270, 60%, 55%, 0.08))", border: "hsla(270, 60%, 55%, 0.3)", icon: "hsl(270, 60%, 55%)", shadow: "hsla(270, 60%, 55%, 0.2)", glow: "hsla(270, 60%, 55%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(330, 70%, 55%, 0.25), hsla(330, 70%, 55%, 0.08))", border: "hsla(330, 70%, 55%, 0.3)", icon: "hsl(330, 70%, 55%)", shadow: "hsla(330, 70%, 55%, 0.2)", glow: "hsla(330, 70%, 55%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(30, 78%, 60%, 0.25), hsla(30, 78%, 60%, 0.08))", border: "hsla(30, 78%, 60%, 0.3)", icon: "hsl(30, 78%, 55%)", shadow: "hsla(30, 78%, 60%, 0.2)", glow: "hsla(30, 78%, 60%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(200, 65%, 52%, 0.25), hsla(200, 65%, 52%, 0.08))", border: "hsla(200, 65%, 52%, 0.3)", icon: "hsl(200, 65%, 52%)", shadow: "hsla(200, 65%, 52%, 0.2)", glow: "hsla(200, 65%, 52%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(145, 60%, 45%, 0.25), hsla(145, 60%, 45%, 0.08))", border: "hsla(145, 60%, 45%, 0.3)", icon: "hsl(145, 60%, 45%)", shadow: "hsla(145, 60%, 45%, 0.2)", glow: "hsla(145, 60%, 45%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(350, 65%, 55%, 0.25), hsla(350, 65%, 55%, 0.08))", border: "hsla(350, 65%, 55%, 0.3)", icon: "hsl(350, 65%, 55%)", shadow: "hsla(350, 65%, 55%, 0.2)", glow: "hsla(350, 65%, 55%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(45, 80%, 50%, 0.25), hsla(45, 80%, 50%, 0.08))", border: "hsla(45, 80%, 50%, 0.3)", icon: "hsl(45, 80%, 45%)", shadow: "hsla(45, 80%, 50%, 0.2)", glow: "hsla(45, 80%, 50%, 0.15)" },
 ];
 
 const Assessment = () => {
@@ -365,27 +366,28 @@ const Assessment = () => {
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 + idx * 0.05 }}
-                      whileHover={{ scale: 1.03, y: -3 }}
-                      whileTap={{ scale: 0.97 }}
+                      whileHover={{ scale: 1.05, y: -4 }}
+                      whileTap={{ scale: 0.96 }}
                       onClick={() => setSelectedSubject(subject)}
-                      className="rounded-2xl p-4 text-left transition-all"
+                      className="rounded-2xl p-4 text-left transition-all relative overflow-hidden"
                       style={{
-                        background: `linear-gradient(-45deg, rgba(254,254,254,0.95), rgba(254,254,254,0.8))`,
+                        background: colors.bg,
                         backdropFilter: "blur(24px) saturate(1.5)",
                         border: `1.5px solid ${colors.border}`,
-                        boxShadow: `0 4px 16px ${colors.shadow}, inset 0 1px 0 rgba(255,255,255,0.8)`,
+                        boxShadow: `0 8px 24px ${colors.shadow}, inset 0 1px 0 rgba(255,255,255,0.7)`,
                       }}
                     >
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                        style={{ background: colors.bg, boxShadow: `0 2px 8px ${colors.shadow}` }}>
-                        <Icon className="w-5 h-5" style={{ color: colors.icon }} />
+                      {/* Glow orb */}
+                      <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-40" style={{ background: `radial-gradient(circle, ${colors.glow}, transparent 70%)` }} />
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ background: `${colors.icon}15`, boxShadow: `0 2px 8px ${colors.shadow}` }}>
+                          <img src={subjectIcon3d} alt="" className="w-7 h-7 object-contain" />
+                        </div>
+                        <p className="font-heading font-bold text-sm text-foreground leading-tight">
+                          {isBangla ? subject.name_bn || subject.name : subject.name}
+                        </p>
                       </div>
-                      <p className="font-heading font-bold text-sm text-foreground leading-tight">
-                        {isBangla ? subject.name_bn || subject.name : subject.name}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground mt-1 font-heading">
-                        {subject.total_chapters} {isBangla ? "অধ্যায়" : "chapters"}
-                      </p>
                     </motion.button>
                   );
                 })}
