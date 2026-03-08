@@ -537,6 +537,31 @@ const Analytics = () => {
             />
           </GlassCard>
 
+          {/* ========== PROFILE STAT CARDS (2x2 grid) ========== */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {[
+              { img: statStreak3d, value: String(currentStreak), label: "Total Streak", grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", bg: "linear-gradient(150deg, rgba(187,167,253,0.25) 0%, rgba(155,135,245,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(155,135,245,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
+              { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Leaderboard Rank", grad: "linear-gradient(135deg, #6A68DF, #9B87F5)", bg: "linear-gradient(150deg, rgba(106,104,223,0.25) 0%, rgba(88,80,200,0.15) 50%, rgba(155,135,245,0.1) 100%)", shadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
+              { img: statExams3d, value: String(totalExams), label: "Exams Attended", grad: "linear-gradient(135deg, #FD91D9, #EFB995)", bg: "linear-gradient(150deg, rgba(253,145,217,0.2) 0%, rgba(239,185,149,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(253,145,217,0.12), inset 0 1px 0 rgba(255,255,255,0.2)" },
+              { img: statXp3d, value: String(totalXP), label: "Total XP", grad: "linear-gradient(135deg, #FD91D9, #AF2D50)", bg: "linear-gradient(150deg, rgba(253,145,217,0.15) 0%, rgba(175,45,80,0.2) 50%, rgba(253,145,217,0.1) 100%)", shadow: "0 8px 32px rgba(175,45,80,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
+            ].map((card) => (
+              <div
+                key={card.label}
+                className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+                style={{ background: card.bg, boxShadow: card.shadow }}
+              >
+                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.04) 50%, transparent 70%)" }} />
+                <div className="relative z-10 p-3.5 sm:p-4 flex flex-col items-center text-center">
+                  <img src={card.img} alt={card.label} className="w-12 h-12 sm:w-14 sm:h-14 object-contain mb-2" />
+                  <p className="text-white text-2xl sm:text-3xl font-extrabold leading-none tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
+                    <span style={{ background: card.grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{card.value}</span>
+                  </p>
+                  <p className="text-white/50 text-[10px] sm:text-xs font-medium mt-1">{card.label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* ========== STREAK CALENDAR CARD ========== */}
           <GlassCard className="p-4 sm:p-5">
             {/* Streak header */}
