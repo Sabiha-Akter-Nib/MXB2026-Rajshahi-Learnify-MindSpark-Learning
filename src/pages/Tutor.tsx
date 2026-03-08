@@ -550,18 +550,6 @@ What would you like to study today?`;
             </div>
 
             <div className="flex items-center gap-1.5">
-              {studentInfo && (
-                <SubjectSelector
-                  userId={user.id}
-                  studentClass={studentInfo.class}
-                  selectedSubject={selectedSubjectId}
-                  onSubjectChange={(id, name) => {
-                    setSelectedSubjectId(id);
-                    setSelectedSubjectName(name);
-                  }}
-                  isBangla={isBangla}
-                />
-              )}
 
               {user && (
                 <ChatHistory
