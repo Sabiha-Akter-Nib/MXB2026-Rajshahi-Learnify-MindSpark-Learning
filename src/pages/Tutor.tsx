@@ -260,15 +260,7 @@ What would you like to study today?`;
 
   const handleNewConversation = () => {
     setCurrentConversationId(null);
-    if (studentInfo) {
-      setMessages([
-        createInitialGreeting({
-          full_name: studentInfo.name,
-          class: studentInfo.class,
-          version: studentInfo.version,
-        }),
-      ]);
-    }
+    setMessages([]);
   };
 
   const handleDeleteCurrentChat = async () => {
