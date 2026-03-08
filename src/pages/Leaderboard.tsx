@@ -545,10 +545,11 @@ const Leaderboard = () => {
                 <div className="absolute -top-1 -right-1 w-6 h-6 bg-slate-300 rounded-full flex items-center justify-center text-xs font-bold text-slate-700 shadow-lg">2</div>
               </motion.div>
               <p className={cn(
-                "font-semibold text-sm text-center truncate w-full px-2",
+                "font-semibold text-sm text-center truncate w-full px-2 flex items-center justify-center gap-1",
                 entries[1]?.isCurrentUser && "text-primary"
               )}>
                 {entries[1]?.displayName}
+                {entries[1]?.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={14} />}
                 {entries[1]?.isCurrentUser && " (You)"}
               </p>
               <p className="text-sm font-bold bg-gradient-to-r from-slate-500 to-slate-600 bg-clip-text text-transparent">
