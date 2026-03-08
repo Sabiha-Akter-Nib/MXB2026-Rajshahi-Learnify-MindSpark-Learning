@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.complete-signup]
 verify_jwt = false
+
+[functions.upload-curriculum]
+verify_jwt = false
