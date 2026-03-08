@@ -422,19 +422,6 @@ const Profile = () => {
               </button>
               <h1 className="text-white font-bold text-lg" style={{ fontFamily: "Poppins, sans-serif" }}>Profile</h1>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowSearch(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.15] backdrop-blur-2xl text-white/80 hover:text-white transition-all"
-                style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
-                }}
-              >
-                <Search className="w-4 h-4" />
-                <span className="text-xs font-semibold">Find Friends</span>
-              </button>
-            </div>
           </header>
 
           {/* ── Profile Card ── */}
@@ -493,21 +480,36 @@ const Profile = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-4 w-full max-w-xs">
+              <div className="mt-4 flex gap-2 w-full">
                 {isOwnProfile ? (
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setIsEditing(true)}
-                    className="w-full py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border border-white/[0.15] text-white"
-                    style={{
-                      background: "linear-gradient(135deg, rgba(106,104,223,0.3) 0%, rgba(155,135,245,0.2) 100%)",
-                      boxShadow: "0 4px 20px rgba(106,104,223,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
-                    }}
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    Edit Profile
-                  </motion.button>
+                  <>
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setIsEditing(true)}
+                      className="flex-1 py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border border-white/[0.15] text-white"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(106,104,223,0.3) 0%, rgba(155,135,245,0.2) 100%)",
+                        boxShadow: "0 4px 20px rgba(106,104,223,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
+                      }}
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      Edit Profile
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setShowSearch(true)}
+                      className="flex-1 py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border border-white/[0.15] text-white"
+                      style={{
+                        background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
+                      }}
+                    >
+                      <Search className="w-4 h-4" />
+                      Find Friends
+                    </motion.button>
+                  </>
                 ) : (
                   <motion.button
                     whileHover={{ scale: 1.03 }}
@@ -515,7 +517,7 @@ const Profile = () => {
                     onClick={handleFollow}
                     disabled={followLoading}
                     className={cn(
-                      "w-full py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border transition-all",
+                      "flex-1 py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border transition-all",
                       isFollowing
                         ? "border-white/20 text-white/80"
                         : "border-transparent text-white"
