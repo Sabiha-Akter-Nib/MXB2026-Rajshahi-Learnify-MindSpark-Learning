@@ -623,6 +623,9 @@ const Profile = () => {
             <DialogTitle className="text-white font-bold text-lg" style={{ fontFamily: "Poppins, sans-serif" }}>Edit Profile</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
+            <div className="flex justify-center [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0">
+              <AvatarUpload userId={user.id} userName={editName} size="lg" showUploadButton={false} interactive />
+            </div>
             <div>
               <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1 block">Full Name</label>
               <Input
