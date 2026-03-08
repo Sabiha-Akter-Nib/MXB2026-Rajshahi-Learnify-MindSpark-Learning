@@ -138,14 +138,16 @@ const Analytics = () => {
         });
         setActiveDates(dates);
 
-        // Weekly XP chart (last 7 days)
-        const weekData: { label: string; xp: number }[] = [];
+        // Weekly XP chart (last 7 days) — use calendar-date keys for accuracy
+        const weekData: { label: string; xp: number; key: string }[] = [];
+        const dayKeyMap: Record<string, number> = {};
         for (let i = 6; i >= 0; i--) {
           const d = subDays(new Date(), i);
           const key = format(d, "yyyy-MM-dd");
           const dayLabel = format(d, "EEE");
           const dateLabel = format(d, "dd, MMM");
-          weekData.push({ label: `${dayLabel}\n${dateLabel}`, xp: 0 });
+          dayKeyMap[key] = weekData.length;
+          weekData.push({ label: `${dayLabel}\n${dateLabel}`, xp: 0, key });
         }
 
         // Sum XP per day
@@ -163,16 +165,16 @@ const Analytics = () => {
           .gte("completed_at", sevenDaysAgo.toISOString());
 
         recentSessions?.forEach((s) => {
-          const dayIndex = 6 - Math.floor((new Date().getTime() - new Date(s.created_at).getTime()) / (1000 * 60 * 60 * 24));
-          if (dayIndex >= 0 && dayIndex < 7) {
-            weekData[dayIndex].xp += s.xp_earned || 0;
+          const dateKey = format(new Date(s.created_at), "yyyy-MM-dd");
+          if (dayKeyMap[dateKey] !== undefined) {
+            weekData[dayKeyMap[dateKey]].xp += s.xp_earned || 0;
           }
         });
 
         recentAssessments?.forEach((a) => {
-          const dayIndex = 6 - Math.floor((new Date().getTime() - new Date(a.completed_at).getTime()) / (1000 * 60 * 60 * 24));
-          if (dayIndex >= 0 && dayIndex < 7) {
-            weekData[dayIndex].xp += a.xp_earned || 0;
+          const dateKey = format(new Date(a.completed_at), "yyyy-MM-dd");
+          if (dayKeyMap[dateKey] !== undefined) {
+            weekData[dayKeyMap[dateKey]].xp += a.xp_earned || 0;
           }
         });
 
