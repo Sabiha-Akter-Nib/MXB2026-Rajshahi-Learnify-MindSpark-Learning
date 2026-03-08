@@ -1,24 +1,26 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Compass, 
-  TrendingUp, 
-  TrendingDown, 
-  Clock, 
-  Brain, 
-  Sparkles,
-  ChevronRight,
-  Calendar,
+import {
+  TrendingUp,
+  TrendingDown,
   Target,
+  ArrowRight,
   Zap,
-  AlertTriangle,
+  Brain,
+  Calendar,
+  Clock,
   CheckCircle2,
-  ArrowRight
+  AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
+import futureSnapshot3d from '@/assets/future-snapshot-3d.png';
+import confidenceForecast3d from '@/assets/confidence-forecast-3d.png';
+
+// --- Types ---
 interface FutureScenario {
   id: string;
   title: string;
@@ -49,6 +51,23 @@ interface SnapshotData {
   topicForecasts: TopicForecast[];
 }
 
+// --- Liquid glass card ---
+const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn("rounded-2xl border border-white/[0.15] backdrop-blur-2xl", className)}
+    style={{
+      background:
+        "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+      boxShadow:
+        "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 0 0 0.5px rgba(255,255,255,0.08)",
+    }}
+    {...props}
+  >
+    {children}
+  </div>
+);
+
+// --- Main Component ---
 const FutureYouSnapshot = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -70,41 +89,19 @@ const FutureYouSnapshot = () => {
       .select('version')
       .eq('user_id', user.id)
       .single();
-    if (data) {
-      setIsBangla(data.version === 'bangla');
-    }
+    if (data) setIsBangla(data.version === 'bangla');
   };
 
   const fetchSnapshotData = async () => {
     if (!user) return;
     setIsLoading(true);
-
     try {
-      // Fetch topic mastery data
-      const { data: masteryData } = await supabase
-        .from('topic_mastery')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('mastery_score', { ascending: true });
-
-      // Fetch revision schedule
-      const { data: revisionData } = await supabase
-        .from('revision_schedule')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_completed', false);
-
-      // Fetch recent study sessions
-      const { data: sessionData } = await supabase
-        .from('study_sessions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(30);
-
-      // Calculate projections
-      const snapshot = calculateProjections(masteryData || [], revisionData || [], sessionData || []);
-      setSnapshotData(snapshot);
+      const [{ data: masteryData }, { data: revisionData }, { data: sessionData }] = await Promise.all([
+        supabase.from('topic_mastery').select('*').eq('user_id', user.id).order('mastery_score', { ascending: true }),
+        supabase.from('revision_schedule').select('*').eq('user_id', user.id).eq('is_completed', false),
+        supabase.from('study_sessions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(30),
+      ]);
+      setSnapshotData(calculateProjections(masteryData || [], revisionData || [], sessionData || []));
     } catch (error) {
       console.error('Error fetching snapshot data:', error);
     } finally {
@@ -112,69 +109,57 @@ const FutureYouSnapshot = () => {
     }
   };
 
-  const calculateProjections = (
-    mastery: any[],
-    revisions: any[],
-    sessions: any[]
-  ): SnapshotData => {
-    // Calculate average mastery
+  const calculateProjections = (mastery: any[], revisions: any[], sessions: any[]): SnapshotData => {
     const avgMastery = mastery.length > 0
       ? mastery.reduce((sum, t) => sum + t.mastery_score, 0) / mastery.length
       : 50;
 
-    // Calculate study consistency (sessions in last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const recentSessions = sessions.filter(s => new Date(s.created_at) > sevenDaysAgo);
     const studyConsistency = Math.min(recentSessions.length / 7, 1);
 
-    // Calculate trend based on recent mastery changes
     const weakTopics = mastery.filter(t => t.is_weak_topic);
-    const masteryTrend: 'rising' | 'stable' | 'declining' = 
-      studyConsistency > 0.7 ? 'rising' : 
-      studyConsistency > 0.3 ? 'stable' : 'declining';
+    const masteryTrend: 'rising' | 'stable' | 'declining' =
+      studyConsistency > 0.7 ? 'rising' : studyConsistency > 0.3 ? 'stable' : 'declining';
 
-    // Calculate retention days based on revision patterns
     const avgRetentionDays = revisions.length > 0
       ? revisions.reduce((sum, r) => sum + r.review_interval_days, 0) / revisions.length
       : 7;
 
-    // Generate topic forecasts
     const topicForecasts: TopicForecast[] = mastery.slice(0, 5).map(topic => {
-      const decayRate = 0.1; // 10% decay per day without revision
+      const decayRate = 0.1;
       const daysUntilForgotten = Math.ceil(topic.mastery_score / (decayRate * 100));
       const projectedMastery = Math.max(0, topic.mastery_score - (decayRate * 14 * 100));
-      
       return {
         topicName: topic.topic_name,
         currentMastery: topic.mastery_score,
         projectedMastery: studyConsistency > 0.5 ? Math.min(100, topic.mastery_score + 10) : projectedMastery,
         daysUntilForgotten: studyConsistency > 0.5 ? daysUntilForgotten * 2 : daysUntilForgotten,
-        revisionsNeeded: Math.ceil((100 - topic.mastery_score) / 20)
+        revisionsNeeded: Math.ceil((100 - topic.mastery_score) / 20),
       };
     });
 
-    // Generate scenarios
     const scenarios: FutureScenario[] = [
       {
         id: 'current',
         title: 'Current Pace',
         titleBn: 'বর্তমান গতি',
-        description: masteryTrend === 'rising' 
+        description: masteryTrend === 'rising'
           ? 'You\'re building strong foundations. Keep it up!'
           : masteryTrend === 'stable'
-          ? 'Steady progress, but there\'s room to grow.'
-          : 'Some topics may slip away without revision.',
+            ? 'Steady progress, but there\'s room to grow.'
+            : 'Some topics may slip away without revision.',
         descriptionBn: masteryTrend === 'rising'
           ? 'তুমি শক্তিশালী ভিত্তি তৈরি করছো। চালিয়ে যাও!'
           : masteryTrend === 'stable'
-          ? 'স্থির অগ্রগতি, কিন্তু বাড়ার সুযোগ আছে।'
-          : 'রিভিশন ছাড়া কিছু টপিক ভুলে যেতে পারো।',
+            ? 'স্থির অগ্রগতি, কিন্তু বাড়ার সুযোগ আছে।'
+            : 'রিভিশন ছাড়া কিছু টপিক ভুলে যেতে পারো।',
         masteryChange: masteryTrend === 'rising' ? 15 : masteryTrend === 'stable' ? 0 : -20,
         daysUntilDecay: Math.round(avgRetentionDays),
         confidenceLevel: masteryTrend === 'rising' ? 'high' : masteryTrend === 'stable' ? 'medium' : 'low',
         icon: 'current',
-        color: masteryTrend === 'rising' ? 'primary' : masteryTrend === 'stable' ? 'accent' : 'destructive'
+        color: masteryTrend === 'rising' ? 'primary' : masteryTrend === 'stable' ? 'accent' : 'destructive',
       },
       {
         id: 'better',
@@ -186,7 +171,7 @@ const FutureYouSnapshot = () => {
         daysUntilDecay: Math.round(avgRetentionDays * 2.5),
         confidenceLevel: 'high',
         icon: 'better',
-        color: 'emerald'
+        color: 'emerald',
       },
       {
         id: 'worse',
@@ -198,8 +183,8 @@ const FutureYouSnapshot = () => {
         daysUntilDecay: Math.round(avgRetentionDays * 0.3),
         confidenceLevel: 'low',
         icon: 'worse',
-        color: 'rose'
-      }
+        color: 'rose',
+      },
     ];
 
     return {
@@ -208,348 +193,280 @@ const FutureYouSnapshot = () => {
       topWeakTopic: weakTopics[0]?.topic_name || null,
       averageRetentionDays: Math.round(avgRetentionDays),
       scenarios,
-      topicForecasts
+      topicForecasts,
     };
-  };
-
-  const getScenarioIcon = (icon: string) => {
-    switch (icon) {
-      case 'better': return <TrendingUp className="w-5 h-5" />;
-      case 'worse': return <TrendingDown className="w-5 h-5" />;
-      default: return <Target className="w-5 h-5" />;
-    }
-  };
-
-  const getConfidenceColor = (level: string) => {
-    switch (level) {
-      case 'high': return 'text-primary';
-      case 'medium': return 'text-accent';
-      case 'low': return 'text-destructive';
-      default: return 'text-muted-foreground';
-    }
   };
 
   const activeScenarioData = snapshotData?.scenarios.find(s => s.id === activeScenario);
 
+  // --- Loading skeleton ---
   if (isLoading) {
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-secondary/5 border border-border/50 p-6"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 animate-pulse" />
-          <div className="h-6 w-48 bg-muted/50 rounded animate-pulse" />
-        </div>
-        <div className="space-y-4">
-          <div className="h-20 bg-muted/30 rounded-xl animate-pulse" />
-          <div className="h-32 bg-muted/30 rounded-xl animate-pulse" />
-        </div>
-      </motion.div>
+      <div className="space-y-3">
+        <div className="rounded-2xl h-[100px] animate-pulse" style={{ background: 'linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)' }} />
+        <GlassCard className="h-[90px] animate-pulse" />
+      </div>
     );
   }
 
   if (!snapshotData) return null;
 
+  const trendLabel = snapshotData.masteryTrend === 'rising'
+    ? (isBangla ? 'উন্নতি' : 'Rising')
+    : snapshotData.masteryTrend === 'stable'
+      ? (isBangla ? 'স্থির' : 'Stable')
+      : (isBangla ? 'পতনশীল' : 'Declining');
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-accent/5 border border-border/50"
-    >
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.1, 0.15, 0.1]
-          }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-primary/20 blur-3xl"
+    <div className="space-y-3">
+      {/* ── Header Card (pink gradient) ── */}
+      <div
+        className="relative rounded-2xl overflow-hidden px-4 py-4 flex items-center gap-3"
+        style={{ background: 'linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)' }}
+      >
+        {/* 3D Icon */}
+        <img
+          src={futureSnapshot3d}
+          alt=""
+          className="w-[90px] h-[90px] object-contain shrink-0 -ml-2 -my-2"
         />
-        <motion.div
-          animate={{ 
-            scale: [1.2, 1, 1.2],
-            opacity: [0.1, 0.2, 0.1]
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-accent/20 blur-3xl"
-        />
+
+        {/* Text */}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-white font-bold text-base sm:text-lg leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            {isBangla ? 'ভবিষ্যতের তুমি' : 'Future You Snapshot'}
+          </h3>
+          <p className="text-white/70 text-[11px] sm:text-xs mt-0.5">
+            {isBangla ? 'আজকের শেখার ফলাফল' : 'Based on today\'s learning'}
+          </p>
+        </div>
+
+        {/* Trend Badge */}
+        <div className="shrink-0 rounded-full px-3 py-1.5 border border-white/30 bg-white/10 backdrop-blur-sm">
+          <span className="text-white text-xs sm:text-sm font-semibold whitespace-nowrap">
+            {trendLabel}
+          </span>
+        </div>
       </div>
 
-      <div className="relative z-10 p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20"
-            >
-              <Compass className="w-5 h-5 text-primary-foreground" />
-            </motion.div>
-            <div>
-              <h3 className="font-semibold text-lg">
-                {isBangla ? 'ভবিষ্যতের তুমি' : 'Future You'}
-                <span className="text-xs text-muted-foreground ml-2">Snapshot™</span>
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                {isBangla ? 'আজকের শেখার ফলাফল' : 'Based on today\'s learning'}
-              </p>
+      {/* ── Confidence Forecast Card ── */}
+      <GlassCard className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <img
+            src={confidenceForecast3d}
+            alt=""
+            className="w-[56px] h-[56px] object-contain shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <h4 className="text-white font-bold text-sm sm:text-base leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              {isBangla ? 'আত্মবিশ্বাস পূর্বাভাস' : 'Confidence Forecast'}
+            </h4>
+            <p className="text-white/50 text-[10px] sm:text-xs mt-0.5 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {isBangla
+                ? `গড় ধারণ: ${snapshotData.averageRetentionDays} দিন`
+                : `Average retention: ${snapshotData.averageRetentionDays} days`}
+            </p>
+            {/* Progress bar */}
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex-1 h-2.5 rounded-full overflow-hidden bg-white/10">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${snapshotData.overallConfidence}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  className="h-full rounded-full"
+                  style={{
+                    background: snapshotData.overallConfidence >= 70
+                      ? 'linear-gradient(90deg, #AED0FF, #2F6B81)'
+                      : snapshotData.overallConfidence >= 40
+                        ? 'linear-gradient(90deg, #D1CAE9, #BC96F0)'
+                        : 'linear-gradient(90deg, #FD91D9, #AF2D50)',
+                  }}
+                />
+              </div>
+              <span className="text-white font-bold text-sm sm:text-base shrink-0" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                {snapshotData.overallConfidence}%
+              </span>
             </div>
           </div>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className={cn(
-              "px-3 py-1 rounded-full text-xs font-medium",
-              snapshotData.masteryTrend === 'rising' && "bg-primary/10 text-primary",
-              snapshotData.masteryTrend === 'stable' && "bg-accent/10 text-accent",
-              snapshotData.masteryTrend === 'declining' && "bg-destructive/10 text-destructive"
-            )}
-          >
-            {snapshotData.masteryTrend === 'rising' && (isBangla ? '📈 উন্নতি হচ্ছে' : '📈 Rising')}
-            {snapshotData.masteryTrend === 'stable' && (isBangla ? '➡️ স্থির' : '➡️ Stable')}
-            {snapshotData.masteryTrend === 'declining' && (isBangla ? '📉 পতনশীল' : '📉 Declining')}
-          </motion.div>
         </div>
+      </GlassCard>
 
-        {/* Confidence Meter */}
-        <div className="mb-6 p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/30">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium flex items-center gap-2">
-              <Brain className="w-4 h-4 text-primary" />
-              {isBangla ? 'আত্মবিশ্বাস পূর্বাভাস' : 'Confidence Forecast'}
-            </span>
-            <span className={cn(
-              "text-2xl font-bold",
-              snapshotData.overallConfidence >= 70 ? "text-primary" :
-              snapshotData.overallConfidence >= 40 ? "text-accent" : "text-destructive"
-            )}>
-              {snapshotData.overallConfidence}%
-            </span>
-          </div>
-          <div className="relative h-3 bg-muted/50 rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${snapshotData.overallConfidence}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className={cn(
-                "absolute inset-y-0 left-0 rounded-full",
-                snapshotData.overallConfidence >= 70 ? "bg-gradient-to-r from-primary to-primary-light" :
-                snapshotData.overallConfidence >= 40 ? "bg-gradient-to-r from-accent to-accent-light" : 
-                "bg-gradient-to-r from-destructive to-destructive/80"
-              )}
-            />
-            {/* Glow effect */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              style={{ width: `${snapshotData.overallConfidence}%` }}
-              className={cn(
-                "absolute inset-y-0 left-0 rounded-full blur-sm",
-                snapshotData.overallConfidence >= 70 ? "bg-primary/50" :
-                snapshotData.overallConfidence >= 40 ? "bg-accent/50" : "bg-destructive/50"
-              )}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {isBangla 
-              ? `গড় ধারণ: ${snapshotData.averageRetentionDays} দিন` 
-              : `Avg retention: ${snapshotData.averageRetentionDays} days`}
-          </p>
-        </div>
+      {/* ── Scenario Selector ── */}
+      <GlassCard className="px-4 py-3">
+        <p className="text-white/70 text-[11px] sm:text-xs font-semibold mb-2 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-[#FD91D9]" />
+          {isBangla ? 'সম্ভাব্য ভবিষ্যত' : 'Possible Futures'}
+        </p>
 
-        {/* Scenario Selector */}
-        <div className="mb-4">
-          <p className="text-sm font-medium mb-3 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            {isBangla ? 'সম্ভাব্য ভবিষ্যত' : 'Possible Futures'}
-          </p>
-
-          {/* Single wide “tab” row across all devices */}
-          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {snapshotData.scenarios.map((scenario) => (
+        {/* Scenario tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {snapshotData.scenarios.map((scenario) => {
+            const isActive = activeScenario === scenario.id;
+            return (
               <motion.button
                 key={scenario.id}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveScenario(scenario.id)}
                 className={cn(
-                  "relative flex-shrink-0 w-[220px] p-3 rounded-xl border transition-all duration-300 text-left",
-                  activeScenario === scenario.id
-                    ? "bg-card border-primary/50 shadow-lg shadow-primary/10"
-                    : "bg-card/30 border-border/30 hover:border-border"
+                  "relative flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-200 text-left",
+                  isActive
+                    ? "border-white/30 bg-white/15"
+                    : "border-white/10 bg-white/5 hover:bg-white/10"
                 )}
               >
                 <div
                   className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center mb-2",
-                    scenario.icon === 'better' && "bg-primary/10 text-primary",
-                    scenario.icon === 'worse' && "bg-destructive/10 text-destructive",
-                    scenario.icon === 'current' &&
-                      (scenario.color === 'primary'
-                        ? "bg-primary/10 text-primary"
-                        : scenario.color === 'accent'
-                          ? "bg-accent/10 text-accent"
-                          : "bg-destructive/10 text-destructive")
-                  )
-                }
+                    "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                    scenario.icon === 'better' && "bg-emerald-500/20 text-emerald-400",
+                    scenario.icon === 'worse' && "bg-rose-500/20 text-rose-400",
+                    scenario.icon === 'current' && "bg-white/10 text-white/70"
+                  )}
                 >
-                  {getScenarioIcon(scenario.icon)}
+                  {scenario.icon === 'better' ? <TrendingUp className="w-4 h-4" /> :
+                    scenario.icon === 'worse' ? <TrendingDown className="w-4 h-4" /> :
+                      <Target className="w-4 h-4" />}
                 </div>
-                <p className="text-xs font-medium leading-snug">
+                <span className="text-white text-[11px] sm:text-xs font-medium whitespace-nowrap">
                   {isBangla ? scenario.titleBn : scenario.title}
-                </p>
-
-                {activeScenario === scenario.id && (
-                  <motion.div
-                    layoutId="activeScenario"
-                    className="absolute inset-0 rounded-xl border-2 border-primary/50"
-                  />
-                )}
+                </span>
               </motion.button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Active Scenario Details */}
+        {/* Active Scenario Detail */}
         <AnimatePresence mode="wait">
           {activeScenarioData && (
             <motion.div
               key={activeScenarioData.id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/30"
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+              className="mt-3 p-3 rounded-xl bg-white/5 border border-white/10"
             >
-              <div className="flex items-start gap-3 mb-4">
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                  activeScenarioData.confidenceLevel === 'high' && "bg-primary/10 text-primary",
-                  activeScenarioData.confidenceLevel === 'medium' && "bg-accent/10 text-accent",
-                  activeScenarioData.confidenceLevel === 'low' && "bg-destructive/10 text-destructive"
-                )}>
-                  {activeScenarioData.confidenceLevel === 'high' && <CheckCircle2 className="w-5 h-5" />}
-                  {activeScenarioData.confidenceLevel === 'medium' && <AlertTriangle className="w-5 h-5" />}
-                  {activeScenarioData.confidenceLevel === 'low' && <AlertTriangle className="w-5 h-5" />}
+              <div className="flex items-start gap-2.5 mb-3">
+                <div
+                  className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                    activeScenarioData.confidenceLevel === 'high' && "bg-emerald-500/20 text-emerald-400",
+                    activeScenarioData.confidenceLevel === 'medium' && "bg-amber-500/20 text-amber-400",
+                    activeScenarioData.confidenceLevel === 'low' && "bg-rose-500/20 text-rose-400"
+                  )}
+                >
+                  {activeScenarioData.confidenceLevel === 'high' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    {isBangla ? activeScenarioData.descriptionBn : activeScenarioData.description}
-                  </p>
-                </div>
+                <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+                  {isBangla ? activeScenarioData.descriptionBn : activeScenarioData.description}
+                </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-xs text-muted-foreground mb-1">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 rounded-lg bg-white/5">
+                  <p className="text-white/40 text-[10px] sm:text-[11px] mb-0.5">
                     {isBangla ? 'দক্ষতা পরিবর্তন' : 'Mastery Change'}
                   </p>
-                  <p className={cn(
-                    "text-lg font-bold",
-                    activeScenarioData.masteryChange > 0 ? "text-emerald-500" : 
-                    activeScenarioData.masteryChange < 0 ? "text-rose-500" : "text-muted-foreground"
-                  )}>
+                  <p
+                    className="text-base sm:text-lg font-bold"
+                    style={{
+                      fontFamily: "'Black Han Sans', sans-serif",
+                      color: activeScenarioData.masteryChange > 0 ? '#6EE7B7' : activeScenarioData.masteryChange < 0 ? '#FDA4AF' : 'rgba(255,255,255,0.5)',
+                    }}
+                  >
                     {activeScenarioData.masteryChange > 0 ? '+' : ''}{activeScenarioData.masteryChange}%
                   </p>
                 </div>
-                <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-xs text-muted-foreground mb-1">
+                <div className="p-2.5 rounded-lg bg-white/5">
+                  <p className="text-white/40 text-[10px] sm:text-[11px] mb-0.5">
                     {isBangla ? 'টপিক মনে থাকবে' : 'Topics Stay Fresh'}
                   </p>
-                  <p className="text-lg font-bold text-foreground">
-                    {activeScenarioData.daysUntilDecay} {isBangla ? 'দিন' : 'days'}
+                  <p className="text-base sm:text-lg font-bold text-white" style={{ fontFamily: "'Black Han Sans', sans-serif" }}>
+                    {activeScenarioData.daysUntilDecay} <span className="text-xs font-normal text-white/50">{isBangla ? 'দিন' : 'days'}</span>
                   </p>
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+      </GlassCard>
 
-        {/* Topic Forecasts */}
-        {snapshotData.topicForecasts.length > 0 && (
-          <div className="mt-4">
-            <p className="text-sm font-medium mb-3 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-primary" />
-              {isBangla ? 'টপিক পূর্বাভাস' : 'Topic Forecasts'}
-            </p>
-            <div className="space-y-2">
-              {snapshotData.topicForecasts.slice(0, 3).map((topic, index) => (
-                <motion.div
-                  key={topic.topicName}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-card/30 border border-border/20"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{topic.topicName}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="flex-1 h-1.5 bg-muted/50 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${topic.currentMastery}%` }}
-                          transition={{ duration: 0.5, delay: index * 0.1 }}
-                          className="h-full bg-primary/60 rounded-full"
-                        />
-                      </div>
-                      <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                      <div className="flex-1 h-1.5 bg-muted/50 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${topic.projectedMastery}%` }}
-                          transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
-                          className={cn(
-                            "h-full rounded-full",
-                            topic.projectedMastery >= topic.currentMastery 
-                              ? "bg-emerald-500/60" 
-                              : "bg-rose-500/60"
-                          )}
-                        />
-                      </div>
+      {/* ── Topic Forecasts ── */}
+      {snapshotData.topicForecasts.length > 0 && (
+        <GlassCard className="px-4 py-3">
+          <p className="text-white/70 text-[11px] sm:text-xs font-semibold mb-2 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-[#BC96F0]" />
+            {isBangla ? 'টপিক পূর্বাভাস' : 'Topic Forecasts'}
+          </p>
+          <div className="space-y-2">
+            {snapshotData.topicForecasts.slice(0, 3).map((topic, index) => (
+              <motion.div
+                key={topic.topicName}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/10"
+              >
+                <div className="flex-1 min-w-0 mr-2">
+                  <p className="text-white text-xs sm:text-sm font-medium truncate">{topic.topicName}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${topic.currentMastery}%` }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        className="h-full rounded-full"
+                        style={{ background: 'linear-gradient(90deg, #AED0FF, #2F6B81)' }}
+                      />
+                    </div>
+                    <ArrowRight className="w-3 h-3 text-white/30 shrink-0" />
+                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${topic.projectedMastery}%` }}
+                        transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
+                        className="h-full rounded-full"
+                        style={{
+                          background: topic.projectedMastery >= topic.currentMastery
+                            ? 'linear-gradient(90deg, #6EE7B7, #059669)'
+                            : 'linear-gradient(90deg, #FDA4AF, #E11D48)',
+                        }}
+                      />
                     </div>
                   </div>
-                  <div className="ml-3 text-right">
-                    <p className={cn(
-                      "text-xs font-medium",
-                      topic.daysUntilForgotten > 14 ? "text-emerald-500" :
-                      topic.daysUntilForgotten > 7 ? "text-amber-500" : "text-rose-500"
-                    )}>
-                      {topic.daysUntilForgotten}d
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {isBangla ? 'বাকি' : 'left'}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <p
+                    className="text-xs font-bold"
+                    style={{
+                      color: topic.daysUntilForgotten > 14 ? '#6EE7B7' : topic.daysUntilForgotten > 7 ? '#FCD34D' : '#FDA4AF',
+                    }}
+                  >
+                    {topic.daysUntilForgotten}d
+                  </p>
+                  <p className="text-[10px] text-white/40">{isBangla ? 'বাকি' : 'left'}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        )}
+        </GlassCard>
+      )}
 
-        {/* Insight Message */}
-        {snapshotData.topWeakTopic && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-4 p-3 rounded-xl bg-primary/5 border border-primary/20"
-          >
-            <p className="text-xs text-center">
-              <Zap className="w-3 h-3 inline mr-1 text-primary" />
-              {isBangla 
-                ? `"${snapshotData.topWeakTopic}" টপিকে ২টি ছোট রিভিশন পরীক্ষা পর্যন্ত শক্তিশালী রাখবে।`
-                : `With 2 short revisions, "${snapshotData.topWeakTopic}" stays strong until exams.`}
-            </p>
-          </motion.div>
-        )}
-      </div>
-    </motion.div>
+      {/* ── Insight Message ── */}
+      {snapshotData.topWeakTopic && (
+        <div
+          className="rounded-xl px-4 py-2.5 border border-[#FD91D9]/30"
+          style={{ background: 'linear-gradient(135deg, rgba(253,145,217,0.15) 0%, rgba(175,45,80,0.1) 100%)' }}
+        >
+          <p className="text-white/80 text-[11px] sm:text-xs text-center">
+            <Zap className="w-3 h-3 inline mr-1 text-[#FD91D9]" />
+            {isBangla
+              ? `"${snapshotData.topWeakTopic}" টপিকে ২টি ছোট রিভিশন পরীক্ষা পর্যন্ত শক্তিশালী রাখবে।`
+              : `With 2 short revisions, "${snapshotData.topWeakTopic}" stays strong until exams.`}
+          </p>
+        </div>
+      )}
+    </div>
   );
 };
 
