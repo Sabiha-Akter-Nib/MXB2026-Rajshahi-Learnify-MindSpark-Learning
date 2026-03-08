@@ -422,19 +422,6 @@ const Profile = () => {
               </button>
               <h1 className="text-white font-bold text-lg" style={{ fontFamily: "Poppins, sans-serif" }}>Profile</h1>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowSearch(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.15] backdrop-blur-2xl text-white/80 hover:text-white transition-all"
-                style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
-                }}
-              >
-                <Search className="w-4 h-4" />
-                <span className="text-xs font-semibold">Find Friends</span>
-              </button>
-            </div>
           </header>
 
           {/* ── Profile Card ── */}
