@@ -884,6 +884,21 @@ const Analytics = () => {
                     {problemSolvingRate}%
                   </span>
                 </p>
+                <div className="flex items-center gap-1 mt-3">
+                  {["1D", "1W", "1M", "3M", "1Y"].map((t, i) => (
+                    <button
+                      key={t}
+                      className="flex-1 py-1 rounded-md text-[8px] sm:text-[9px] font-bold transition-all"
+                      style={{
+                        background: i === 2 ? "rgba(253,145,217,0.25)" : "rgba(255,255,255,0.06)",
+                        color: i === 2 ? "#FD91D9" : "rgba(255,255,255,0.4)",
+                        border: i === 2 ? "1px solid rgba(253,145,217,0.3)" : "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
