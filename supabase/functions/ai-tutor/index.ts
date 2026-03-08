@@ -502,8 +502,21 @@ serve(async (req) => {
       }
     }
 
-    // Generate context-aware system prompt with web context
-    const basePrompt = getSystemPrompt(studentInfo, webContext);
+    // Fetch official curriculum content if available for this subject+class
+    let curriculumContent = "";
+    if (latestMessage?.content) {
+      curriculumContent = await fetchCurriculumContent(
+        subjectName || chapterReq.subjectHint || null,
+        studentInfo?.class || 7,
+        String(latestMessage.content)
+      );
+      if (curriculumContent) {
+        console.log("Curriculum content loaded:", curriculumContent.length, "chars");
+      }
+    }
+
+    // Generate context-aware system prompt with web context + curriculum
+    const basePrompt = getSystemPrompt(studentInfo, webContext, curriculumContent);
     const systemPrompt = persona ? `${basePrompt}\n\n${persona}` : basePrompt;
 
     console.log("Student Info:", JSON.stringify(studentInfo));
