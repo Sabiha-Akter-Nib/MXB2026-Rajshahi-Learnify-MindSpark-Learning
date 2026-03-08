@@ -605,24 +605,55 @@ const Profile = () => {
             ))}
           </div>
 
-          {/* ── Subject Progress Pie Charts ── */}
+          {/* ── Subject Progress ── */}
           {subjectProgress.length > 0 && (
             <GlassCard className="p-4 sm:p-5">
-              <h3 className="text-white font-bold text-sm sm:text-base mb-4 uppercase tracking-wider">Subject Progress</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {subjectProgress.map((sub) => (
-                  <GlowingPieChart
-                    key={sub.name}
-                    title={sub.name}
-                    data={[
-                      { name: "Correct", value: sub.correct },
-                      { name: "Wrong", value: sub.wrong },
-                      { name: "Skipped", value: sub.skipped },
-                    ]}
-                    colors={["#58CC02", "#FF4B4B", "#FFBA33"]}
-                    size={100}
-                  />
-                ))}
+              <div className="flex items-center gap-3 mb-4">
+                <img src={subjectBooks3dNew} alt="Subjects" className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 object-contain" />
+                <div
+                  className="flex-1 rounded-xl p-3"
+                  style={{ background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)" }}
+                >
+                  <h3 className="text-white font-semibold text-sm sm:text-base">Subject Progress</h3>
+                  <p className="text-white/50 text-[10px] sm:text-xs">Your performance across subjects</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                {subjectProgress.map((sub, index) => {
+                  const total = sub.correct + sub.wrong + sub.skipped;
+                  const progress = total > 0 ? Math.round((sub.correct / total) * 100) : 0;
+                  return (
+                    <motion.div
+                      key={sub.name}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="rounded-xl px-2 py-1.5 sm:px-3 sm:py-3 border border-white/10 bg-white/5 backdrop-blur-sm flex flex-row items-center gap-2 sm:gap-2.5"
+                    >
+                      <img src={subjectIcon3d} alt="" className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 object-contain" />
+                      <div className="flex-1 min-w-0 flex flex-col gap-1">
+                        <span className="text-white text-[11px] sm:text-sm font-medium truncate">{sub.name}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ background: "linear-gradient(90deg, #E040A0, #A040E0)" }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${progress}%` }}
+                              transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-white/40 font-medium">{progress}%</span>
+                        </div>
+                        <div className="flex gap-2 text-[8px] sm:text-[9px] font-medium">
+                          <span className="text-[#58CC02]">{sub.correct}✓</span>
+                          <span className="text-[#FF4B4B]">{sub.wrong}✗</span>
+                          <span className="text-[#FFBA33]">{sub.skipped}—</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </GlassCard>
           )}
