@@ -604,8 +604,8 @@ What would you like to study today?`;
         className="flex-1 overflow-y-auto relative z-10 scroll-smooth"
       >
         <div className="max-w-4xl mx-auto px-4 py-6">
-          {/* Welcome state when only the initial greeting exists */}
-          {messages.length <= 1 && !isTyping && (
+          {/* Welcome state when no messages */}
+          {messages.length === 0 && !isTyping && (
             <WelcomeState
               studentName={studentInfo?.name}
               isBangla={isBangla}
@@ -616,7 +616,7 @@ What would you like to study today?`;
           )}
 
           {/* Messages */}
-          {messages.length > 1 && (
+          {messages.length > 0 && (
             <AnimatePresence>
               {messages.map((message, index) => (
                 <MessageBubble
