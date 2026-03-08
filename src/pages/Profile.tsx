@@ -440,7 +440,7 @@ const Profile = () => {
             <div className="px-4 sm:px-6 pb-5">
               <div className="flex items-end gap-4 -mt-10 sm:-mt-12">
                 {/* Avatar */}
-                <div className="shrink-0 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 rounded-full border-4 border-[#1a1025] overflow-hidden">
+                <div className="shrink-0 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 rounded-full overflow-hidden">
                   <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
                 </div>
 
