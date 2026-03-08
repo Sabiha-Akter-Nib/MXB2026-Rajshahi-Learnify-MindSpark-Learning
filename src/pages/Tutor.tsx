@@ -4,7 +4,6 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Settings2,
-  Trash2,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, Trash2 } from "lucide-react";
 
 interface Attachment {
   type: "image" | "pdf";
@@ -550,7 +549,6 @@ What would you like to study today?`;
             </div>
 
             <div className="flex items-center gap-1.5">
-
               {user && (
                 <ChatHistory
                   userId={user.id}
@@ -559,18 +557,6 @@ What would you like to study today?`;
                   onNewConversation={handleNewConversation}
                   isBangla={isBangla}
                 />
-              )}
-
-              {currentConversationId && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  title={isBangla ? "এই চ্যাট মুছুন" : "Delete this chat"}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
               )}
             </div>
           </div>
@@ -598,19 +584,29 @@ What would you like to study today?`;
           {/* Messages */}
           {messages.length > 0 && (
             <AnimatePresence>
-              {messages.map((message, index) => (
-                <MessageBubble
-                  key={message.id}
-                  id={message.id}
-                  role={message.role}
-                  content={message.content}
-                  timestamp={message.timestamp}
-                  isStreaming={isTyping && index === messages.length - 1 && message.role === "assistant"}
-                  thinkingTime={message.thinkingTime}
-                  attachments={message.attachments}
-                  index={index}
-                />
-              ))}
+              {messages.map((message, index) => {
+                // Find last user message index
+                const lastUserIdx = messages.reduce((acc, m, i) => m.role === "user" ? i : acc, -1);
+                return (
+                  <MessageBubble
+                    key={message.id}
+                    id={message.id}
+                    role={message.role}
+                    content={message.content}
+                    timestamp={message.timestamp}
+                    isStreaming={isTyping && index === messages.length - 1 && message.role === "assistant"}
+                    thinkingTime={message.thinkingTime}
+                    attachments={message.attachments}
+                    index={index}
+                    isLastUserMessage={message.role === "user" && index === lastUserIdx && !isTyping}
+                    onEdit={(editedContent) => {
+                      // Remove messages from this point onward and re-send
+                      setMessages(prev => prev.slice(0, index));
+                      setInput(editedContent);
+                    }}
+                  />
+                );
+              })}
             </AnimatePresence>
           )}
 
@@ -644,11 +640,11 @@ What would you like to study today?`;
       />
 
       {/* Input Area */}
-      <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent pt-4 px-4 pb-4">
+      <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent pt-3 px-4 pb-4">
         <div className="max-w-4xl mx-auto">
-          {/* Subject selector row */}
-          {studentInfo && (
-            <div className="mb-2">
+          {/* Inline subject + persona row */}
+          <div className="flex items-center gap-2 mb-2 overflow-x-auto no-scrollbar">
+            {studentInfo && (
               <SubjectSelector
                 userId={user.id}
                 studentClass={studentInfo.class}
@@ -659,8 +655,27 @@ What would you like to study today?`;
                 }}
                 isBangla={isBangla}
               />
-            </div>
-          )}
+            )}
+            {/* Persona toggle pill */}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowPersonaSelector(!showPersonaSelector)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap",
+                "backdrop-blur-md border shadow-sm",
+                showPersonaSelector
+                  ? "bg-primary/10 border-primary/30 text-primary"
+                  : "bg-card/80 border-border/50 hover:bg-card hover:shadow-md text-foreground"
+              )}
+            >
+              <Settings2 className="w-4 h-4" />
+              <span className="max-w-[80px] truncate font-heading text-xs">
+                {isBangla ? "শিক্ষক মোড" : "Style"}
+              </span>
+            </motion.button>
+          </div>
+
           {/* Persona Selector */}
           <AnimatePresence>
             {showPersonaSelector && (
@@ -668,13 +683,13 @@ What would you like to study today?`;
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mb-4 overflow-hidden"
+                className="mb-3 overflow-hidden"
               >
-                <div className="bg-card/80 backdrop-blur-md rounded-3xl border border-border/50 p-4 shadow-xl">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Settings2 className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium">{isBangla ? "শিক্ষক মোড" : "Teaching Style"}</span>
-                  </div>
+                <div className="rounded-2xl p-3 border border-border/30 shadow-lg"
+                  style={{
+                    background: "linear-gradient(135deg, hsl(270 30% 97%) 0%, hsl(200 30% 97%) 100%)",
+                  }}
+                >
                   <PersonaSelector
                     selected={persona}
                     onSelect={(p) => {
@@ -700,9 +715,7 @@ What would you like to study today?`;
             isProcessing={isProcessing}
             onStartRecording={startRecording}
             onStopRecording={stopRecording}
-            onTogglePersona={() => setShowPersonaSelector(!showPersonaSelector)}
             onOpenUpload={() => setShowUploadModal(true)}
-            showPersonaSelector={showPersonaSelector}
             isBangla={isBangla}
             pendingAttachment={pendingAttachment}
             onRemoveAttachment={() => setPendingAttachment(null)}

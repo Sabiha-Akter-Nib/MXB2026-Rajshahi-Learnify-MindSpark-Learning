@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Copy, ThumbsUp, ThumbsDown, Clock, Brain, Check, FileText, Sparkles } from "lucide-react";
+import { Copy, ThumbsUp, ThumbsDown, Clock, Brain, Check, FileText, Sparkles, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import StreamingMessage from "./StreamingMessage";
@@ -19,6 +19,8 @@ interface MessageBubbleProps {
     name?: string;
   }>;
   index?: number;
+  isLastUserMessage?: boolean;
+  onEdit?: (content: string) => void;
 }
 
 const formatTime = (date: Date): string => {
@@ -34,6 +36,8 @@ const MessageBubble = ({
   thinkingTime,
   attachments,
   index = 0,
+  isLastUserMessage = false,
+  onEdit,
 }: MessageBubbleProps) => {
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState<boolean | null>(null);
@@ -56,7 +60,7 @@ const MessageBubble = ({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
         transition={{ delay: index * 0.02, duration: 0.35, ease: "easeOut" }}
-        className="flex justify-end mb-5"
+        className="flex justify-end mb-5 group"
       >
         <div className="max-w-[80%] space-y-1">
           {/* Attachments */}
@@ -86,8 +90,17 @@ const MessageBubble = ({
             </div>
           </div>
 
-          {/* Timestamp */}
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 px-1 justify-end">
+          {/* Timestamp + edit button */}
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 px-1 justify-end">
+            {isLastUserMessage && onEdit && (
+              <button
+                onClick={() => onEdit(content)}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-muted-foreground/50 hover:text-primary hover:bg-primary/8 transition-all opacity-0 group-hover:opacity-100"
+              >
+                <Pencil className="w-3 h-3" />
+                <span className="text-[10px] font-medium">Edit</span>
+              </button>
+            )}
             <Clock className="w-3 h-3" />
             <span>{formatTime(timestamp)}</span>
           </div>
@@ -96,7 +109,7 @@ const MessageBubble = ({
     );
   }
 
-  // ── AI MESSAGE (with bubble) ──
+  // ── AI MESSAGE ──
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -119,15 +132,13 @@ const MessageBubble = ({
         </motion.div>
       </div>
 
-      {/* Content area — with bubble */}
+      {/* Content area */}
       <div className="flex-1 min-w-0 max-w-[85%]">
-        {/* Name + time header */}
         <div className="flex items-center gap-2 mb-1.5">
           <span className="text-xs font-bold text-foreground/70 font-heading">OddhaboshAI</span>
           <span className="text-[10px] text-muted-foreground/60">{formatTime(timestamp)}</span>
         </div>
 
-        {/* Thinking time */}
         {thinkingTime && thinkingTime > 2 && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
             <Brain className="w-3.5 h-3.5 text-primary" />
@@ -136,7 +147,6 @@ const MessageBubble = ({
           </div>
         )}
 
-        {/* Attachments */}
         {attachments && attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2">
             {attachments.map((attachment, i) => (
@@ -170,14 +180,14 @@ const MessageBubble = ({
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all duration-200"
               onClick={handleCopy}
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-[hsl(145,63%,42%)]" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Copied" : "Copy"}
             </button>
             <div className="flex-1" />
             <button
               className={cn(
                 "p-1.5 rounded-xl transition-all duration-200",
-                liked === true ? "text-[hsl(145,63%,42%)] bg-[hsl(145,63%,42%)]/10" : "text-muted-foreground hover:text-[hsl(145,63%,42%)] hover:bg-[hsl(145,63%,42%)]/8"
+                liked === true ? "text-success bg-success/10" : "text-muted-foreground hover:text-success hover:bg-success/8"
               )}
               onClick={() => setLiked(liked === true ? null : true)}
             >
