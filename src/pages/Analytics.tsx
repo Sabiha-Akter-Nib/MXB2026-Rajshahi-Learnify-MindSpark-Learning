@@ -733,7 +733,7 @@ const Analytics = () => {
             }}
           >
             <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.05) 40%, rgba(253,145,217,0.04) 50%, transparent 70%)" }} />
-            <div className="relative z-10 p-4 sm:p-5">
+            <div className="relative z-10 px-4 py-3 sm:px-5 sm:py-3.5">
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-white font-bold text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
                   Learn Time
