@@ -672,10 +672,10 @@ const Profile = () => {
 
             // Fixed pink/purple/pale palette — each badge always unique
             const badgeStyles = [
-              { grad: "linear-gradient(135deg, #FD91D9, #E040A0)", shadow: "0 0 24px rgba(253,145,217,0.5)", ring: "rgba(253,145,217,0.25)", textColor: "#FD91D9" },
-              { grad: "linear-gradient(135deg, #9B87F5, #6A68DF)", shadow: "0 0 24px rgba(155,135,245,0.5)", ring: "rgba(155,135,245,0.25)", textColor: "#BBA7FD" },
-              { grad: "linear-gradient(135deg, #BBA7FD, #7C3AED)", shadow: "0 0 24px rgba(124,58,237,0.5)", ring: "rgba(187,167,253,0.25)", textColor: "#D4C4FF" },
-              { grad: "linear-gradient(135deg, #EFB995, #AF2D50)", shadow: "0 0 24px rgba(175,45,80,0.5)", ring: "rgba(239,185,149,0.25)", textColor: "#EFB995" },
+              { grad: "linear-gradient(135deg, #FF6B9D, #C2185B)", shadow: "0 0 24px rgba(255,107,157,0.5)", ring: "rgba(255,107,157,0.25)", textColor: "#FF6B9D" },
+              { grad: "linear-gradient(135deg, #A78BFA, #5B21B6)", shadow: "0 0 24px rgba(167,139,250,0.5)", ring: "rgba(167,139,250,0.25)", textColor: "#A78BFA" },
+              { grad: "linear-gradient(135deg, #F0ABFC, #9333EA)", shadow: "0 0 24px rgba(240,171,252,0.5)", ring: "rgba(240,171,252,0.25)", textColor: "#F0ABFC" },
+              { grad: "linear-gradient(135deg, #FDA4AF, #BE123C)", shadow: "0 0 24px rgba(253,164,175,0.5)", ring: "rgba(253,164,175,0.25)", textColor: "#FDA4AF" },
             ];
 
             const allBadges = [
@@ -747,7 +747,7 @@ const Profile = () => {
                               style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 45%)" }}
                             />
                             {/* Icon */}
-                            <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white/80 drop-shadow-lg mb-0.5" strokeWidth={2} />
+                            <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-lg mb-0.5" strokeWidth={2.5} />
                             {/* Number */}
                             <span
                               className="text-white text-lg sm:text-xl font-extrabold leading-none drop-shadow-md"
