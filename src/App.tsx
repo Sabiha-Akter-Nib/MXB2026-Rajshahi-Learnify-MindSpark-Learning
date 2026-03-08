@@ -13,7 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Tutor from "./pages/Tutor";
-import Subjects from "./pages/Subjects";
+
 import Practice from "./pages/Practice";
 import Assessment from "./pages/Assessment";
 import LearningPlan from "./pages/LearningPlan";
@@ -42,7 +42,7 @@ function AppContent() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/tutor" element={<Tutor />} />
-        <Route path="/subjects" element={<Subjects />} />
+        
         <Route path="/practice" element={<Practice />} />
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/learning-plan" element={<LearningPlan />} />

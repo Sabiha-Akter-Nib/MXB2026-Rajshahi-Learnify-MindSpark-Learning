@@ -417,25 +417,40 @@ const Analytics = () => {
         setMonthlyBarData(barData);
 
         // ── Lessons & problem solving ──
-        const allAssessments = assessments || [];
-        const { data: fullAssessments } = await supabase
+        // Get all subjects for the student's class to determine total chapters
+        const { data: subjectsData } = await supabase
+          .from("subjects")
+          .select("id, total_chapters")
+          .lte("min_class", profileData?.class || 1)
+          .gte("max_class", profileData?.class || 10);
+
+        const totalAvailableChapters = (subjectsData || []).reduce((sum, s) => sum + (s.total_chapters || 0), 0);
+
+        // Chapters completed from student_progress
+        const { data: progressData } = await supabase
+          .from("student_progress")
+          .select("chapters_completed")
+          .eq("user_id", user.id);
+
+        const completedChapters = (progressData || []).reduce((sum, p) => sum + (p.chapters_completed || 0), 0);
+        setLessonsCompleted(completedChapters);
+        setTotalLessons(totalAvailableChapters || completedChapters || 0);
+
+        // Problem solving rate from all assessments
+        const { data: allAssessmentData } = await supabase
           .from("assessments")
           .select("correct_answers, total_questions")
           .eq("user_id", user.id);
 
-        const completedLessons = allAssessments.length;
-        setLessonsCompleted(completedLessons);
-        setTotalLessons(completedLessons); // total = completed so far
-
         let totalCorrect = 0, totalQ = 0;
-        (fullAssessments || []).forEach((a) => {
+        (allAssessmentData || []).forEach((a) => {
           totalCorrect += a.correct_answers || 0;
           totalQ += a.total_questions || 0;
         });
         setProblemSolvingRate(totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0);
 
         // Total exams attended
-        setTotalExams((fullAssessments || []).length);
+        setTotalExams((allAssessmentData || []).length);
 
         // Leaderboard rank
         const { data: leaderboardData } = await supabase
@@ -457,6 +472,8 @@ const Analytics = () => {
     };
 
     fetchData();
+    // Auto-fetch weekly summary
+    fetchWeeklySummary();
   }, [user]);
 
   // Calendar logic

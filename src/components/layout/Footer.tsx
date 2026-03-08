@@ -5,7 +5,7 @@ import logoImg from "@/assets/logo.png";
 const footerLinks = {
   product: [
     { label: "Features", href: "/features" },
-    { label: "Subjects", href: "/subjects" },
+    
     { label: "Pricing", href: "/pricing" },
     { label: "Demo", href: "/demo" },
   ],
