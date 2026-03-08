@@ -127,6 +127,7 @@ interface ProfileData {
   version: string;
   created_at: string;
   division: string | null;
+  cover_color: string | null;
 }
 
 interface FollowUser {
@@ -152,6 +153,7 @@ const Profile = () => {
   const [editName, setEditName] = useState("");
   const [editUsername, setEditUsername] = useState("");
   const [editSchool, setEditSchool] = useState("");
+  const [editCoverColor, setEditCoverColor] = useState("#6A68DF");
 
   // Stats
   const [totalXP, setTotalXP] = useState(0);
@@ -211,6 +213,7 @@ const Profile = () => {
         setEditName(profileData.full_name);
         setEditUsername(profileData.username || "");
         setEditSchool(profileData.school_name);
+        setEditCoverColor((profileData as any).cover_color || "#6A68DF");
       }
 
       // Stats
@@ -325,7 +328,7 @@ const Profile = () => {
 
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: editName, username: editUsername.trim() || null, school_name: editSchool })
+      .update({ full_name: editName, username: editUsername.trim() || null, school_name: editSchool, cover_color: editCoverColor } as any)
       .eq("user_id", user.id);
 
     if (error?.message?.includes("unique")) {
@@ -333,7 +336,7 @@ const Profile = () => {
       return;
     }
 
-    setProfile((p) => (p ? { ...p, full_name: editName, username: editUsername.trim(), school_name: editSchool } : p));
+    setProfile((p) => (p ? { ...p, full_name: editName, username: editUsername.trim(), school_name: editSchool, cover_color: editCoverColor } : p));
     setIsEditing(false);
   };
 
@@ -435,26 +438,49 @@ const Profile = () => {
           </header>
 
           {/* ── Profile Card ── */}
-          <GlassCard className="p-5 sm:p-6">
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-3 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0">
-                <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
+          <GlassCard className="overflow-hidden">
+            {/* Cover Color Banner */}
+            <div
+              className="h-28 sm:h-36 w-full relative"
+              style={{
+                background: profile.cover_color
+                  ? `linear-gradient(135deg, ${profile.cover_color}, ${profile.cover_color}dd)`
+                  : "linear-gradient(135deg, #6A68DF, #9B87F5)",
+              }}
+            />
+
+            {/* Profile Info Row */}
+            <div className="px-4 sm:px-6 pb-5">
+              <div className="flex items-end gap-4 -mt-10 sm:-mt-12">
+                {/* Avatar */}
+                <div className="shrink-0 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 rounded-full border-4 border-[#1a1025] overflow-hidden">
+                  <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
+                </div>
+
+                {/* Name + Username + School */}
+                <div className="flex-1 min-w-0 pb-1">
+                  <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight">{displayName}</h2>
+                  {profile.username && (
+                    <p className="text-white/60 text-base sm:text-lg font-semibold truncate">@{profile.username}</p>
+                  )}
+                  <p className="text-white/40 text-xs sm:text-sm truncate mt-0.5 flex items-center gap-1">
+                    <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                    {profile.school_name}
+                  </p>
+                </div>
               </div>
-              <h2 className="text-white font-extrabold text-xl sm:text-2xl">{displayName}</h2>
-              {profile.username && (
-                <p className="text-white/50 text-sm font-medium">@{profile.username}</p>
-              )}
-              <div className="flex items-center gap-2 mt-1.5 text-white/40 text-xs">
+
+              {/* Meta Row */}
+              <div className="flex items-center gap-2 mt-3 text-white/40 text-xs">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>Joined {joinedDate}</span>
+                <span className="text-white/20">•</span>
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Class {profile.class}</span>
               </div>
+
               {/* Class / Following / Followers */}
               <div className="flex items-center gap-5 mt-4">
-                <div className="flex flex-col items-center">
-                  <span className="text-white font-extrabold text-lg">{profile.class}</span>
-                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Class</span>
-                </div>
-                <div className="w-px h-8 bg-white/10" />
                 <button onClick={loadFollowing} className="flex flex-col items-center hover:scale-105 transition-transform active:scale-95">
                   <span className="text-white font-extrabold text-lg">{followingCount}</span>
                   <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Following</span>
@@ -676,6 +702,35 @@ const Profile = () => {
                 onChange={(e) => setEditSchool(e.target.value)}
                 className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30"
               />
+            </div>
+            <div>
+              <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-2 block">Cover Color</label>
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-xl border-2 border-white/20 shrink-0 cursor-pointer relative overflow-hidden"
+                  style={{ background: editCoverColor }}
+                >
+                  <input
+                    type="color"
+                    value={editCoverColor}
+                    onChange={(e) => setEditCoverColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {["#6A68DF", "#9B87F5", "#FD91D9", "#58CC02", "#FF4B4B", "#FFBA33", "#1DB954", "#E91E63", "#00BCD4", "#FF5722"].map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setEditCoverColor(c)}
+                      className={cn(
+                        "w-7 h-7 rounded-lg border-2 transition-all hover:scale-110",
+                        editCoverColor === c ? "border-white scale-110" : "border-white/10"
+                      )}
+                      style={{ background: c }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
             <motion.button
               whileHover={{ scale: 1.02 }}
