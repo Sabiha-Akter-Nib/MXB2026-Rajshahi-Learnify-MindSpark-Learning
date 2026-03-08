@@ -216,6 +216,22 @@ const Signup = () => {
         }
         case 6: {
           if (!formData.version) { setError("ভার্সন নির্বাচন করুন"); break; }
+          setStep(7);
+          break;
+        }
+        case 7: {
+          // Validate username
+          const uname = formData.username.trim();
+          if (uname.length < 3) { setError("ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে"); break; }
+          if (!/^[a-zA-Z0-9_]+$/.test(uname)) { setError("শুধু ইংরেজি অক্ষর, সংখ্যা এবং _ ব্যবহার করুন"); break; }
+          // Check uniqueness
+          const { data: existing } = await supabase
+            .from("profiles")
+            .select("user_id")
+            .eq("username", uname)
+            .maybeSingle();
+          if (existing) { setError("এই ইউজারনেম ইতোমধ্যে ব্যবহৃত হয়েছে"); break; }
+          // Complete signup
           await invokeEdge("complete-signup", {
             email: formData.email,
             password: formData.password,
@@ -223,6 +239,7 @@ const Signup = () => {
             school_name: formData.school,
             class: formData.class,
             version: formData.version,
+            username: uname,
             ...(showDivision && formData.division ? { division: formData.division } : {}),
           });
           toast({ title: "অ্যাকাউন্ট তৈরি হয়েছে!", description: "এখন লগ ইন করুন।" });
