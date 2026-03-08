@@ -5,7 +5,7 @@ import {
   ArrowLeft, Brain, CheckCircle2, XCircle, Trophy, Sparkles, Loader2,
   Target, Lightbulb, Zap, Star, Clock, Award, BookOpen, Calculator,
   BookText, Atom, FlaskConical, Leaf, Globe, Laptop, Languages,
-  LayoutDashboard, RefreshCw,
+  LayoutDashboard, RefreshCw, Plus, X, Timer, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
