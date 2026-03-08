@@ -466,43 +466,10 @@ serve(async (req) => {
     const latestMessage = messages[messages.length - 1];
     let webContext = "";
 
-    // If the student asks only by chapter number, we must first resolve the exact chapter title.
+    // Parse chapter request info
     const chapterReq = latestMessage?.content ? parseChapterRequest(String(latestMessage.content)) : { hasExplicitChapterTitle: true };
 
-    if (latestMessage?.content && chapterReq?.chapterNumber && !chapterReq?.hasExplicitChapterTitle && !imageBase64) {
-      // Without a subject, we cannot safely map "chapter 2" to a real chapter.
-      if (!chapterReq.subjectHint) {
-        return sseText(
-          studentInfo?.version === "english"
-            ? "I cannot be 100% sure which book you mean from only a chapter number. Please tell me: (1) Subject/book (e.g., Bangla 1st Paper / Mathematics), and (2) the chapter title (or upload a photo of the chapter list/table of contents)."
-            : "শুধু 'অধ্যায় ২/৩' বললে আমি কোন বই/বিষয় বুঝবো নিশ্চিত হতে পারি না। দয়া করে বলো: (১) বিষয়/বই (যেমন বাংলা ১ম পত্র/গণিত), এবং (২) অধ্যায়ের নাম। অথবা বইয়ের সূচিপত্র/অধ্যায়ের তালিকার ছবি আপলোড করো।"
-        );
-      }
-
-      // With subject hint, do a targeted web lookup for the chapter title first.
-      if (PERPLEXITY_API_KEY) {
-        const tocQuery = extractSearchQuery(String(latestMessage.content), studentInfo?.class || 5);
-        webContext = await searchWeb(tocQuery, PERPLEXITY_API_KEY);
-      }
-
-      if (!webContext) {
-        return sseText(
-          studentInfo?.version === "english"
-            ? `I could not verify the exact title for Chapter ${chapterReq.chapterNumber} of ${chapterReq.subjectHint} from reliable web sources. Please share the chapter title, or upload a photo/PDF of the table of contents (সূচিপত্র).`
-            : `${chapterReq.subjectHint} এর অধ্যায় ${chapterReq.chapterNumber} এর সঠিক নাম আমি নির্ভরযোগ্যভাবে যাচাই করতে পারিনি। দয়া করে অধ্যায়ের নাম বলো, অথবা সূচিপত্র/চ্যাপ্টার লিস্টের ছবি/PDF আপলোড করো।`
-        );
-      }
-    } else if (!imageBase64) {
-      // Perform web search if we have Perplexity API key and there's a substantial question
-      if (PERPLEXITY_API_KEY && latestMessage?.content?.length > 10) {
-        const searchQuery = extractSearchQuery(latestMessage.content, studentInfo?.class || 5);
-        if (searchQuery) {
-          webContext = await searchWeb(searchQuery, PERPLEXITY_API_KEY);
-        }
-      }
-    }
-
-    // Fetch official curriculum content if available for this subject+class
+    // Fetch official curriculum content FIRST - if we have the textbook, no need to ask for uploads
     let curriculumContent = "";
     if (latestMessage?.content) {
       curriculumContent = await fetchCurriculumContent(
@@ -512,6 +479,25 @@ serve(async (req) => {
       );
       if (curriculumContent) {
         console.log("Curriculum content loaded:", curriculumContent.length, "chars");
+      }
+    }
+
+    // Only ask for clarification if we DON'T have curriculum content AND the chapter request is ambiguous
+    if (!curriculumContent && latestMessage?.content && chapterReq?.chapterNumber && !chapterReq?.hasExplicitChapterTitle && !imageBase64) {
+      if (!chapterReq.subjectHint) {
+        return sseText(
+          studentInfo?.version === "english"
+            ? "I cannot be 100% sure which book you mean from only a chapter number. Please tell me: (1) Subject/book (e.g., Bangla 1st Paper / Mathematics), and (2) the chapter title."
+            : "শুধু 'অধ্যায় ২/৩' বললে আমি কোন বই/বিষয় বুঝবো নিশ্চিত হতে পারি না। দয়া করে বলো: (১) বিষয়/বই (যেমন বাংলা ১ম পত্র/গণিত), এবং (২) অধ্যায়ের নাম।"
+        );
+      }
+    }
+
+    // Perform supplementary web search (secondary source)
+    if (!imageBase64 && PERPLEXITY_API_KEY && latestMessage?.content?.length > 10) {
+      const searchQuery = extractSearchQuery(latestMessage.content, studentInfo?.class || 5);
+      if (searchQuery) {
+        webContext = await searchWeb(searchQuery, PERPLEXITY_API_KEY);
       }
     }
 
