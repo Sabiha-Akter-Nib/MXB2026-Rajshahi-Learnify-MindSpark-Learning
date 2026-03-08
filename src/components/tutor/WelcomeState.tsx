@@ -49,7 +49,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         <motion.img
           src={mascotImg}
           alt="OddhaboshAI"
-          className="w-32 h-32 relative z-10 drop-shadow-xl"
+          className="w-24 h-24 relative z-10 drop-shadow-xl"
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
