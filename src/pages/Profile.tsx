@@ -921,9 +921,9 @@ const Profile = () => {
                           <span className="text-[10px] text-white/40 font-medium">{progress}%</span>
                         </div>
                         <div className="flex gap-2 text-[8px] sm:text-[9px] font-medium">
-                          <span className="text-[#58CC02]">{sub.correct}✓</span>
-                          <span className="text-[#FF4B4B]">{sub.wrong}✗</span>
-                          <span className="text-[#FFBA33]">{sub.skipped}—</span>
+                          <span className="text-[#58CC02]">{sub.correct} Correct</span>
+                          <span className="text-[#FF4B4B]">{sub.wrong} Wrong</span>
+                          <span className="text-[#FFBA33]">{sub.skipped} Skipped</span>
                         </div>
                       </div>
                     </motion.div>
