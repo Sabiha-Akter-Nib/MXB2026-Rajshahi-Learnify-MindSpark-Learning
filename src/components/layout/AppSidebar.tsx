@@ -60,7 +60,7 @@ export function AppSidebar() {
       <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
         <NavLink
           to={item.url}
-          end
+          className={({ isActive }: any) => `flex items-center gap-3 py-2.5 rounded-xl transition-all duration-200 ${collapsed ? 'justify-center px-0' : 'px-3'} ${isActive ? '!bg-gradient-to-r !from-[hsl(270,60%,50%)]/20 !to-[hsl(330,60%,50%)]/10 !text-white !font-semibold' : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'}`}
           className={`flex items-center gap-3 py-2.5 rounded-xl text-white/50 hover:text-white/80 hover:bg-white/[0.04] transition-all duration-200 ${collapsed ? 'justify-center px-0' : 'px-3'}`}
           activeClassName="!bg-gradient-to-r !from-[hsl(270,60%,50%)]/20 !to-[hsl(330,60%,50%)]/10 !text-white !font-semibold"
         >
