@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Mic, MicOff, Paperclip, X, Loader2, Settings2,
-  BookOpen, Brain, RefreshCw, Upload, Plus, Sparkles
+  BookOpen, Brain, RefreshCw, Upload, Plus, SendHorizontal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,15 +12,15 @@ interface QuickAction {
   labelBn: string;
   prompt: string;
   promptBn: string;
-  gradient: string;
+  color: string;
   isMultimodal?: boolean;
 }
 
 const quickActions: QuickAction[] = [
-  { icon: BookOpen, label: "Explain", labelBn: "ব্যাখ্যা করো", prompt: "Please explain in detail ", promptBn: "দয়া করে বিস্তারিতভাবে ব্যাখ্যা করো ", gradient: "from-primary to-primary-light" },
-  { icon: Brain, label: "Practice", labelBn: "অনুশীলন", prompt: "Give me MCQ, CQ and short questions for practice on ", promptBn: "অনুশীলনের জন্য MCQ, CQ এবং সংক্ষিপ্ত প্রশ্ন দাও ", gradient: "from-success to-[hsl(var(--success)/0.7)]" },
-  { icon: RefreshCw, label: "Revision", labelBn: "রিভিশন", prompt: "Help me revise and summarize ", promptBn: "রিভিশন এবং সারসংক্ষেপ করতে সাহায্য করো ", gradient: "from-accent to-accent-light" },
-  { icon: Upload, label: "Multimodal", labelBn: "মাল্টিমিডিয়া", prompt: "", promptBn: "", gradient: "from-warning to-[hsl(var(--warning)/0.7)]", isMultimodal: true },
+  { icon: BookOpen, label: "Explain", labelBn: "ব্যাখ্যা", prompt: "Please explain in detail ", promptBn: "দয়া করে বিস্তারিতভাবে ব্যাখ্যা করো ", color: "text-primary" },
+  { icon: Brain, label: "Practice", labelBn: "অনুশীলন", prompt: "Give me MCQ, CQ and short questions for practice on ", promptBn: "অনুশীলনের জন্য MCQ, CQ এবং সংক্ষিপ্ত প্রশ্ন দাও ", color: "text-[hsl(145,63%,42%)]" },
+  { icon: RefreshCw, label: "Revision", labelBn: "রিভিশন", prompt: "Help me revise and summarize ", promptBn: "রিভিশন এবং সারসংক্ষেপ করতে সাহায্য করো ", color: "text-accent" },
+  { icon: Upload, label: "Upload", labelBn: "আপলোড", prompt: "", promptBn: "", color: "text-[hsl(25,95%,55%)]", isMultimodal: true },
 ];
 
 interface PendingAttachment {
@@ -105,54 +105,51 @@ const EnhancedInputBar = ({
       <AnimatePresence>
         {pendingAttachment && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            className="mb-3"
+            exit={{ opacity: 0, y: 6 }}
+            className="mb-2"
           >
             <div className="relative inline-block">
               {pendingAttachment.type === "image" && pendingAttachment.url ? (
-                <img src={pendingAttachment.url} alt="Selected" className="max-h-28 rounded-2xl border-2 border-primary/20 shadow-md" />
+                <img src={pendingAttachment.url} alt="Selected" className="max-h-24 rounded-xl border border-border/40 shadow-sm" />
               ) : (
-                <div className="flex items-center gap-2.5 px-4 py-3 bg-secondary/60 rounded-2xl border border-primary/15">
+                <div className="flex items-center gap-2 px-3.5 py-2.5 bg-muted/50 rounded-xl border border-border/30">
                   <Paperclip className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">{pendingAttachment.name || "PDF Document"}</span>
+                  <span className="text-xs font-medium text-foreground">{pendingAttachment.name || "PDF Document"}</span>
                 </div>
               )}
               <button
                 onClick={handleRemoveAttachment}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center shadow-lg"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center shadow-md"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Quick actions row */}
+      {/* Quick actions */}
       <AnimatePresence>
         {showQuickActions && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="mb-3 flex gap-2.5 flex-wrap"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            className="mb-2.5 flex gap-2 flex-wrap"
           >
             {quickActions.map((action, i) => (
               <motion.button
                 key={i}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.04 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => handleQuickAction(action)}
-                className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-card border border-border/40 shadow-md hover:shadow-lg hover:border-primary/25 transition-all duration-250 text-sm font-semibold text-foreground font-heading"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-card border border-border/40 shadow-sm hover:shadow-md hover:border-primary/20 transition-all text-xs font-semibold text-foreground font-heading"
               >
-                <div className={cn("w-7 h-7 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-sm", action.gradient)}>
-                  <action.icon className="w-3.5 h-3.5 text-primary-foreground" />
-                </div>
+                <action.icon className={cn("w-3.5 h-3.5", action.color)} />
                 {isBangla ? action.labelBn : action.label}
               </motion.button>
             ))}
@@ -160,72 +157,89 @@ const EnhancedInputBar = ({
         )}
       </AnimatePresence>
 
-      {/* Main input container — Peach-accented glass card */}
-      <motion.div 
-        className={cn(
-          "relative rounded-[1.25rem] border transition-all duration-300 overflow-hidden",
-          isFocused || input.trim()
-            ? "border-primary/30 shadow-xl shadow-primary/[0.08]"
-            : "border-border/40 shadow-lg shadow-foreground/[0.04]"
+      {/* Recording indicator */}
+      <AnimatePresence>
+        {isRecording && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-2"
+          >
+            <div className="flex items-center gap-3 px-4 py-2.5 bg-destructive/5 border border-destructive/15 rounded-xl">
+              <motion.div
+                className="w-2 h-2 bg-destructive rounded-full"
+                animate={{ opacity: [1, 0.3, 1], scale: [1, 1.3, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+              <span className="text-xs font-semibold text-destructive font-heading flex-1">
+                {isBangla ? "শুনছি... কথা বলুন" : "Listening... speak now"}
+              </span>
+              <button
+                onClick={handleVoiceToggle}
+                className="text-xs font-medium text-destructive hover:underline"
+              >
+                {isBangla ? "থামান" : "Stop"}
+              </button>
+            </div>
+          </motion.div>
         )}
-        animate={{
-          borderColor: isFocused 
-            ? "hsl(270 60% 40% / 0.3)" 
-            : "hsl(240 10% 88% / 0.4)",
-        }}
+      </AnimatePresence>
+
+      {/* Main input container */}
+      <div 
+        className={cn(
+          "relative rounded-2xl border bg-card transition-all duration-200 overflow-hidden",
+          isFocused
+            ? "border-primary/25 shadow-lg shadow-primary/[0.06] ring-1 ring-primary/10"
+            : "border-border/50 shadow-md"
+        )}
       >
-        {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-card via-card to-secondary/30 pointer-events-none" />
-        
-        {/* Peach accent stripe at top */}
-        <motion.div 
-          className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-[hsl(25,95%,70%)] to-accent"
-          animate={{ opacity: isFocused || input.trim() ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
+        {/* Top accent line */}
+        <div 
+          className={cn(
+            "absolute top-0 left-4 right-4 h-[1.5px] rounded-full transition-opacity duration-300",
+            isFocused ? "opacity-100" : "opacity-0"
+          )}
+          style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(25 95% 70%), hsl(var(--primary)))" }}
         />
 
-        <div className="relative flex items-end gap-2 px-3 py-2.5">
-          {/* Left action buttons */}
-          <div className="flex items-center gap-0.5 pb-1">
+        <div className="flex items-end gap-1.5 px-2.5 py-2">
+          {/* Left actions */}
+          <div className="flex items-center gap-0.5 pb-0.5">
             <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
             
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+            <button
               onClick={() => imageInputRef.current?.click()}
               disabled={disabled}
-              className="h-9 w-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/8 transition-all duration-200"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:bg-primary/6 transition-colors"
             >
-              <Paperclip className="w-[18px] h-[18px]" />
-            </motion.button>
+              <Paperclip className="w-4 h-4" />
+            </button>
 
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+            <button
               onClick={() => setShowQuickActions(!showQuickActions)}
               className={cn(
-                "h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200",
+                "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
                 showQuickActions 
-                  ? "text-primary bg-primary/10" 
-                  : "text-muted-foreground hover:text-primary hover:bg-primary/8"
+                  ? "text-primary bg-primary/8" 
+                  : "text-muted-foreground/60 hover:text-primary hover:bg-primary/6"
               )}
             >
-              <Plus className={cn("w-[18px] h-[18px] transition-transform duration-300", showQuickActions && "rotate-45")} />
-            </motion.button>
+              <Plus className={cn("w-4 h-4 transition-transform duration-200", showQuickActions && "rotate-45")} />
+            </button>
 
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+            <button
               onClick={onTogglePersona}
               className={cn(
-                "h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200",
+                "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
                 showPersonaSelector 
-                  ? "text-primary bg-primary/10" 
-                  : "text-muted-foreground hover:text-primary hover:bg-primary/8"
+                  ? "text-primary bg-primary/8" 
+                  : "text-muted-foreground/60 hover:text-primary hover:bg-primary/6"
               )}
             >
-              <Settings2 className="w-[18px] h-[18px]" />
-            </motion.button>
+              <Settings2 className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Textarea */}
@@ -236,95 +250,57 @@ const EnhancedInputBar = ({
             onKeyDown={onKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder={isBangla ? "মেসেজ লিখো..." : "Message OddhaboshAI..."}
+            placeholder={isBangla ? "তোমার প্রশ্ন লেখো..." : "Ask OddhaboshAI..."}
             disabled={disabled || isTyping}
-            className="flex-1 bg-transparent border-none resize-none min-h-[28px] max-h-[120px] text-sm placeholder:text-muted-foreground/40 focus:ring-0 focus:outline-none py-1.5 font-heading text-foreground"
+            className="flex-1 bg-transparent border-none resize-none min-h-[32px] max-h-[120px] text-[13px] placeholder:text-muted-foreground/35 focus:ring-0 focus:outline-none py-1.5 font-heading text-foreground leading-relaxed"
             rows={1}
           />
 
-          {/* Right: AI badge + send/mic */}
-          <div className="flex items-center gap-2 pb-1">
-            {/* AI sparkle badge */}
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-primary/8 to-[hsl(25,95%,70%)/0.08] border border-primary/10">
-              <Sparkles className="w-3 h-3 text-primary" />
-              <span className="text-[10px] font-bold font-heading text-primary tracking-wide">AI</span>
-            </div>
+          {/* Right: mic + send */}
+          <div className="flex items-center gap-1.5 pb-0.5">
+            {/* Mic button */}
+            <button
+              onClick={handleVoiceToggle}
+              disabled={isProcessing || disabled || (canSend as unknown as boolean)}
+              className={cn(
+                "h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                isRecording
+                  ? "text-destructive bg-destructive/10"
+                  : canSend
+                    ? "text-muted-foreground/20 cursor-default"
+                    : "text-muted-foreground/50 hover:text-primary hover:bg-primary/6"
+              )}
+            >
+              {isProcessing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : isRecording ? (
+                <MicOff className="w-4 h-4" />
+              ) : (
+                <Mic className="w-4 h-4" />
+              )}
+            </button>
 
-            {/* Send / Mic button */}
-            {canSend ? (
-              <motion.button
-                whileTap={{ scale: 0.85 }}
-                whileHover={{ scale: 1.08 }}
-                onClick={onSend}
-                className="relative w-10 h-10 rounded-full bg-gradient-to-br from-primary via-primary to-[hsl(25,95%,70%)] flex items-center justify-center shadow-lg shadow-primary/35 hover:shadow-xl hover:shadow-primary/45 transition-all duration-300"
-              >
-                {/* Glow ring */}
-                <motion.div
-                  className="absolute inset-0 rounded-full"
-                  animate={{
-                    boxShadow: [
-                      "0 0 12px hsl(270 60% 40% / 0.3)",
-                      "0 0 20px hsl(270 60% 40% / 0.5)",
-                      "0 0 12px hsl(270 60% 40% / 0.3)",
-                    ],
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-                {isTyping ? (
-                  <Loader2 className="w-4.5 h-4.5 text-primary-foreground animate-spin" />
-                ) : (
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="19" x2="12" y2="5" />
-                    <polyline points="5 12 12 5 19 12" />
-                  </svg>
-                )}
-              </motion.button>
-            ) : (
-              <motion.button
-                animate={isRecording ? { scale: [1, 1.15, 1] } : {}}
-                transition={{ duration: 0.7, repeat: isRecording ? Infinity : 0 }}
-                onClick={handleVoiceToggle}
-                disabled={isProcessing || disabled}
-                className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300",
-                  isRecording
-                    ? "bg-destructive/15 text-destructive shadow-lg shadow-destructive/25 border border-destructive/20"
-                    : "bg-gradient-to-br from-primary to-[hsl(25,95%,70%)] text-primary-foreground shadow-lg shadow-primary/30"
-                )}
-              >
-                {isProcessing ? (
-                  <Loader2 className="w-4.5 h-4.5 animate-spin" />
-                ) : isRecording ? (
-                  <MicOff className="w-4.5 h-4.5" />
-                ) : (
-                  <Mic className="w-4.5 h-4.5" />
-                )}
-              </motion.button>
-            )}
+            {/* Send button */}
+            <motion.button
+              whileTap={canSend ? { scale: 0.9 } : {}}
+              onClick={canSend ? onSend : undefined}
+              disabled={!canSend}
+              className={cn(
+                "h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200",
+                canSend
+                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 hover:shadow-lg hover:brightness-110"
+                  : "bg-muted/40 text-muted-foreground/30"
+              )}
+            >
+              {isTyping ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <SendHorizontal className="w-4 h-4" />
+              )}
+            </motion.button>
           </div>
         </div>
-      </motion.div>
-
-      {/* Recording indicator */}
-      <AnimatePresence>
-        {isRecording && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            className="absolute -top-14 left-1/2 -translate-x-1/2 flex items-center gap-2.5 px-5 py-2.5 bg-card border border-destructive/20 rounded-full shadow-lg backdrop-blur-md"
-          >
-            <motion.div
-              className="w-2.5 h-2.5 bg-destructive rounded-full"
-              animate={{ opacity: [1, 0.3, 1], scale: [1, 1.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
-            />
-            <span className="text-sm font-semibold text-destructive font-heading">
-              {isBangla ? "রেকর্ডিং..." : "Recording..."}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
     </div>
   );
 };
