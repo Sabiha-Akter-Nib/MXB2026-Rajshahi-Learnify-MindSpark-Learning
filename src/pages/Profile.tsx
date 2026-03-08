@@ -844,7 +844,7 @@ const Profile = () => {
           {/* ── Weekly XP Chart ── */}
           <GlassCard className="p-4 sm:p-5">
             <h3 className="text-white font-bold text-sm sm:text-base text-center mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
-              Weekly XP Points
+              Weekly XP Points History
             </h3>
             <p className="text-white/40 text-[10px] sm:text-xs text-center mb-3">Last 7 days</p>
 
@@ -876,25 +876,58 @@ const Profile = () => {
                     }))}
                     margin={{ top: 20, right: 10, left: 0, bottom: 0 }}
                   >
-                    <XAxis dataKey="label" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 9 }}
+                      axisLine={false}
+                      tickLine={false}
+                      interval={0}
+                    />
                     <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} width={30} />
                     <Tooltip content={() => null} />
-                    {/* Target user's line - gray when viewing others, purple when own */}
+                    {/* Target user's line */}
                     <Line
-                      type="monotone"
+                      type="linear"
                       dataKey="targetXp"
                       stroke={isOwnProfile ? "#9B87F5" : "rgba(255,255,255,0.35)"}
                       strokeWidth={2}
-                      dot={{ r: 4, fill: isOwnProfile ? "#9B87F5" : "rgba(255,255,255,0.35)", stroke: "none" }}
+                      dot={(props: any) => {
+                        const { cx, cy, payload } = props;
+                        if (cx == null || cy == null) return null;
+                        const xpVal = payload?.targetXp ?? 0;
+                        const isGray = !isOwnProfile;
+                        return (
+                          <g key={`target-${props.index}`}>
+                            <text x={cx} y={cy - 14} textAnchor="middle" fill={isGray ? "rgba(255,255,255,0.4)" : "#BBA7FD"} fontSize={9} fontWeight={600}>{xpVal}</text>
+                            <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
+                              <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill={isGray ? "rgba(255,255,255,0.35)" : "#BBA7FD"} stroke={isGray ? "rgba(255,255,255,0.25)" : "#9B87F5"} strokeWidth="1" />
+                            </svg>
+                          </g>
+                        );
+                      }}
+                      activeDot={{ r: 6, fill: isOwnProfile ? "#BBA7FD" : "rgba(255,255,255,0.5)", stroke: "#fff", strokeWidth: 2 }}
                     />
                     {/* Self line when viewing other profile */}
                     {!isOwnProfile && weeklyXpSelf.length > 0 && (
                       <Line
-                        type="monotone"
+                        type="linear"
                         dataKey="selfXp"
                         stroke="#9B87F5"
                         strokeWidth={2}
-                        dot={{ r: 4, fill: "#9B87F5", stroke: "none" }}
+                        dot={(props: any) => {
+                          const { cx, cy, payload } = props;
+                          if (cx == null || cy == null) return null;
+                          const xpVal = payload?.selfXp ?? 0;
+                          return (
+                            <g key={`self-${props.index}`}>
+                              <text x={cx} y={cy - 14} textAnchor="middle" fill="#BBA7FD" fontSize={9} fontWeight={600}>{xpVal}</text>
+                              <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill="#BBA7FD" stroke="#9B87F5" strokeWidth="1" />
+                              </svg>
+                            </g>
+                          );
+                        }}
+                        activeDot={{ r: 6, fill: "#BBA7FD", stroke: "#fff", strokeWidth: 2 }}
                       />
                     )}
                   </LineChart>
