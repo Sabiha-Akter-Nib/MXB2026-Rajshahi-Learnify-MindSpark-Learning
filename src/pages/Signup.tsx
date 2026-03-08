@@ -395,6 +395,20 @@ const Signup = () => {
             </div>
           </motion.div>
         );
+      case 7:
+        return (
+          <motion.div key="step7" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>একটি ইউজারনেম বেছে নাও</label>
+            <input type="text" placeholder="your_username" value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 30) })}
+              onKeyDown={(e) => e.key === "Enter" && handleNext()}
+              className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
+              style={error ? inputErrorStyle : inputStyle} />
+            <p className="text-[10px] mt-1.5 opacity-60" style={{ color: labelColor }}>
+              শুধু ইংরেজি অক্ষর, সংখ্যা এবং _ ব্যবহার করা যাবে
+            </p>
+          </motion.div>
+        );
       default:
         return null;
     }
