@@ -749,7 +749,7 @@ const Analytics = () => {
               {/* Big number */}
               <div className="mb-2.5">
                 <span
-                  className="text-white text-4xl sm:text-5xl font-bold leading-none"
+                  className="text-white text-3xl sm:text-4xl font-bold leading-none"
                   style={{ fontFamily: "'Black Han Sans', sans-serif" }}
                 >
                   {studyHours[studyTimeRange]}
