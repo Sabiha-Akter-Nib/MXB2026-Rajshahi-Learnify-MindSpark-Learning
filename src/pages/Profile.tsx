@@ -703,6 +703,35 @@ const Profile = () => {
                 className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30"
               />
             </div>
+            <div>
+              <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-2 block">Cover Color</label>
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-xl border-2 border-white/20 shrink-0 cursor-pointer relative overflow-hidden"
+                  style={{ background: editCoverColor }}
+                >
+                  <input
+                    type="color"
+                    value={editCoverColor}
+                    onChange={(e) => setEditCoverColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {["#6A68DF", "#9B87F5", "#FD91D9", "#58CC02", "#FF4B4B", "#FFBA33", "#1DB954", "#E91E63", "#00BCD4", "#FF5722"].map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setEditCoverColor(c)}
+                      className={cn(
+                        "w-7 h-7 rounded-lg border-2 transition-all hover:scale-110",
+                        editCoverColor === c ? "border-white scale-110" : "border-white/10"
+                      )}
+                      style={{ background: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
