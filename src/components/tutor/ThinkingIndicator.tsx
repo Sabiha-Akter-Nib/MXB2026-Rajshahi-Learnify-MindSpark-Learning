@@ -22,29 +22,41 @@ const ThinkingIndicator = ({ startTime }: ThinkingIndicatorProps) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="flex gap-3 mb-6"
+      className="flex gap-3 mb-5"
     >
       {/* Avatar */}
-      <div className="w-9 h-9 flex-shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-[#EFB995]/20 to-[#6A68DF]/20 flex items-center justify-center">
+      <motion.div
+        animate={{ scale: [1, 1.05, 1] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        className="w-9 h-9 flex-shrink-0 rounded-full overflow-hidden flex items-center justify-center shadow-md"
+        style={{
+          background: `linear-gradient(135deg, hsla(270, 50%, 85%, 0.4) 0%, hsla(320, 40%, 85%, 0.3) 50%, hsla(30, 60%, 88%, 0.3) 100%)`,
+        }}
+      >
         <img src={mascotImg} alt="AI" className="w-8 h-8 object-contain" />
-      </div>
+      </motion.div>
 
       {/* Thinking bubble */}
-      <div className="bg-card border border-border/30 rounded-2xl rounded-bl-md px-5 py-3.5 shadow-sm">
+      <div className="bg-card border border-border/25 rounded-2xl rounded-bl-md px-5 py-3.5 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
-            <span className="w-2 h-2 bg-[#6A68DF]/50 rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1s' }} />
-            <span className="w-2 h-2 bg-[#6A68DF]/50 rounded-full animate-bounce" style={{ animationDelay: '150ms', animationDuration: '1s' }} />
-            <span className="w-2 h-2 bg-[#6A68DF]/50 rounded-full animate-bounce" style={{ animationDelay: '300ms', animationDuration: '1s' }} />
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                className="w-2 h-2 rounded-full bg-primary/40"
+                animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
+              />
+            ))}
           </div>
           {elapsed >= 2 && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground border-l border-border/40 pl-3"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground border-l border-border/30 pl-3"
             >
-              <Sparkles className="w-3 h-3 text-[#6A68DF]" />
-              <span>Thinking for {elapsed}s...</span>
+              <Sparkles className="w-3 h-3 text-primary" />
+              <span className="font-heading font-medium">Thinking for {elapsed}s...</span>
             </motion.div>
           )}
         </div>
