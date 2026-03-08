@@ -369,26 +369,26 @@ const Assessment = () => {
                       whileHover={{ scale: 1.05, y: -4 }}
                       whileTap={{ scale: 0.96 }}
                       onClick={() => setSelectedSubject(subject)}
-                      className="rounded-[20px] relative overflow-hidden aspect-[4/3] flex items-end transition-all"
+                      className="rounded-[20px] relative overflow-hidden p-4 flex flex-col justify-end min-h-[110px] text-left transition-all"
                       style={{
+                        background: `linear-gradient(135deg, ${colors.icon}18 0%, ${colors.icon}08 100%)`,
+                        backdropFilter: "blur(24px) saturate(1.5)",
                         border: `1.5px solid ${colors.border}`,
-                        boxShadow: `0 8px 28px ${colors.shadow}, inset 0 1px 0 rgba(255,255,255,0.5)`,
+                        boxShadow: `0 8px 28px ${colors.shadow}, inset 0 1px 0 rgba(255,255,255,0.7)`,
                       }}
                     >
-                      {/* Background image */}
-                      <img src={subjectIcon3d} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                      {/* Color gradient overlay */}
-                      <div className="absolute inset-0" style={{
-                        background: `linear-gradient(180deg, ${colors.icon}30 0%, ${colors.icon}90 70%, ${colors.icon}CC 100%)`,
-                      }} />
+                      {/* Decorative mascot - transparent */}
+                      <img src={mascotImg} alt="" className="absolute -top-3 -right-3 w-16 h-16 object-contain pointer-events-none" style={{ opacity: 0.12 }} />
+                      {/* Decorative XP star - transparent */}
+                      <img src={statXp3d} alt="" className="absolute bottom-1 right-2 w-10 h-10 object-contain pointer-events-none" style={{ opacity: 0.1 }} />
+                      {/* Decorative bubble - transparent */}
+                      <img src={subjectIcon3d} alt="" className="absolute top-1 left-[40%] w-14 h-14 object-contain pointer-events-none" style={{ opacity: 0.08 }} />
                       {/* Glow orb */}
-                      <div className="absolute top-2 right-2 w-12 h-12 rounded-full" style={{ background: `radial-gradient(circle, ${colors.glow}, transparent 70%)`, opacity: 0.6 }} />
-                      {/* Text */}
-                      <div className="relative z-10 w-full px-3.5 pb-3 pt-1">
-                        <p className="font-heading font-extrabold text-sm text-white leading-tight drop-shadow-md" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.3)" }}>
-                          {isBangla ? subject.name_bn || subject.name : subject.name}
-                        </p>
-                      </div>
+                      <div className="absolute -top-6 -left-6 w-20 h-20 rounded-full pointer-events-none" style={{ background: `radial-gradient(circle, ${colors.glow}, transparent 70%)`, opacity: 0.35 }} />
+                      {/* Text - large, left aligned */}
+                      <p className="relative z-10 font-heading font-extrabold text-base sm:text-lg leading-tight" style={{ color: colors.icon }}>
+                        {isBangla ? subject.name_bn || subject.name : subject.name}
+                      </p>
                     </motion.button>
                   );
                 })}
