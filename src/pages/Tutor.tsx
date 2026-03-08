@@ -23,6 +23,7 @@ import MessageBubble from "@/components/tutor/MessageBubble";
 import ThinkingIndicator from "@/components/tutor/ThinkingIndicator";
 import EnhancedInputBar from "@/components/tutor/EnhancedInputBar";
 import SubjectSelector from "@/components/tutor/SubjectSelector";
+import mascotImg from "@/assets/ai-mascot-3d.png";
 import {
   AlertDialog,
   AlertDialogAction,
