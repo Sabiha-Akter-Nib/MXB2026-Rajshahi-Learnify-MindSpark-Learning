@@ -350,6 +350,63 @@ const Analytics = () => {
         });
 
         setWeeklyChartData(weekData);
+
+        // ── Study hours by time range ──
+        const allSessions = sessions || [];
+        const now = new Date();
+        const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+        const monthStart2 = startOfMonth(now);
+        const quarterStart = startOfQuarter(now);
+        const yearStart = startOfYear(now);
+
+        let weeklyMins = 0, monthlyMins = 0, quarterlyMins = 0, yearlyMins = 0;
+        allSessions.forEach((s) => {
+          const d = new Date(s.created_at);
+          const mins = s.duration_minutes || 0;
+          if (d >= yearStart) yearlyMins += mins;
+          if (d >= quarterStart) quarterlyMins += mins;
+          if (d >= monthStart2) monthlyMins += mins;
+          if (d >= weekStart) weeklyMins += mins;
+        });
+        setStudyHours({
+          weekly: Math.round((weeklyMins / 60) * 10) / 10,
+          monthly: Math.round((monthlyMins / 60) * 10) / 10,
+          quarterly: Math.round((quarterlyMins / 60) * 10) / 10,
+          yearly: Math.round((yearlyMins / 60) * 10) / 10,
+        });
+
+        // Monthly bar chart data (last 5 months)
+        const barData: { label: string; hours: number }[] = [];
+        for (let i = 4; i >= 0; i--) {
+          const mStart = startOfMonth(subMonthsFn(now, i));
+          const mEnd = endOfMonth(subMonthsFn(now, i));
+          let mins = 0;
+          allSessions.forEach((s) => {
+            const d = new Date(s.created_at);
+            if (d >= mStart && d <= mEnd) mins += s.duration_minutes || 0;
+          });
+          barData.push({ label: format(mStart, "MMM"), hours: Math.round((mins / 60) * 10) / 10 });
+        }
+        setMonthlyBarData(barData);
+
+        // ── Lessons & problem solving ──
+        const allAssessments = assessments || [];
+        const { data: fullAssessments } = await supabase
+          .from("assessments")
+          .select("correct_answers, total_questions")
+          .eq("user_id", user.id);
+
+        const completedLessons = allAssessments.length;
+        setLessonsCompleted(completedLessons);
+        setTotalLessons(completedLessons); // total = completed so far
+
+        let totalCorrect = 0, totalQ = 0;
+        (fullAssessments || []).forEach((a) => {
+          totalCorrect += a.correct_answers || 0;
+          totalQ += a.total_questions || 0;
+        });
+        setProblemSolvingRate(totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0);
+
       } catch (err) {
         console.error("Analytics fetch error:", err);
       } finally {
