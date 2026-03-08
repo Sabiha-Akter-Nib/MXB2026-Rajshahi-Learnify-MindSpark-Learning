@@ -490,6 +490,12 @@ const Analytics = () => {
             </div>
           </GlassCard>
 
+          {/* ========== LEARNING PROGRESS CARD ========== */}
+          <LearningProgressCard
+            weeklyChartData={weeklyChartData}
+            isBangla={profile?.version === "bangla"}
+          />
+
           {/* ========== ADVANCED PANELS ========== */}
           <div className="flex flex-col gap-5">
             <StudyMomentumEngine />
