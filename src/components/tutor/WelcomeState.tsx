@@ -49,10 +49,10 @@ const suggestions = [
     labelBn: "রিভিশন",
     prompt: "Help me revise ",
     promptBn: "রিভিশন করতে সাহায্য করো ",
-    gradientFrom: "hsl(42, 85%, 52%)",
-    gradientTo: "hsl(35, 80%, 58%)",
-    shadow: "hsla(42, 85%, 52%, 0.4)",
-    textColor: "hsl(42, 85%, 38%)",
+    gradientFrom: "hsl(30, 78%, 68%)",
+    gradientTo: "hsl(25, 72%, 76%)",
+    shadow: "hsla(30, 78%, 68%, 0.4)",
+    textColor: "hsl(30, 70%, 42%)",
   },
 ];
 
