@@ -265,6 +265,25 @@ const Analytics = () => {
   const [problemSolvingRate, setProblemSolvingRate] = useState(0);
   const [totalExams, setTotalExams] = useState(0);
   const [leaderboardRank, setLeaderboardRank] = useState<number | null>(null);
+  const [weeklySummary, setWeeklySummary] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState(false);
+
+  const fetchWeeklySummary = useCallback(async () => {
+    if (!user) return;
+    setSummaryLoading(true);
+    setSummaryError(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("weekly-summary");
+      if (error) throw error;
+      setWeeklySummary(data?.summary || null);
+    } catch (err) {
+      console.error("Weekly summary error:", err);
+      setSummaryError(true);
+    } finally {
+      setSummaryLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
