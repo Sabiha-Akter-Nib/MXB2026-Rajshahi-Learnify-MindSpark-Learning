@@ -769,11 +769,6 @@ const ResultsScreen = ({
           )}
         </motion.div>
 
-        {/* Tugi */}
-        <motion.div initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5, type: "spring", stiffness: 150 }}>
-          <motion.img src={tugiImg} alt="Tugi" className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-xl"
-            animate={{ y: [0, -6, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} />
-        </motion.div>
       </div>
 
       {/* Message */}
