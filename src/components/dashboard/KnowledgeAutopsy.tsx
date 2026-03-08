@@ -155,20 +155,6 @@ const KnowledgeAutopsy = () => {
               : "Understanding faded here—not failed"}
           </p>
         </div>
-        {/* Badge */}
-        <div
-          className="shrink-0 rounded-full px-3.5 py-1.5 flex items-center gap-1.5"
-          style={{
-            background: 'rgba(240, 235, 250, 0.15)',
-            border: '2px solid rgba(240, 235, 250, 0.35)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          }}
-        >
-          <Clock className="w-3 h-3 text-white" />
-          <span className="text-white text-xs sm:text-sm font-bold whitespace-nowrap">
-            {isBangla ? "টাইমলাইন" : "Autopsy™"}
-          </span>
-        </div>
       </div>
 
       {/* ── Autopsy Cards (side by side grid) ── */}
