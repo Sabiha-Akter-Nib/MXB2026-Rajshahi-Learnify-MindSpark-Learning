@@ -619,18 +619,20 @@ const Profile = () => {
           </div>
 
           {/* ── Subject Progress ── */}
-          {subjectProgress.length > 0 && (
-            <GlassCard className="p-4 sm:p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <img src={subjectBooks3dNew} alt="Subjects" className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 object-contain" />
-                <div
-                  className="flex-1 rounded-xl p-3"
-                  style={{ background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)" }}
-                >
-                  <h3 className="text-white font-semibold text-sm sm:text-base">Subject Progress</h3>
-                  <p className="text-white/50 text-[10px] sm:text-xs">Your performance across subjects</p>
-                </div>
+          <GlassCard className="p-4 sm:p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <img src={subjectBooks3dNew} alt="Subjects" className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 object-contain" />
+              <div
+                className="flex-1 rounded-xl p-3"
+                style={{ background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)" }}
+              >
+                <h3 className="text-white font-semibold text-sm sm:text-base">Subject Progress</h3>
+                <p className="text-white/50 text-[10px] sm:text-xs">Your performance across subjects</p>
               </div>
+            </div>
+            {subjectProgress.length === 0 ? (
+              <div className="text-center py-8 text-white/40 text-sm">No subjects found for your class.</div>
+            ) : (
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 {subjectProgress.map((sub, index) => {
                   const total = sub.correct + sub.wrong + sub.skipped;
@@ -668,8 +670,8 @@ const Profile = () => {
                   );
                 })}
               </div>
-            </GlassCard>
-          )}
+            )}
+          </GlassCard>
 
           {/* ── Bloom Level Progress ── */}
           {bloomLevels.length > 0 && (
