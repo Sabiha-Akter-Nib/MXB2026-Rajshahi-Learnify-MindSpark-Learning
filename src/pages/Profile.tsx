@@ -862,7 +862,7 @@ const Profile = () => {
             {!isOwnProfile && weeklyXpSelf.length > 0 && (
               <div className="flex items-center gap-4 mb-3 px-1">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "rgba(255,255,255,0.35)" }} />
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#EFB995" }} />
                   <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">{profile?.full_name || "User"}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
