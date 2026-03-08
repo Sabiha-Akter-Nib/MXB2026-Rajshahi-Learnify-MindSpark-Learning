@@ -13,7 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Tutor from "./pages/Tutor";
-import Subjects from "./pages/Subjects";
+
 import Practice from "./pages/Practice";
 import Assessment from "./pages/Assessment";
 import LearningPlan from "./pages/LearningPlan";
