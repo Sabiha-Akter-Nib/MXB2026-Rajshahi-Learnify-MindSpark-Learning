@@ -163,11 +163,14 @@ const Practice = () => {
     setSessionEndTime(null);
     setResultsConfettiDone(false);
     try {
+      // Combine main topic with additional topics
+      const allTopics = [topic, ...additionalTopics.map(at => at.topic)].join(", ");
+      const allSubjects = [selectedSubjectName, ...additionalTopics.map(at => at.subjectName).filter(Boolean)].filter(Boolean).join(", ");
       const { data, error: invokeError } = await supabase.functions.invoke("generate-practice", {
         body: {
-          topic, studentClass: profile?.class || 5, version: profile?.version || "bangla",
+          topic: allTopics, studentClass: profile?.class || 5, version: profile?.version || "bangla",
           count: questionCount, bloomLevel: selectedBloomLevel !== "all" ? selectedBloomLevel : undefined,
-          subjectName: selectedSubjectName,
+          subjectName: allSubjects || undefined,
         },
       });
       if (invokeError) throw new Error(invokeError.message || "Failed to generate questions");
