@@ -538,7 +538,7 @@ const Analytics = () => {
           </GlassCard>
 
           {/* ========== PROFILE STAT CARDS (2x2 grid) ========== */}
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-4 gap-2">
             {[
               { img: statStreak3d, value: String(currentStreak), label: "Total Streak", grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", bg: "linear-gradient(150deg, rgba(187,167,253,0.25) 0%, rgba(155,135,245,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(155,135,245,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
               { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Leaderboard Rank", grad: "linear-gradient(135deg, #6A68DF, #9B87F5)", bg: "linear-gradient(150deg, rgba(106,104,223,0.25) 0%, rgba(88,80,200,0.15) 50%, rgba(155,135,245,0.1) 100%)", shadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
@@ -551,12 +551,12 @@ const Analytics = () => {
                 style={{ background: card.bg, boxShadow: card.shadow }}
               >
                 <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.04) 50%, transparent 70%)" }} />
-                <div className="relative z-10 p-3.5 sm:p-4 flex flex-col items-center text-center">
-                  <img src={card.img} alt={card.label} className="w-12 h-12 sm:w-14 sm:h-14 object-contain mb-2" />
-                  <p className="text-white text-2xl sm:text-3xl font-extrabold leading-none tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
+                <div className="relative z-10 p-3 sm:p-3.5 flex flex-col items-center text-center">
+                  <img src={card.img} alt={card.label} className="w-14 h-14 sm:w-16 sm:h-16 object-contain mb-1.5" />
+                  <p className="text-white text-lg sm:text-xl font-extrabold leading-none tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
                     <span style={{ background: card.grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{card.value}</span>
                   </p>
-                  <p className="text-white/50 text-[10px] sm:text-xs font-medium mt-1">{card.label}</p>
+                  <p className="text-white/50 text-[8px] sm:text-[10px] font-medium mt-1 whitespace-nowrap">{card.label}</p>
                 </div>
               </div>
             ))}
