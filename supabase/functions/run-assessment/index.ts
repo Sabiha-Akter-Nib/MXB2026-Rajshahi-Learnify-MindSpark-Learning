@@ -6,8 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BLOOM_LEVELS = ["remember", "understand", "apply", "analyze", "evaluate", "create"];
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -19,39 +17,29 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
-    // Validate user from JWT token
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("Authorization header required");
-    }
+    if (!authHeader) throw new Error("Authorization header required");
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
     if (authError || !user) {
-      console.error("Auth error:", authError);
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const userId = user.id;
+    if (!LOVABLE_API_KEY) throw new Error("AI service not configured");
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error("AI service not configured");
-    }
+    const { action, subjectId, topic, bloomLevel, answers, questions, count = 25, subjectName } = await req.json();
 
-    const { action, subjectId, topic, bloomLevel, answers, assessmentId, questions, tutorContext } = await req.json();
-
-    // Helper: fetch curriculum content for known subject+class
-    async function fetchCurriculumForAssessment(subjectName: string, studentClass: number): Promise<string> {
+    // Helper: fetch curriculum content
+    async function fetchCurriculumForAssessment(sName: string, studentClass: number): Promise<string> {
       const curriculumFiles: Record<string, string> = {
         "Bangla 1st Paper|7": "bangla-1st-paper-class-7.txt",
       };
       for (const key of Object.keys(curriculumFiles)) {
         const [subj, cls] = key.split("|");
-        if (parseInt(cls) === studentClass && subjectName.toLowerCase().includes(subj.toLowerCase())) {
+        if (parseInt(cls) === studentClass && sName.toLowerCase().includes(subj.toLowerCase())) {
           const urls = [
             `${supabaseUrl}/storage/v1/object/public/curriculum/${curriculumFiles[key]}`,
             `https://mindsparklearning.lovable.app/data/${curriculumFiles[key]}`,
@@ -72,77 +60,69 @@ serve(async (req) => {
     }
 
     if (action === "generate") {
-      // Generate assessment questions from tutor context
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("class")
-        .eq("user_id", userId)
-        .single();
+      const { data: profile } = await supabase.from("profiles").select("class").eq("user_id", userId).single();
+      const { data: subject } = subjectId
+        ? await supabase.from("subjects").select("name, name_bn").eq("id", subjectId).single()
+        : { data: null };
 
-      const { data: subject } = subjectId ? await supabase
-        .from("subjects")
-        .select("name, name_bn")
-        .eq("id", subjectId)
-        .single() : { data: null };
-
-      const currentLevel = bloomLevel || "remember";
-      const levelIndex = BLOOM_LEVELS.indexOf(currentLevel);
-      const isBangla = true;
-
-      // Fetch curriculum content if available
-      const subjectName = subject?.name || "";
-      const curriculumContent = subjectName ? await fetchCurriculumForAssessment(subjectName, profile?.class || 7) : "";
-      
-      // Use tutor context if available
-      const contextInfo = tutorContext 
-        ? `Based on this AI Tutor conversation content:\n${tutorContext.slice(0, 2000)}\n\n` 
-        : "";
+      const sName = subject?.name || subjectName || "";
+      const curriculumContent = sName ? await fetchCurriculumForAssessment(sName, profile?.class || 7) : "";
+      const isEnglishSubject = sName.toLowerCase().includes("english") || sName.toLowerCase().includes("ইংরেজি");
+      const questionCount = count || 25;
 
       const curriculumInfo = curriculumContent ? `
 OFFICIAL NCTB TEXTBOOK CONTENT (PRIMARY SOURCE - ALL questions MUST be based on this):
 ${curriculumContent}
-
 CRITICAL: Generate questions ONLY from the official textbook content above.
 ` : "";
 
-      const prompt = `${curriculumInfo}${contextInfo}Generate exactly 5 MCQ assessment questions for a Class ${profile?.class || 5} student (bangla medium).
+      const comboMCQInstruction = isEnglishSubject ? "" : `
 
-IMPORTANT: Generate questions in Bengali language.
+IMPORTANT - COMBINATION MCQ PATTERN:
+For at least 30-40% of questions, use the Bangladeshi "combination MCQ" format with Roman numerals:
+Present 3 statements (i, ii, iii), then ask "কোনটি সঠিক?" with 4 combination options:
+- ক. i ও ii
+- খ. i ও iii  
+- গ. ii ও iii
+- ঘ. i, ii ও iii
 
-Subject: ${subject?.name || "General Knowledge"}
-Topic: ${topic || "Based on the conversation above"}
-Bloom's Taxonomy Level: ${currentLevel.toUpperCase()}
+Include the statements in the question text. The options array contains the 4 combinations.
+`;
 
-Level expectations for MCQ format:
-- Remember: Basic recall questions (What is...? Which one...? Name the...?)
-- Understand: Comprehension questions (What does X mean? Which statement correctly explains...?)
-- Apply: Application questions (Given this situation, what would...? Calculate...?)
-- Analyze: Analysis questions (What is the relationship between...? Compare these options...?)
-- Evaluate: Judgment MCQs with clear options (Which is the BEST approach? What is the MOST effective...? Which option is MOST suitable?)
-- Create: Creative MCQs (Which combination would work best? What new approach...?)
+      const prompt = `${curriculumInfo}Generate exactly ${questionCount} MCQ model test questions for a Class ${profile?.class || 7} student (bangla medium).
+
+Subject: ${sName || "General Knowledge"}
+Topic: ${topic || "Full syllabus model test"}
+
+INSTRUCTIONS:
+- Generate questions in Bengali language
+- Mix all Bloom's Taxonomy levels across the questions
+- Each question must have exactly 4 options
+- Only ONE correct answer per question
+- Include clear educational explanations
+- Cover the topic comprehensively with variety
+${comboMCQInstruction}
 
 CRITICAL RULES:
-1. All questions MUST be multiple choice with exactly 4 options
-2. DO NOT include written/essay-style questions
-3. DO NOT use phrases like "আপনার উত্তরের স্বপক্ষে যুক্তি দিন" or "তোমার সিদ্ধান্তের স্বপক্ষে যুক্তি দাও" - these are essay prompts, not MCQ
-4. For Evaluate level, use comparative MCQs like "Which is the BEST option?", "Which is MOST effective?", "Which would be MOST suitable?"
-5. Each option must be a clear, distinct choice
-6. Explanations should gently guide to the correct answer without directly saying "wrong"
+1. All questions MUST be proper MCQ with exactly 4 options
+2. DO NOT include essay/written questions
+3. Explanations should be educational
+4. Each question gets 1 XP for correct answer
 
-Return JSON format:
+Return JSON:
 {
   "questions": [
     {
-      "question": "Question text as proper MCQ",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "question": "Question text",
+      "options": ["A", "B", "C", "D"],
       "correctIndex": 0,
-      "explanation": "${isBangla ? "সঠিক উত্তর হলো [উত্তর] কারণ... আরো ভালোভাবে বুঝতে এই পয়েন্টগুলো মনে রাখো..." : "The correct answer is [answer] because... To understand better, remember these points..."}",
-      "xpValue": ${5 + levelIndex * 2}
+      "explanation": "Why this is correct",
+      "xpValue": 1
     }
   ]
 }`;
 
-      console.log(`Generating ${currentLevel} level questions from tutor context: ${tutorContext ? 'Yes' : 'No'}`);
+      console.log(`Generating ${questionCount} model test questions for ${sName}, topic: ${topic}`);
 
       const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -153,14 +133,7 @@ Return JSON format:
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { 
-              role: "system", 
-              content: `You are an educational assessment generator following Bloom's Taxonomy. 
-CRITICAL: Generate ONLY proper MCQ questions with 4 distinct options. 
-NEVER generate essay-style questions or prompts asking students to "explain", "justify", or "give reasons".
-For Evaluate level, use comparative MCQs like "Which is BEST?", "Which is MOST effective?"
-Return only valid JSON.` 
-            },
+            { role: "system", content: `You are an expert NCTB curriculum educator creating model test MCQ questions for Bangladeshi students. Generate ONLY proper MCQs with 4 options. Return only valid JSON.` },
             { role: "user", content: prompt }
           ],
         }),
@@ -173,30 +146,25 @@ Return only valid JSON.`
 
       const aiData = await aiResponse.json();
       const content = aiData.choices?.[0]?.message?.content || "";
-      
+
       let questionsData;
       try {
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        questionsData = JSON.parse(jsonMatch?.[0] || "{}");
+        const clean = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        questionsData = JSON.parse(clean);
       } catch {
-        questionsData = { questions: [] };
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        questionsData = jsonMatch ? JSON.parse(jsonMatch[0]) : { questions: [] };
       }
 
-      console.log(`Generated ${questionsData.questions?.length || 0} questions at ${currentLevel} level`);
+      console.log(`Generated ${questionsData.questions?.length || 0} model test questions`);
 
       return new Response(
-        JSON.stringify({ 
-          questions: questionsData.questions || [],
-          bloomLevel: currentLevel,
-          topic,
-          subjectId
-        }),
+        JSON.stringify({ questions: questionsData.questions || [], topic, subjectId }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (action === "submit") {
-      // Grade and save assessment results
       let correctCount = 0;
       let totalXp = 0;
       const results: any[] = [];
@@ -205,150 +173,76 @@ Return only valid JSON.`
         const q = questions[i];
         const userAnswer = answers[i];
         const isCorrect = userAnswer === q.correctIndex;
-        
-        if (isCorrect) {
-          correctCount++;
-          totalXp += q.xpValue || 5;
+        if (isCorrect) { correctCount++; totalXp += 1; }
+        // -0.25 negative marking for wrong
+        if (userAnswer !== -1 && userAnswer !== null && userAnswer !== undefined && !isCorrect) {
+          totalXp -= 0.25;
         }
-        
-        results.push({
-          question: q.question,
-          userAnswer,
-          correctAnswer: q.correctIndex,
-          isCorrect,
-          explanation: q.explanation
-        });
+        results.push({ question: q.question, userAnswer, correctAnswer: q.correctIndex, isCorrect, explanation: q.explanation });
       }
 
+      totalXp = Math.max(0, parseFloat(totalXp.toFixed(2)));
+
       // Save assessment
-      const { data: assessment } = await supabase
-        .from("assessments")
-        .insert({
-          user_id: userId,
-          subject_id: subjectId || null,
-          topic: topic || null,
-          bloom_level: bloomLevel || "remember",
-          total_questions: questions.length,
-          correct_answers: correctCount,
-          xp_earned: totalXp
-        })
-        .select()
-        .single();
+      await supabase.from("assessments").insert({
+        user_id: userId, subject_id: subjectId || null, topic: topic || null,
+        bloom_level: bloomLevel || "mixed", total_questions: questions.length,
+        correct_answers: correctCount, xp_earned: Math.round(totalXp),
+      });
 
       // Update topic mastery
       if (topic) {
-        const { data: existingMastery } = await supabase
-          .from("topic_mastery")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("topic_name", topic)
-          .single();
+        const { data: existingMastery } = await supabase.from("topic_mastery")
+          .select("*").eq("user_id", userId).eq("topic_name", topic).single();
 
         if (existingMastery) {
           const newAttempts = existingMastery.attempts + questions.length;
           const newCorrect = existingMastery.correct_answers + correctCount;
           const newScore = Math.round((newCorrect / newAttempts) * 100);
-          const isWeak = newScore < 60;
-
-          await supabase
-            .from("topic_mastery")
-            .update({
-              attempts: newAttempts,
-              correct_answers: newCorrect,
-              mastery_score: newScore,
-              is_weak_topic: isWeak,
-              last_practiced_at: new Date().toISOString(),
-              bloom_level: bloomLevel
-            })
-            .eq("id", existingMastery.id);
+          await supabase.from("topic_mastery").update({
+            attempts: newAttempts, correct_answers: newCorrect, mastery_score: newScore,
+            is_weak_topic: newScore < 60, last_practiced_at: new Date().toISOString(), bloom_level: bloomLevel || "mixed"
+          }).eq("id", existingMastery.id);
         } else {
           const score = Math.round((correctCount / questions.length) * 100);
           await supabase.from("topic_mastery").insert({
-            user_id: userId,
-            subject_id: subjectId || null,
-            topic_name: topic,
-            bloom_level: bloomLevel || "remember",
-            mastery_score: score,
-            attempts: questions.length,
-            correct_answers: correctCount,
-            is_weak_topic: score < 60,
-            last_practiced_at: new Date().toISOString()
+            user_id: userId, subject_id: subjectId || null, topic_name: topic,
+            bloom_level: bloomLevel || "mixed", mastery_score: score,
+            attempts: questions.length, correct_answers: correctCount,
+            is_weak_topic: score < 60, last_practiced_at: new Date().toISOString()
           });
         }
       }
 
-      // Update student stats with XP + streak + last_activity_date
-      // Use Bangladesh time (Asia/Dhaka) for streak day boundaries
-      const dhakaDate = (d: Date) =>
-        new Intl.DateTimeFormat("en-CA", {
-          timeZone: "Asia/Dhaka",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        }).format(d);
-
+      // Track session
+      const dhakaDate = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
       const today = dhakaDate(new Date());
-
-      const { data: currentStats } = await supabase
-        .from("student_stats")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
+      const { data: currentStats } = await supabase.from("student_stats").select("*").eq("user_id", userId).single();
 
       if (currentStats) {
         const lastActivity = currentStats.last_activity_date;
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = dhakaDate(yesterday);
-
         let newStreak = currentStats.current_streak;
+        if (lastActivity === today) { /* keep */ }
+        else if (lastActivity === yesterdayStr) { newStreak += 1; }
+        else if (!lastActivity) { newStreak = 1; }
+        else { newStreak = 1; }
 
-        if (lastActivity === today) {
-          // Already active today, keep streak
-        } else if (lastActivity === yesterdayStr) {
-          // Active yesterday, increment streak
-          newStreak += 1;
-        } else if (!lastActivity) {
-          newStreak = 1;
-        } else {
-          // Streak broken (gap of 2+ days), start fresh
-          newStreak = 1;
-        }
-
-        const longestStreak = Math.max(currentStats.longest_streak, newStreak);
-
-        await supabase
-          .from("student_stats")
-          .update({
-            total_xp: currentStats.total_xp + totalXp,
-            current_streak: newStreak,
-            longest_streak: longestStreak,
-            last_activity_date: today,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", userId);
-
-        console.log(`Assessment stats: streak=${newStreak}, xp=${currentStats.total_xp + totalXp}`);
+        await supabase.from("student_stats").update({
+          total_xp: currentStats.total_xp + Math.round(totalXp),
+          current_streak: newStreak,
+          longest_streak: Math.max(currentStats.longest_streak, newStreak),
+          last_activity_date: today, updated_at: new Date().toISOString(),
+        }).eq("user_id", userId);
       }
 
-      // Determine if student should level up
-      const levelIndex = BLOOM_LEVELS.indexOf(bloomLevel || "remember");
-      const passRate = correctCount / questions.length;
-      const shouldLevelUp = passRate >= 0.8 && levelIndex < BLOOM_LEVELS.length - 1;
-      const nextLevel = shouldLevelUp ? BLOOM_LEVELS[levelIndex + 1] : bloomLevel;
-
-      console.log(`Assessment completed: ${correctCount}/${questions.length}, XP: ${totalXp}, Level up: ${shouldLevelUp}`);
+      console.log(`Model test completed: ${correctCount}/${questions.length}, XP: ${totalXp}`);
 
       return new Response(
         JSON.stringify({
-          results,
-          score: Math.round((correctCount / questions.length) * 100),
-          correctCount,
-          totalQuestions: questions.length,
-          xpEarned: totalXp,
-          shouldLevelUp,
-          nextLevel,
-          assessment
+          results, score: Math.round((correctCount / questions.length) * 100),
+          correctCount, totalQuestions: questions.length, xpEarned: totalXp,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

@@ -16,10 +16,8 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Authenticate the request
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      console.error("No authorization header provided");
       return new Response(
         JSON.stringify({ error: "Authorization required" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -28,9 +26,7 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
     if (authError || !user) {
-      console.error("Authentication failed:", authError?.message);
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -73,6 +69,8 @@ serve(async (req) => {
     }
 
     const language = "Bengali/Bangla";
+    const isEnglishSubject = (subjectName || topic || "").toLowerCase().includes("english") || 
+                             (subjectName || topic || "").toLowerCase().includes("ইংরেজি");
 
     console.log(`Generating ${count} practice questions for Class ${studentClass} on: ${topic}`);
 
@@ -82,6 +80,30 @@ ${curriculumContent}
 
 CRITICAL: Generate questions ONLY from the official textbook content above.
 ` : "";
+
+    const comboMCQInstruction = isEnglishSubject ? "" : `
+
+IMPORTANT - COMBINATION MCQ PATTERN:
+For at least 30-40% of questions, use the Bangladeshi "combination MCQ" format. This format presents 3 statements labeled with Roman numerals (i, ii, iii), then asks "কোনটি সঠিক?" with 4 combination options:
+- ক. i ও ii
+- খ. i ও iii  
+- গ. ii ও iii
+- ঘ. i, ii ও iii
+
+Example:
+"নিচের কোনটি সঠিক?
+i. [statement 1]
+ii. [statement 2]  
+iii. [statement 3]
+
+কোনটি সঠিক?
+ক. i ও ii
+খ. i ও iii
+গ. ii ও iii
+ঘ. i, ii ও iii"
+
+The question text should include the statements. The options array should contain the 4 combinations. Make sure the statements are factually verifiable and the correct combination is accurate.
+`;
 
     const systemPrompt = `You are an expert NCTB curriculum educator creating practice questions for Bangladeshi students.
 ${curriculumInfo}
@@ -95,15 +117,12 @@ INSTRUCTIONS:
 Generate exactly ${count} multiple-choice questions following these rules:
 
 1. Questions MUST be appropriate for Class ${studentClass} level
-2. Cover different Bloom's Taxonomy levels:
-   - 2 questions at "remember" level (basic facts/definitions)
-   - 2 questions at "understand" level (explain concepts)
-   - 1 question at "apply" or "analyze" level (use knowledge)
-
-3. Each question must have exactly 4 options (A, B, C, D)
+2. Cover different Bloom's Taxonomy levels across the questions
+3. Each question must have exactly 4 options
 4. Only ONE correct answer per question
 5. Include clear, educational explanations for each answer
 6. Use ${language} for question content where appropriate
+${comboMCQInstruction}
 
 RESPONSE FORMAT (JSON only, no markdown):
 {
@@ -113,7 +132,7 @@ RESPONSE FORMAT (JSON only, no markdown):
       "question": "Question text here?",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctIndex": 0,
-      "explanation": "Clear explanation why option A is correct and why others are wrong.",
+      "explanation": "Clear explanation why this is correct.",
       "bloomLevel": "remember"
     }
   ]
@@ -139,42 +158,28 @@ Generate ONLY valid JSON. No markdown code blocks.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits exhausted." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ error: "AI credits exhausted." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      
       throw new Error("AI service unavailable");
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
-
     console.log("Raw AI response:", content.substring(0, 500));
 
-    // Parse JSON from response
     let questions;
     try {
-      // Remove markdown code blocks if present
-      const cleanContent = content
-        .replace(/```json\n?/g, "")
-        .replace(/```\n?/g, "")
-        .trim();
-      
+      const cleanContent = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       const parsed = JSON.parse(cleanContent);
       questions = parsed.questions || parsed;
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
-      // Fallback: try to extract JSON from response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
