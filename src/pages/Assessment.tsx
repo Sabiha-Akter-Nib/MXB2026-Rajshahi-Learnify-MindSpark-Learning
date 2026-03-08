@@ -94,9 +94,13 @@ const Assessment = () => {
   const [showResult, setShowResult] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
   const [topicInput, setTopicInput] = useState("");
+  const [chapterInput, setChapterInput] = useState("");
   const [questionCount, setQuestionCount] = useState(25);
+  const [timeLimit, setTimeLimit] = useState(0); // in minutes, 0 = no limit
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [additionalEntries, setAdditionalEntries] = useState<AdditionalSubjectEntry[]>([]);
+  const [timeExpired, setTimeExpired] = useState(false);
 
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
