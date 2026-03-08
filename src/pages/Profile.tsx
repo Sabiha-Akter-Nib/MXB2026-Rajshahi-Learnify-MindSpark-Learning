@@ -438,26 +438,49 @@ const Profile = () => {
           </header>
 
           {/* ── Profile Card ── */}
-          <GlassCard className="p-5 sm:p-6">
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-3 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0">
-                <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
+          <GlassCard className="overflow-hidden">
+            {/* Cover Color Banner */}
+            <div
+              className="h-28 sm:h-36 w-full relative"
+              style={{
+                background: profile.cover_color
+                  ? `linear-gradient(135deg, ${profile.cover_color}, ${profile.cover_color}dd)`
+                  : "linear-gradient(135deg, #6A68DF, #9B87F5)",
+              }}
+            />
+
+            {/* Profile Info Row */}
+            <div className="px-4 sm:px-6 pb-5">
+              <div className="flex items-end gap-4 -mt-10 sm:-mt-12">
+                {/* Avatar */}
+                <div className="shrink-0 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 rounded-full border-4 border-[#1a1025] overflow-hidden">
+                  <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
+                </div>
+
+                {/* Name + Username + School */}
+                <div className="flex-1 min-w-0 pb-1">
+                  <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight">{displayName}</h2>
+                  {profile.username && (
+                    <p className="text-white/60 text-base sm:text-lg font-semibold truncate">@{profile.username}</p>
+                  )}
+                  <p className="text-white/40 text-xs sm:text-sm truncate mt-0.5 flex items-center gap-1">
+                    <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                    {profile.school_name}
+                  </p>
+                </div>
               </div>
-              <h2 className="text-white font-extrabold text-xl sm:text-2xl">{displayName}</h2>
-              {profile.username && (
-                <p className="text-white/50 text-sm font-medium">@{profile.username}</p>
-              )}
-              <div className="flex items-center gap-2 mt-1.5 text-white/40 text-xs">
+
+              {/* Meta Row */}
+              <div className="flex items-center gap-2 mt-3 text-white/40 text-xs">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>Joined {joinedDate}</span>
+                <span className="text-white/20">•</span>
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Class {profile.class}</span>
               </div>
+
               {/* Class / Following / Followers */}
               <div className="flex items-center gap-5 mt-4">
-                <div className="flex flex-col items-center">
-                  <span className="text-white font-extrabold text-lg">{profile.class}</span>
-                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Class</span>
-                </div>
-                <div className="w-px h-8 bg-white/10" />
                 <button onClick={loadFollowing} className="flex flex-col items-center hover:scale-105 transition-transform active:scale-95">
                   <span className="text-white font-extrabold text-lg">{followingCount}</span>
                   <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Following</span>
