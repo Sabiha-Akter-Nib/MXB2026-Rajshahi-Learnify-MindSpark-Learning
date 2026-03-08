@@ -556,7 +556,7 @@ const Analytics = () => {
                   <p className="text-white text-lg sm:text-xl font-extrabold leading-none tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
                     <span style={{ background: card.grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{card.value}</span>
                   </p>
-                  <p className="text-white/50 text-[8px] sm:text-[10px] font-medium mt-1 whitespace-nowrap">{card.label}</p>
+                  <p className="text-white text-[10px] sm:text-xs font-bold mt-1 whitespace-nowrap tracking-wide uppercase">{card.label}</p>
                 </div>
               </div>
             ))}
