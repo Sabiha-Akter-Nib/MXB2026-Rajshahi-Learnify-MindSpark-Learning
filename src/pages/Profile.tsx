@@ -711,10 +711,44 @@ const Profile = () => {
               />
             </div>
             <div>
-              <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-2 block">Cover Color</label>
-              <div className="flex items-center gap-3">
+              <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3 block">Cover Color</label>
+              
+              {/* Preview banner */}
+              <div
+                className="w-full h-16 rounded-xl mb-3 relative overflow-hidden"
+                style={{
+                  background: `linear-gradient(135deg, ${editCoverColor}, ${editCoverColor}dd)`,
+                  boxShadow: `0 4px 20px ${editCoverColor}40`,
+                }}
+              >
+                <div className="absolute inset-0" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)" }} />
+              </div>
+
+              {/* Preset colors grid */}
+              <div className="grid grid-cols-6 gap-2 mb-3">
+                {[
+                  "#6A68DF", "#9B87F5", "#FD91D9", "#E91E63", "#FF4B4B", "#FF5722",
+                  "#FFBA33", "#58CC02", "#1DB954", "#00BCD4", "#2196F3", "#7C4DFF",
+                ].map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setEditCoverColor(c)}
+                    className={cn(
+                      "aspect-square rounded-xl border-2 transition-all hover:scale-110 active:scale-95",
+                      editCoverColor.toUpperCase() === c ? "border-white scale-105 shadow-lg" : "border-white/10"
+                    )}
+                    style={{
+                      background: c,
+                      boxShadow: editCoverColor.toUpperCase() === c ? `0 0 16px ${c}60` : "none",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Hex input + color picker */}
+              <div className="flex items-center gap-2">
                 <div
-                  className="w-10 h-10 rounded-xl border-2 border-white/20 shrink-0 cursor-pointer relative overflow-hidden"
+                  className="w-9 h-9 rounded-lg shrink-0 cursor-pointer relative overflow-hidden border border-white/20"
                   style={{ background: editCoverColor }}
                 >
                   <input
@@ -724,18 +758,18 @@ const Profile = () => {
                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                   />
                 </div>
-                <div className="flex gap-2 flex-wrap">
-                  {["#6A68DF", "#9B87F5", "#FD91D9", "#58CC02", "#FF4B4B", "#FFBA33", "#1DB954", "#E91E63", "#00BCD4", "#FF5722"].map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setEditCoverColor(c)}
-                      className={cn(
-                        "w-7 h-7 rounded-lg border-2 transition-all hover:scale-110",
-                        editCoverColor === c ? "border-white scale-110" : "border-white/10"
-                      )}
-                      style={{ background: c }}
-                    />
-                  ))}
+                <div className="flex-1 relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm font-mono">#</span>
+                  <Input
+                    value={editCoverColor.replace("#", "").toUpperCase()}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9A-Fa-f]/g, "").slice(0, 6);
+                      if (val.length <= 6) setEditCoverColor(`#${val}`);
+                    }}
+                    maxLength={6}
+                    placeholder="6A68DF"
+                    className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30 pl-7 font-mono text-sm tracking-widest"
+                  />
                 </div>
               </div>
             </div>
