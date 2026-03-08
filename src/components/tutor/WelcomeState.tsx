@@ -19,7 +19,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
   const firstName = studentName?.split(" ")[0] || "";
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
+    <div className="flex flex-col items-center justify-center py-6 px-4">
       {/* Mascot with animated glow rings */}
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
