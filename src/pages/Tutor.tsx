@@ -4,7 +4,6 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Settings2,
-  Trash2,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
