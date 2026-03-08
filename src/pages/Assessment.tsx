@@ -635,9 +635,11 @@ const Assessment = () => {
                   </motion.button>
                 </>
               ) : isLastLevel ? (
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: GRADIENT }}>
-                  <Link to="/dashboard" className="flex items-center gap-2"><ArrowLeft className="w-4 h-4" />{isBangla ? "ড্যাশবোর্ড" : "Dashboard"}</Link>
-                </motion.button>
+                <Link to="/dashboard">
+                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: GRADIENT }}>
+                    <ArrowLeft className="w-4 h-4" />{isBangla ? "ড্যাশবোর্ড" : "Dashboard"}
+                  </motion.button>
+                </Link>
               ) : (
                 <>
                   <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => { setSelectedSubject(null); setQuestions([]); setShowResult(false); }}
