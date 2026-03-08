@@ -423,8 +423,13 @@ const Profile = () => {
                 <Calendar className="w-3.5 h-3.5" />
                 <span>Joined {joinedDate}</span>
               </div>
-              {/* Followers / Following / Class */}
+              {/* Class / Following / Followers */}
               <div className="flex items-center gap-5 mt-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-white font-extrabold text-lg">{profile.class}</span>
+                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Class</span>
+                </div>
+                <div className="w-px h-8 bg-white/10" />
                 <button onClick={loadFollowing} className="flex flex-col items-center hover:scale-105 transition-transform active:scale-95">
                   <span className="text-white font-extrabold text-lg">{followingCount}</span>
                   <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Following</span>
@@ -434,11 +439,6 @@ const Profile = () => {
                   <span className="text-white font-extrabold text-lg">{followerCount}</span>
                   <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Followers</span>
                 </button>
-                <div className="w-px h-8 bg-white/10" />
-                <div className="flex flex-col items-center">
-                  <span className="text-white font-extrabold text-lg">{profile.class}</span>
-                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Class</span>
-                </div>
               </div>
 
               {/* Action Buttons */}
