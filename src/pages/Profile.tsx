@@ -440,7 +440,7 @@ const Profile = () => {
             <div className="px-4 sm:px-6 pb-5">
               <div className="flex items-end gap-4 -mt-10 sm:-mt-12">
                 {/* Avatar */}
-                <div className="shrink-0 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 rounded-full border-4 border-[#1a1025] overflow-hidden">
+                <div className="shrink-0 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 rounded-full overflow-hidden">
                   <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
                 </div>
 
@@ -448,7 +448,7 @@ const Profile = () => {
                 <div className="flex-1 min-w-0 pb-1">
                   <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight">{displayName}</h2>
                   {profile.username && (
-                    <p className="text-white/60 text-base sm:text-lg font-semibold truncate">@{profile.username}</p>
+                    <p className="text-white/60 text-sm sm:text-base font-semibold truncate">@{profile.username}</p>
                   )}
                   <p className="text-white/40 text-xs sm:text-sm truncate mt-0.5 flex items-center gap-1">
                     <GraduationCap className="w-3.5 h-3.5 shrink-0" />
