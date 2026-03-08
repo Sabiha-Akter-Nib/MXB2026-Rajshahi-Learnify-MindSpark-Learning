@@ -49,10 +49,10 @@ const suggestions = [
     labelBn: "রিভিশন",
     prompt: "Help me revise ",
     promptBn: "রিভিশন করতে সাহায্য করো ",
-    gradientFrom: "hsl(42, 85%, 52%)",
-    gradientTo: "hsl(35, 80%, 58%)",
-    shadow: "hsla(42, 85%, 52%, 0.4)",
-    textColor: "hsl(42, 85%, 38%)",
+    gradientFrom: "hsl(30, 78%, 68%)",
+    gradientTo: "hsl(25, 72%, 76%)",
+    shadow: "hsla(30, 78%, 68%, 0.4)",
+    textColor: "hsl(30, 70%, 42%)",
   },
 ];
 
@@ -123,7 +123,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.35, duration: 0.5 }}
-        className="grid grid-cols-2 gap-3.5 w-full max-w-sm"
+        className="grid grid-cols-4 gap-2.5 w-full max-w-md"
       >
         {suggestions.map((s, i) => (
           <motion.button
@@ -134,18 +134,18 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
             whileHover={{ scale: 1.06, y: -5 }}
             whileTap={{ scale: 0.93 }}
             onClick={() => onQuickAction(isBangla ? s.promptBn : s.prompt)}
-            className="group relative flex flex-col items-center gap-3 p-5 rounded-3xl overflow-hidden"
+            className="group relative flex flex-col items-center gap-2 p-3 sm:p-4 rounded-2xl overflow-hidden"
             style={{
               background: "linear-gradient(-45deg, rgba(254,254,254,0.92) 0%, rgba(254,254,254,0.7) 100%)",
               backdropFilter: "blur(24px) saturate(1.5)",
               WebkitBackdropFilter: "blur(24px) saturate(1.5)",
               border: "1.5px solid rgba(255,255,255,0.6)",
-              boxShadow: `0 8px 32px ${s.shadow}, 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)`,
+              boxShadow: `0 6px 24px ${s.shadow}, 0 2px 6px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.8)`,
             }}
           >
             {/* Gradient icon */}
             <motion.div
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110"
+              className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110"
               style={{
                 background: `linear-gradient(135deg, ${s.gradientFrom}, ${s.gradientTo})`,
                 boxShadow: `0 6px 24px ${s.shadow}`,

@@ -36,8 +36,8 @@ interface EnhancedInputBarProps {
 }
 
 // Magenta → Purple gradient
-const GRADIENT = "linear-gradient(135deg, hsl(300, 65%, 52%) 0%, hsl(270, 60%, 55%) 50%, hsl(42, 85%, 55%) 100%)";
-const GRADIENT_SHADOW = "0 4px 20px hsla(300, 65%, 52%, 0.35), 0 2px 8px hsla(270, 60%, 55%, 0.2)";
+const GRADIENT = "linear-gradient(135deg, hsl(300, 65%, 52%) 0%, hsl(270, 60%, 55%) 50%, hsl(30, 78%, 72%) 100%)";
+const GRADIENT_SHADOW = "0 4px 20px hsla(300, 65%, 52%, 0.3), 0 2px 8px hsla(270, 60%, 55%, 0.15)";
 
 const EnhancedInputBar = ({
   input, setInput, onSend, onKeyDown, isTyping, isRecording, isProcessing,
@@ -238,8 +238,8 @@ const EnhancedInputBar = ({
               style={{
                 background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))",
                 border: "1px solid rgba(255,255,255,0.5)",
-                boxShadow: "0 2px 10px hsla(42, 70%, 55%, 0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
-                color: "hsl(42, 75%, 38%)",
+                boxShadow: "0 2px 10px hsla(30, 60%, 65%, 0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
+                color: "hsl(30, 65%, 40%)",
               }}
             >
               <Paperclip className="w-3.5 h-3.5" />
