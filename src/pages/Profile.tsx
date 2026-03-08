@@ -36,6 +36,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import statStreak3d from "@/assets/stat-streak-glass.png";
+import subjectIcon3d from "@/assets/subject-icon-3d.png";
+import subjectBooks3dNew from "@/assets/subject-books-3d-new.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
 import statRank3d from "@/assets/stat-rank-3d.png";
 import statExams3d from "@/assets/stat-exams-3d.png";
