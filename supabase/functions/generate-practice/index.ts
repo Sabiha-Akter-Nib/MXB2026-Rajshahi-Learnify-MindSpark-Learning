@@ -68,7 +68,15 @@ serve(async (req) => {
 
     console.log(`Generating ${count} practice questions for Class ${studentClass} on: ${topic}`);
 
+    const curriculumInfo = curriculumContent ? `
+OFFICIAL NCTB TEXTBOOK CONTENT (PRIMARY SOURCE):
+${curriculumContent}
+
+CRITICAL: Generate questions ONLY from the official textbook content above.
+` : "";
+
     const systemPrompt = `You are an expert NCTB curriculum educator creating practice questions for Bangladeshi students.
+${curriculumInfo}
 
 STUDENT PROFILE:
 - Class/Grade: ${studentClass}
