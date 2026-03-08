@@ -658,6 +658,102 @@ const Profile = () => {
             ))}
           </div>
 
+          {/* ── Weekly XP Chart ── */}
+          <GlassCard className="p-4 sm:p-5">
+            <h3 className="text-white font-bold text-sm sm:text-base text-center mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
+              Weekly XP Points History
+            </h3>
+            <p className="text-white/40 text-[10px] sm:text-xs text-center mb-3">Last 7 days</p>
+
+            {/* Legend */}
+            {!isOwnProfile && weeklyXpSelf.length > 0 && (
+              <div className="flex items-center gap-4 mb-3 px-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#EFB995" }} />
+                  <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">{profile?.full_name || "User"}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#9B87F5" }} />
+                  <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">You</span>
+                </div>
+              </div>
+            )}
+
+            <div
+              className="rounded-xl p-3 sm:p-4"
+              style={{ background: "linear-gradient(180deg, rgba(253,145,217,0.15) 0%, rgba(255,255,255,0.05) 100%)" }}
+            >
+              <div className="h-48 sm:h-56 overflow-visible">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={weeklyXpTarget.map((d, i) => ({
+                      label: d.label,
+                      targetXp: d.xp,
+                      selfXp: weeklyXpSelf[i]?.xp ?? 0,
+                    }))}
+                    margin={{ top: 20, right: 10, left: 0, bottom: 0 }}
+                  >
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 9 }}
+                      axisLine={false}
+                      tickLine={false}
+                      interval={0}
+                    />
+                    <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} width={30} />
+                    <Tooltip content={() => null} />
+                    {/* Target user's line */}
+                    <Line
+                      type="linear"
+                      dataKey="targetXp"
+                      stroke={isOwnProfile ? "#9B87F5" : "#EFB995"}
+                      strokeWidth={isOwnProfile ? 2 : 2.5}
+                      strokeDasharray={isOwnProfile ? undefined : "6 3"}
+                      dot={(props: any) => {
+                        const { cx, cy, payload } = props;
+                        if (cx == null || cy == null) return null;
+                        const xpVal = payload?.targetXp ?? 0;
+                        const isOther = !isOwnProfile;
+                        return (
+                          <g key={`target-${props.index}`}>
+                            <text x={cx} y={cy - (isOther ? 22 : 14)} textAnchor="middle" fill={isOther ? "#EFB995" : "#BBA7FD"} fontSize={9} fontWeight={600}>{xpVal}</text>
+                            <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
+                              <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill={isOther ? "#EFB995" : "#BBA7FD"} stroke={isOther ? "#D4945A" : "#9B87F5"} strokeWidth="1" />
+                            </svg>
+                          </g>
+                        );
+                      }}
+                      activeDot={{ r: 6, fill: isOwnProfile ? "#BBA7FD" : "#EFB995", stroke: "#fff", strokeWidth: 2 }}
+                    />
+                    {/* Self line when viewing other profile */}
+                    {!isOwnProfile && weeklyXpSelf.length > 0 && (
+                      <Line
+                        type="linear"
+                        dataKey="selfXp"
+                        stroke="#9B87F5"
+                        strokeWidth={2}
+                        dot={(props: any) => {
+                          const { cx, cy, payload } = props;
+                          if (cx == null || cy == null) return null;
+                          const xpVal = payload?.selfXp ?? 0;
+                          return (
+                            <g key={`self-${props.index}`}>
+                              <text x={cx} y={cy - 14} textAnchor="middle" fill="#BBA7FD" fontSize={9} fontWeight={600}>{xpVal}</text>
+                              <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill="#BBA7FD" stroke="#9B87F5" strokeWidth="1" />
+                              </svg>
+                            </g>
+                          );
+                        }}
+                        activeDot={{ r: 6, fill: "#BBA7FD", stroke: "#fff", strokeWidth: 2 }}
+                      />
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </GlassCard>
+
           {/* ── Achievements ── */}
           {(() => {
             const streakMilestones = [7, 14, 30, 50, 100, 200, 365];
