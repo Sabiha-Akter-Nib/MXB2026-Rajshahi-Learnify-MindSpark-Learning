@@ -21,6 +21,7 @@ import Settings from "./pages/Settings";
 import Achievements from "./pages/Achievements";
 import Leaderboard from "./pages/Leaderboard";
 import Analytics from "./pages/Analytics";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Welcome from "./pages/Welcome";
 
