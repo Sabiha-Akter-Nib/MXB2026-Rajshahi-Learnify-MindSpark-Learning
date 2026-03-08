@@ -173,7 +173,7 @@ const Profile = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ProfileData[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
 
   // Subject progress
   const [subjectProgress, setSubjectProgress] = useState<{ name: string; correct: number; wrong: number; skipped: number }[]>([]);
