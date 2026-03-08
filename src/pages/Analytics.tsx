@@ -436,15 +436,21 @@ const Analytics = () => {
         setLessonsCompleted(completedChapters);
         setTotalLessons(totalAvailableChapters || completedChapters || 0);
 
+        // Problem solving rate from all assessments
+        const { data: allAssessmentData } = await supabase
+          .from("assessments")
+          .select("correct_answers, total_questions")
+          .eq("user_id", user.id);
+
         let totalCorrect = 0, totalQ = 0;
-        (fullAssessments || []).forEach((a) => {
+        (allAssessmentData || []).forEach((a) => {
           totalCorrect += a.correct_answers || 0;
           totalQ += a.total_questions || 0;
         });
         setProblemSolvingRate(totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0);
 
         // Total exams attended
-        setTotalExams((fullAssessments || []).length);
+        setTotalExams((allAssessmentData || []).length);
 
         // Leaderboard rank
         const { data: leaderboardData } = await supabase
