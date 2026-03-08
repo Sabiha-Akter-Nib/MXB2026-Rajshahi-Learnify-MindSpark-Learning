@@ -646,6 +646,21 @@ What would you like to study today?`;
       {/* Input Area */}
       <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent pt-4 px-4 pb-4">
         <div className="max-w-4xl mx-auto">
+          {/* Subject selector row */}
+          {studentInfo && (
+            <div className="mb-2">
+              <SubjectSelector
+                userId={user.id}
+                studentClass={studentInfo.class}
+                selectedSubject={selectedSubjectId}
+                onSubjectChange={(id, name) => {
+                  setSelectedSubjectId(id);
+                  setSelectedSubjectName(name);
+                }}
+                isBangla={isBangla}
+              />
+            </div>
+          )}
           {/* Persona Selector */}
           <AnimatePresence>
             {showPersonaSelector && (
