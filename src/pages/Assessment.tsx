@@ -71,13 +71,29 @@ const subjectCardColors = [
   { bg: "linear-gradient(135deg, hsla(45, 80%, 50%, 0.25), hsla(45, 80%, 50%, 0.08))", border: "hsla(45, 80%, 50%, 0.3)", icon: "hsl(45, 80%, 45%)", shadow: "hsla(45, 80%, 50%, 0.2)", glow: "hsla(45, 80%, 50%, 0.15)" },
 ];
 
-// ── Live Timer ──
-const LiveTimer = ({ startTime }: { startTime: Date }) => {
+// ── Live Timer with time limit support ──
+const LiveTimer = ({ startTime, timeLimitMin, onTimeExpired }: { startTime: Date; timeLimitMin: number; onTimeExpired?: () => void }) => {
   const [elapsed, setElapsed] = useState(0);
+  const expiredRef = useRef(false);
   useEffect(() => {
-    const interval = setInterval(() => setElapsed(Math.floor((Date.now() - startTime.getTime()) / 1000)), 1000);
+    const interval = setInterval(() => {
+      const e = Math.floor((Date.now() - startTime.getTime()) / 1000);
+      setElapsed(e);
+      if (timeLimitMin > 0 && e >= timeLimitMin * 60 && !expiredRef.current) {
+        expiredRef.current = true;
+        onTimeExpired?.();
+      }
+    }, 1000);
     return () => clearInterval(interval);
-  }, [startTime]);
+  }, [startTime, timeLimitMin]);
+
+  if (timeLimitMin > 0) {
+    const remaining = Math.max(0, timeLimitMin * 60 - elapsed);
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    const isLow = remaining <= 60;
+    return <span className="font-bold text-xs font-heading" style={{ color: isLow ? "hsl(0,70%,55%)" : "hsl(270,60%,55%)" }}>{m}:{s.toString().padStart(2, "0")}</span>;
+  }
   const m = Math.floor(elapsed / 60);
   const s = elapsed % 60;
   return <span className="font-bold text-xs font-heading" style={{ color: "hsl(270,60%,55%)" }}>{m}:{s.toString().padStart(2, "0")}</span>;
