@@ -417,15 +417,24 @@ const Analytics = () => {
         setMonthlyBarData(barData);
 
         // ── Lessons & problem solving ──
-        const allAssessments = assessments || [];
-        const { data: fullAssessments } = await supabase
-          .from("assessments")
-          .select("correct_answers, total_questions")
+        // Get all subjects for the student's class to determine total chapters
+        const { data: subjectsData } = await supabase
+          .from("subjects")
+          .select("id, total_chapters")
+          .lte("min_class", profileData?.class || 1)
+          .gte("max_class", profileData?.class || 10);
+
+        const totalAvailableChapters = (subjectsData || []).reduce((sum, s) => sum + (s.total_chapters || 0), 0);
+
+        // Chapters completed from student_progress
+        const { data: progressData } = await supabase
+          .from("student_progress")
+          .select("chapters_completed")
           .eq("user_id", user.id);
 
-        const completedLessons = allAssessments.length;
-        setLessonsCompleted(completedLessons);
-        setTotalLessons(completedLessons); // total = completed so far
+        const completedChapters = (progressData || []).reduce((sum, p) => sum + (p.chapters_completed || 0), 0);
+        setLessonsCompleted(completedChapters);
+        setTotalLessons(totalAvailableChapters || completedChapters || 0);
 
         let totalCorrect = 0, totalQ = 0;
         (fullAssessments || []).forEach((a) => {
