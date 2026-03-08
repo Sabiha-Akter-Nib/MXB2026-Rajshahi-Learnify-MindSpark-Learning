@@ -68,7 +68,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="text-center mb-10"
+        className="text-center mb-6"
       >
         <h2 className="text-2xl md:text-3xl font-bold font-heading text-foreground mb-2.5 tracking-tight">
           {isBangla 
