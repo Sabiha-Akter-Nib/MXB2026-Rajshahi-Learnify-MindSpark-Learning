@@ -412,6 +412,21 @@ const Analytics = () => {
         });
         setProblemSolvingRate(totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0);
 
+        // Total exams attended
+        setTotalExams((fullAssessments || []).length);
+
+        // Leaderboard rank
+        const { data: leaderboardData } = await supabase
+          .from("leaderboard_entries")
+          .select("user_id, total_xp")
+          .eq("is_public", true)
+          .order("total_xp", { ascending: false });
+
+        if (leaderboardData) {
+          const idx = leaderboardData.findIndex((e) => e.user_id === user.id);
+          setLeaderboardRank(idx >= 0 ? idx + 1 : null);
+        }
+
       } catch (err) {
         console.error("Analytics fetch error:", err);
       } finally {
