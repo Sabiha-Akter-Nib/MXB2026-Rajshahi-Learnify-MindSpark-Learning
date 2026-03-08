@@ -793,53 +793,6 @@ const Profile = () => {
             </div>
           </GlassCard>
 
-          {/* ── Achievements / Badges ── */}
-          <GlassCard className="p-4 sm:p-5">
-            <h3 className="text-white font-bold text-sm sm:text-base mb-4 uppercase tracking-wider flex items-center gap-2">
-              <Award className="w-4 h-4 text-[#FD91D9]" />
-              Achievements
-            </h3>
-            {earnedBadges.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {earnedBadges.map((badge, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="rounded-xl border border-white/[0.12] p-3 flex flex-col items-center text-center"
-                    style={{
-                      background: "linear-gradient(135deg, rgba(106,104,223,0.15) 0%, rgba(253,145,217,0.1) 50%, rgba(239,185,149,0.08) 100%)",
-                      boxShadow: "0 4px 16px rgba(106,104,223,0.1), inset 0 1px 0 rgba(255,255,255,0.1)",
-                    }}
-                  >
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center mb-2"
-                      style={{
-                        background: "linear-gradient(135deg, #6A68DF, #FD91D9)",
-                        boxShadow: "0 0 20px rgba(106,104,223,0.3)",
-                      }}
-                    >
-                      <Award className="w-5 h-5 text-white" />
-                    </div>
-                    <p className="text-white font-bold text-[10px] sm:text-xs leading-tight">{badge.name}</p>
-                    <p className="text-white/40 text-[8px] sm:text-[9px] mt-0.5 line-clamp-2">{badge.description}</p>
-                    <span
-                      className="mt-1.5 text-[9px] font-bold px-2 py-0.5 rounded-full"
-                      style={{
-                        background: "linear-gradient(135deg, rgba(253,145,217,0.2), rgba(106,104,223,0.2))",
-                        color: "#BBA7FD",
-                      }}
-                    >
-                      +{badge.xp_reward} XP
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-white/40 text-sm text-center py-6">No achievements earned yet</p>
-            )}
-          </GlassCard>
         </div>
       </div>
 
