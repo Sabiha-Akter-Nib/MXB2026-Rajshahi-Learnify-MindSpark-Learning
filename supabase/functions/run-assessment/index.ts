@@ -52,13 +52,20 @@ serve(async (req) => {
       for (const key of Object.keys(curriculumFiles)) {
         const [subj, cls] = key.split("|");
         if (parseInt(cls) === studentClass && subjectName.toLowerCase().includes(subj.toLowerCase())) {
-          try {
-            const resp = await fetch(`https://mindsparklearning.lovable.app/data/${curriculumFiles[key]}`);
-            if (resp.ok) {
-              const content = await resp.text();
-              return content.length > 60000 ? content.substring(0, 60000) : content;
-            }
-          } catch (e) { console.error("Curriculum fetch error:", e); }
+          const urls = [
+            `${supabaseUrl}/storage/v1/object/public/curriculum/${curriculumFiles[key]}`,
+            `https://mindsparklearning.lovable.app/data/${curriculumFiles[key]}`,
+          ];
+          for (const url of urls) {
+            try {
+              const resp = await fetch(url);
+              if (resp.ok) {
+                const content = await resp.text();
+                return content.length > 60000 ? content.substring(0, 60000) : content;
+              }
+              await resp.text();
+            } catch (e) { /* try next */ }
+          }
         }
       }
       return "";
