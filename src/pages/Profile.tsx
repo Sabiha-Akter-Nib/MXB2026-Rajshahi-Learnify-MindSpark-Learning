@@ -661,10 +661,11 @@ const Profile = () => {
               <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1 block">Username</label>
               <Input
                 value={editUsername}
-                onChange={(e) => setEditUsername(e.target.value)}
+                onChange={(e) => { setEditUsername(e.target.value); setUsernameError(""); }}
                 placeholder="Choose a username"
                 className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30"
               />
+              {usernameError && <p className="text-red-400 text-xs mt-1 font-medium">{usernameError}</p>}
             </div>
             <div>
               <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1 block">School</label>
