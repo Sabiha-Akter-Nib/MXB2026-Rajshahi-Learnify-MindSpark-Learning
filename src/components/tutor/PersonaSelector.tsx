@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, Heart, Beaker, Zap, ListOrdered, Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type PersonaType = 
-  | "strict" 
-  | "friendly" 
-  | "scientist" 
-  | "revision" 
+export type PersonaType =
+  | "strict"
+  | "friendly"
+  | "scientist"
+  | "revision"
   | "stepbystep";
 
 interface Persona {
@@ -17,9 +17,8 @@ interface Persona {
   icon: React.ElementType;
   description: string;
   descriptionBn: string;
-  gradient: string;
-  shadowColor: string;
-  accentColor: string;
+  gradientFrom: string;
+  gradientTo: string;
 }
 
 const personas: Persona[] = [
@@ -30,9 +29,8 @@ const personas: Persona[] = [
     icon: GraduationCap,
     description: "Formal & rigorous",
     descriptionBn: "আনুষ্ঠানিক এবং কঠোর",
-    gradient: "from-destructive to-destructive/80",
-    shadowColor: "shadow-destructive/30",
-    accentColor: "destructive",
+    gradientFrom: "hsl(0, 72%, 55%)",
+    gradientTo: "hsl(340, 65%, 60%)",
   },
   {
     id: "friendly",
@@ -41,20 +39,18 @@ const personas: Persona[] = [
     icon: Heart,
     description: "Warm & supportive",
     descriptionBn: "উষ্ণ এবং সহায়ক",
-    gradient: "from-primary to-primary-dark",
-    shadowColor: "shadow-primary/30",
-    accentColor: "primary",
+    gradientFrom: "hsl(270, 60%, 55%)",
+    gradientTo: "hsl(290, 50%, 65%)",
   },
   {
     id: "scientist",
-    name: "Concept Scientist",
+    name: "Scientist",
     nameBn: "বিজ্ঞানী",
     icon: Beaker,
     description: "Curious & deep",
     descriptionBn: "কৌতূহলী এবং গভীর",
-    gradient: "from-accent to-accent-light",
-    shadowColor: "shadow-accent/30",
-    accentColor: "accent",
+    gradientFrom: "hsl(200, 80%, 50%)",
+    gradientTo: "hsl(180, 60%, 55%)",
   },
   {
     id: "revision",
@@ -63,9 +59,8 @@ const personas: Persona[] = [
     icon: Zap,
     description: "Quick key points",
     descriptionBn: "দ্রুত মূল পয়েন্ট",
-    gradient: "from-warning to-warning/80",
-    shadowColor: "shadow-warning/30",
-    accentColor: "warning",
+    gradientFrom: "hsl(35, 90%, 55%)",
+    gradientTo: "hsl(25, 85%, 60%)",
   },
   {
     id: "stepbystep",
@@ -74,9 +69,8 @@ const personas: Persona[] = [
     icon: ListOrdered,
     description: "Patient & thorough",
     descriptionBn: "ধৈর্যশীল এবং পুঙ্খানুপুঙ্খ",
-    gradient: "from-primary-light to-primary",
-    shadowColor: "shadow-primary-light/30",
-    accentColor: "primary-light",
+    gradientFrom: "hsl(152, 60%, 42%)",
+    gradientTo: "hsl(170, 50%, 50%)",
   },
 ];
 
@@ -96,66 +90,41 @@ export const PersonaSelector = ({
   const [hoveredId, setHoveredId] = useState<PersonaType | null>(null);
 
   if (compact) {
+    // Compact: horizontal scrollable glass pills
     return (
-      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1">
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-1">
         {personas.map((persona, index) => {
           const Icon = persona.icon;
           const isSelected = selected === persona.id;
-          const isHovered = hoveredId === persona.id;
-          
+
           return (
             <motion.button
               key={persona.id}
-              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              initial={{ opacity: 0, scale: 0.9, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.3 }}
+              transition={{ delay: index * 0.04, duration: 0.3 }}
               whileTap={{ scale: 0.95 }}
-              onHoverStart={() => setHoveredId(persona.id)}
-              onHoverEnd={() => setHoveredId(null)}
+              whileHover={{ scale: 1.05, y: -2 }}
               onClick={() => onSelect(persona.id)}
-              className={cn(
-                "relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap",
-                "border backdrop-blur-sm",
-                isSelected
-                  ? `bg-gradient-to-r ${persona.gradient} text-white border-transparent shadow-lg ${persona.shadowColor}`
-                  : "bg-card/80 text-foreground border-border/50 hover:border-primary/30 hover:bg-card"
-              )}
+              className="relative flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap overflow-hidden flex-shrink-0"
+              style={isSelected ? {
+                background: `linear-gradient(135deg, ${persona.gradientFrom}, ${persona.gradientTo})`,
+                boxShadow: `0 6px 24px ${persona.gradientFrom.replace(')', ' / 0.4)')}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+                color: "white",
+                border: "1px solid transparent",
+              } : {
+                background: "linear-gradient(-45deg, rgba(255,255,255,0.85), rgba(255,255,255,0.6))",
+                backdropFilter: "blur(16px)",
+                border: "1px solid rgba(255,255,255,0.5)",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)",
+              }}
             >
-              {/* Glow effect on hover */}
-              {(isHovered || isSelected) && (
-                <motion.div
-                  layoutId="persona-glow"
-                  className={cn(
-                    "absolute inset-0 rounded-2xl -z-10",
-                    isSelected ? "opacity-0" : "opacity-100"
-                  )}
-                  style={{
-                    background: `linear-gradient(135deg, hsl(var(--primary) / 0.1), transparent)`,
-                    boxShadow: isHovered && !isSelected ? "0 0 20px hsl(var(--primary) / 0.2)" : "none",
-                  }}
-                  initial={false}
-                  transition={{ duration: 0.2 }}
-                />
-              )}
-              
-              <motion.div
-                animate={isSelected ? { 
-                  rotate: [0, -10, 10, 0],
-                  scale: [1, 1.2, 1],
-                } : {}}
-                transition={{ duration: 0.4 }}
-              >
-                <Icon className={cn("w-4 h-4", isSelected ? "text-white" : "")} />
-              </motion.div>
-              
-              <span>{isBangla ? persona.nameBn : persona.name}</span>
-              
+              <Icon className={cn("w-4 h-4", isSelected ? "text-white" : "text-muted-foreground")} />
+              <span className={cn("text-xs font-bold font-heading", !isSelected && "text-foreground/80")}>
+                {isBangla ? persona.nameBn : persona.name}
+              </span>
               {isSelected && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="ml-1"
-                >
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-0.5">
                   <Check className="w-3.5 h-3.5" />
                 </motion.div>
               )}
@@ -166,115 +135,82 @@ export const PersonaSelector = ({
     );
   }
 
-  // Full persona selector - iOS style cards
+  // Full: grid of glass cards
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 p-1">
       {personas.map((persona, index) => {
         const Icon = persona.icon;
         const isSelected = selected === persona.id;
         const isHovered = hoveredId === persona.id;
-        
+
         return (
           <motion.button
             key={persona.id}
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: index * 0.08, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ delay: index * 0.08, duration: 0.4 }}
             whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.05, y: -4 }}
             onHoverStart={() => setHoveredId(persona.id)}
             onHoverEnd={() => setHoveredId(null)}
             onClick={() => onSelect(persona.id)}
-            className={cn(
-              "relative flex flex-col items-center gap-3 p-5 rounded-3xl transition-all overflow-hidden",
-              "border backdrop-blur-md",
-              isSelected
-                ? "border-transparent shadow-2xl"
-                : "bg-card/60 border-border/30 hover:bg-card/80 hover:border-primary/20"
-            )}
+            className="relative flex flex-col items-center gap-3 p-5 rounded-3xl transition-all overflow-hidden"
+            style={isSelected ? {
+              background: `linear-gradient(135deg, ${persona.gradientFrom}, ${persona.gradientTo})`,
+              boxShadow: `0 12px 40px ${persona.gradientFrom.replace(')', ' / 0.35)')}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+              border: "1px solid transparent",
+            } : {
+              background: "linear-gradient(-45deg, rgba(255,255,255,0.9), rgba(255,255,255,0.65))",
+              backdropFilter: "blur(20px) saturate(1.4)",
+              border: "1px solid rgba(255,255,255,0.5)",
+              boxShadow: isHovered
+                ? "0 8px 30px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.7)"
+                : "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)",
+            }}
           >
-            {/* Selected background gradient */}
-            {isSelected && (
-              <motion.div
-                layoutId="selected-bg"
-                className={cn("absolute inset-0 bg-gradient-to-br", persona.gradient)}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              />
-            )}
-            
-            {/* Hover glow */}
-            <motion.div
-              className="absolute inset-0 rounded-3xl pointer-events-none"
-              animate={{
-                boxShadow: isHovered && !isSelected 
-                  ? "inset 0 0 30px hsl(var(--primary) / 0.1), 0 10px 40px hsl(var(--primary) / 0.15)"
-                  : isSelected
-                  ? `0 20px 60px -15px ${persona.accentColor === 'destructive' ? 'hsl(var(--destructive) / 0.4)' : 
-                     persona.accentColor === 'primary' ? 'hsl(var(--primary) / 0.4)' :
-                     persona.accentColor === 'accent' ? 'hsl(var(--accent) / 0.4)' :
-                     persona.accentColor === 'warning' ? 'hsl(var(--warning) / 0.4)' :
-                     'hsl(var(--primary-light) / 0.4)'}`
-                  : "0 0 0 transparent",
-              }}
-              transition={{ duration: 0.3 }}
-            />
-            
-            {/* Icon container */}
+            {/* Icon */}
             <motion.div
               className={cn(
-                "relative w-14 h-14 rounded-2xl flex items-center justify-center z-10",
-                isSelected 
-                  ? "bg-white/20 backdrop-blur-sm" 
-                  : "bg-gradient-to-br from-muted to-muted/50"
+                "w-14 h-14 rounded-2xl flex items-center justify-center",
+                isSelected ? "bg-white/20" : ""
               )}
-              animate={isSelected || isHovered ? {
-                y: [0, -5, 0],
-                scale: [1, 1.1, 1],
-              } : {}}
+              style={!isSelected ? {
+                background: `linear-gradient(135deg, ${persona.gradientFrom}, ${persona.gradientTo})`,
+                boxShadow: `0 4px 16px ${persona.gradientFrom.replace(')', ' / 0.3)')}`,
+              } : undefined}
+              animate={isSelected || isHovered ? { y: [0, -4, 0], scale: [1, 1.08, 1] } : {}}
               transition={{ duration: 0.5 }}
             >
-              <Icon className={cn(
-                "w-7 h-7 transition-colors",
-                isSelected ? "text-white" : "text-muted-foreground"
-              )} />
-              
-              {/* Sparkle effect on selected */}
+              <Icon className={cn("w-7 h-7", isSelected ? "text-white" : "text-white")} />
               {isSelected && (
                 <motion.div
                   className="absolute -top-1 -right-1"
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
                   transition={{ delay: 0.2, type: "spring" }}
                 >
                   <Sparkles className="w-4 h-4 text-white/80" />
                 </motion.div>
               )}
             </motion.div>
-            
-            {/* Text content */}
-            <div className={cn(
-              "relative z-10 text-center",
-              isSelected ? "text-white" : ""
-            )}>
-              <p className="font-semibold text-sm mb-0.5">
+
+            {/* Text */}
+            <div className="text-center z-10">
+              <p className={cn("font-semibold text-sm mb-0.5 font-heading", isSelected ? "text-white" : "text-foreground")}>
                 {isBangla ? persona.nameBn : persona.name}
               </p>
-              <p className={cn(
-                "text-xs transition-colors",
-                isSelected ? "text-white/80" : "text-muted-foreground"
-              )}>
+              <p className={cn("text-xs", isSelected ? "text-white/80" : "text-muted-foreground")}>
                 {isBangla ? persona.descriptionBn : persona.description}
               </p>
             </div>
-            
-            {/* Selected checkmark */}
+
+            {/* Check */}
             <AnimatePresence>
               {isSelected && (
                 <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
                   className="absolute top-3 right-3 w-6 h-6 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center"
                 >
                   <Check className="w-4 h-4 text-white" />

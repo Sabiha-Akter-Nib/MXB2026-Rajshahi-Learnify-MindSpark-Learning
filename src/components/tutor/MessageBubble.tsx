@@ -27,18 +27,69 @@ const formatTime = (date: Date): string => {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-const MessageBubble = ({
-  id,
-  role,
-  content,
-  timestamp,
-  isStreaming = false,
-  thinkingTime,
-  attachments,
-  index = 0,
-  isLastUserMessage = false,
-  onEdit,
-}: MessageBubbleProps) => {
+const AttachmentList = ({ attachments }: { attachments: MessageBubbleProps["attachments"] }) => {
+  if (!attachments || attachments.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-2 mb-2">
+      {attachments.map((attachment, i) => (
+        <div key={i} className="rounded-2xl overflow-hidden border border-border/30 shadow-sm">
+          {attachment.type === "image" ? (
+            <img src={attachment.url} alt="Attachment" className="max-w-[200px] max-h-[150px] object-cover" />
+          ) : (
+            <div className="flex items-center gap-2 px-4 py-3 bg-muted/40">
+              <FileText className="w-5 h-5 text-primary" />
+              <span className="text-sm font-medium truncate max-w-[150px]">{attachment.name || "Document"}</span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const UserBubble = ({ content, timestamp, attachments, isLastUserMessage, onEdit, index = 0 }: Omit<MessageBubbleProps, "id" | "role">) => (
+  <motion.div
+    initial={{ opacity: 0, y: 14 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0 }}
+    transition={{ delay: index * 0.02, duration: 0.35, ease: "easeOut" }}
+    className="flex justify-end mb-5 group"
+  >
+    <div className="max-w-[80%] space-y-1">
+      <AttachmentList attachments={attachments} />
+      {/* User bubble — light gradient */}
+      <div
+        className="rounded-2xl rounded-br-md px-5 py-4 font-heading"
+        style={{
+          background: "linear-gradient(135deg, hsl(270 55% 96%) 0%, hsl(200 60% 96%) 100%)",
+          border: "1px solid hsl(270 30% 90%)",
+        }}
+      >
+        <div className="text-sm leading-relaxed text-foreground">
+          {content.split("\n").map((line, i) => (
+            <p key={i} className="mb-1.5 last:mb-0">{line}</p>
+          ))}
+        </div>
+      </div>
+      {/* Timestamp + edit */}
+      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 px-1 justify-end">
+        {isLastUserMessage && onEdit && (
+          <button
+            onClick={() => onEdit(content)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-muted-foreground/50 hover:text-primary hover:bg-primary/8 transition-all opacity-0 group-hover:opacity-100"
+          >
+            <Pencil className="w-3 h-3" />
+            <span className="text-[10px] font-medium">Edit</span>
+          </button>
+        )}
+        <Clock className="w-3 h-3" />
+        <span>{formatTime(timestamp)}</span>
+      </div>
+    </div>
+  </motion.div>
+);
+
+const AIBubble = ({ content, timestamp, isStreaming = false, thinkingTime, attachments, index = 0 }: Omit<MessageBubbleProps, "id" | "role" | "isLastUserMessage" | "onEdit">) => {
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState<boolean | null>(null);
   const { toast } = useToast();
@@ -50,66 +101,6 @@ const MessageBubble = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const isUser = role === "user";
-
-  // ── USER BUBBLE ──
-  if (isUser) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0 }}
-        transition={{ delay: index * 0.02, duration: 0.35, ease: "easeOut" }}
-        className="flex justify-end mb-5 group"
-      >
-        <div className="max-w-[80%] space-y-1">
-          {/* Attachments */}
-          {attachments && attachments.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2 justify-end">
-              {attachments.map((attachment, i) => (
-                <div key={i} className="rounded-2xl overflow-hidden border border-border/30 shadow-sm">
-                  {attachment.type === "image" ? (
-                    <img src={attachment.url} alt="Attachment" className="max-w-[200px] max-h-[150px] object-cover" />
-                  ) : (
-                    <div className="flex items-center gap-2 px-4 py-3 bg-muted/40">
-                      <FileText className="w-5 h-5 text-primary" />
-                      <span className="text-sm font-medium truncate max-w-[150px]">{attachment.name || "Document"}</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* User bubble */}
-          <div className="rounded-2xl rounded-br-md px-5 py-4 bg-primary/8 text-foreground border border-primary/10 font-heading">
-            <div className="text-sm leading-relaxed">
-              {content.split("\n").map((line, i) => (
-                <p key={i} className="mb-1.5 last:mb-0">{line}</p>
-              ))}
-            </div>
-          </div>
-
-          {/* Timestamp + edit button */}
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 px-1 justify-end">
-            {isLastUserMessage && onEdit && (
-              <button
-                onClick={() => onEdit(content)}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg text-muted-foreground/50 hover:text-primary hover:bg-primary/8 transition-all opacity-0 group-hover:opacity-100"
-              >
-                <Pencil className="w-3 h-3" />
-                <span className="text-[10px] font-medium">Edit</span>
-              </button>
-            )}
-            <Clock className="w-3 h-3" />
-            <span>{formatTime(timestamp)}</span>
-          </div>
-        </div>
-      </motion.div>
-    );
-  }
-
-  // ── AI MESSAGE ──
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -132,7 +123,6 @@ const MessageBubble = ({
         </motion.div>
       </div>
 
-      {/* Content area */}
       <div className="flex-1 min-w-0 max-w-[85%]">
         <div className="flex items-center gap-2 mb-1.5">
           <span className="text-xs font-bold text-foreground/70 font-heading">OddhaboshAI</span>
@@ -147,25 +137,16 @@ const MessageBubble = ({
           </div>
         )}
 
-        {attachments && attachments.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-2">
-            {attachments.map((attachment, i) => (
-              <div key={i} className="rounded-2xl overflow-hidden border border-border/30 shadow-sm">
-                {attachment.type === "image" ? (
-                  <img src={attachment.url} alt="Attachment" className="max-w-[200px] max-h-[150px] object-cover" />
-                ) : (
-                  <div className="flex items-center gap-2 px-4 py-3 bg-muted/40">
-                    <FileText className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-medium truncate max-w-[150px]">{attachment.name || "Document"}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <AttachmentList attachments={attachments} />
 
-        {/* Message bubble */}
-        <div className="rounded-2xl rounded-bl-md px-5 py-4 bg-card border border-border/40 shadow-sm font-heading">
+        {/* AI bubble — subtle gradient */}
+        <div
+          className="rounded-2xl rounded-bl-md px-5 py-4 shadow-sm font-heading"
+          style={{
+            background: "linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(270 20% 98%) 50%, hsl(200 30% 97%) 100%)",
+            border: "1px solid hsl(270 20% 92%)",
+          }}
+        >
           <StreamingMessage
             content={content}
             isComplete={!isStreaming}
@@ -207,6 +188,13 @@ const MessageBubble = ({
       </div>
     </motion.div>
   );
+};
+
+const MessageBubble = (props: MessageBubbleProps) => {
+  if (props.role === "user") {
+    return <UserBubble {...props} />;
+  }
+  return <AIBubble {...props} />;
 };
 
 export default MessageBubble;
