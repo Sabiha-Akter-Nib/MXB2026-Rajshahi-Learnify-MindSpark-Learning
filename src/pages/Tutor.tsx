@@ -534,27 +534,32 @@ What would you like to learn today?`,
     <div className="min-h-screen flex flex-col relative">
       <TutorBackground />
 
-      {/* Header — clean, minimal */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-card/80 border-b border-border/30">
+      {/* Header — polished with gradient accent */}
+      <header className="sticky top-0 z-30 backdrop-blur-2xl bg-card/70 border-b border-border/20">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-xl" asChild>
+              <Button variant="ghost" size="icon" className="rounded-xl hover:bg-muted/60" asChild>
                 <Link to="/dashboard">
                   <ArrowLeft className="w-5 h-5" />
                 </Link>
               </Button>
 
-              <div className="flex items-center gap-2.5">
-                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#EFB995]/20 to-[#6A68DF]/20 flex items-center justify-center">
-                  <img src={mascotImg} alt="AI" className="w-9 h-9 object-contain" />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-card" />
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#6A68DF]/15 via-[#E87DA0]/10 to-[#EFB995]/15 flex items-center justify-center ring-2 ring-white/60 shadow-md">
+                    <img src={mascotImg} alt="AI" className="w-10 h-10 object-contain" />
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-[2.5px] border-card shadow-sm" />
                 </div>
 
                 <div>
-                  <h1 className="font-['Poppins',sans-serif] font-bold text-base text-foreground">AI Tutor</h1>
-                  <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  <div className="flex items-center gap-2">
+                    <h1 className="font-['Poppins',sans-serif] font-bold text-base text-foreground">OddhaboshAI</h1>
+                    <span className="px-1.5 py-0.5 rounded-md bg-[#6A68DF]/10 text-[#6A68DF] text-[9px] font-bold uppercase tracking-wider">Tutor</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
                     {studentInfo ? `Class ${studentInfo.class} • ${isBangla ? "বাংলা" : "English"}` : "Online"}
                   </p>
                 </div>
