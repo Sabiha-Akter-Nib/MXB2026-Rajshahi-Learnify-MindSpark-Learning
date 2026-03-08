@@ -888,7 +888,7 @@ const Profile = () => {
                     <AvatarUpload userId={f.user_id} userName={f.full_name} size="sm" showUploadButton={false} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm truncate">{f.full_name}</p>
+                    <p className="text-white font-semibold text-sm truncate flex items-center gap-1">{f.full_name}{isVerifiedEmail(f.email) && <VerifiedBadge size={14} />}</p>
                     <p className="text-white/40 text-xs truncate">
                       {f.username ? `@${f.username} • ` : ""}Class {f.class} • {f.school_name}
                     </p>
