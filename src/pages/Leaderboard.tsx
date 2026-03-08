@@ -586,10 +586,11 @@ const Leaderboard = () => {
                 <Sparkles className="w-4 h-4 text-yellow-200 absolute bottom-2 right-0 animate-pulse delay-500" />
               </motion.div>
               <p className={cn(
-                "font-bold text-center truncate w-full px-2 text-lg",
+                "font-bold text-center truncate w-full px-2 text-lg flex items-center justify-center gap-1",
                 entries[0]?.isCurrentUser && "text-primary"
               )}>
                 {entries[0]?.displayName}
+                {entries[0]?.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}
                 {entries[0]?.isCurrentUser && " (You)"}
               </p>
               <p className="text-base font-black bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 bg-clip-text text-transparent">
