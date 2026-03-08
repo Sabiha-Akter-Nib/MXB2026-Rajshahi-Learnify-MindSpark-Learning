@@ -19,13 +19,13 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
   const firstName = studentName?.split(" ")[0] || "";
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
+    <div className="flex flex-col items-center justify-center py-6 px-4">
       {/* Mascot with animated glow rings */}
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 180, damping: 18 }}
-        className="relative mb-8"
+        className="relative mb-4"
       >
         {/* Outer glow ring */}
         <motion.div
@@ -49,7 +49,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         <motion.img
           src={mascotImg}
           alt="OddhaboshAI"
-          className="w-32 h-32 relative z-10 drop-shadow-xl"
+          className="w-24 h-24 relative z-10 drop-shadow-xl"
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -68,9 +68,9 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="text-center mb-10"
+        className="text-center mb-6"
       >
-        <h2 className="text-2xl md:text-3xl font-bold font-heading text-foreground mb-2.5 tracking-tight">
+        <h2 className="text-xl md:text-2xl font-bold font-heading text-foreground mb-1.5 tracking-tight">
           {isBangla 
             ? `আসসালামু আলাইকুম${firstName ? `, ${firstName}` : ""}! 👋`
             : `Assalamu Alaikum${firstName ? `, ${firstName}` : ""}! 👋`
@@ -89,7 +89,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.35, duration: 0.5 }}
-        className="grid grid-cols-2 gap-3.5 w-full max-w-sm"
+        className="grid grid-cols-2 gap-2.5 w-full max-w-sm"
       >
         {suggestions.map((s, i) => (
           <motion.button
@@ -100,9 +100,9 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
             whileHover={{ scale: 1.04, y: -3 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => onQuickAction(isBangla ? s.promptBn : s.prompt)}
-            className="group flex flex-col items-center gap-3 p-5 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/30 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 text-center"
+            className="group flex flex-col items-center gap-2 p-3.5 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/30 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 text-center"
           >
-            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300`}>
+            <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300`}>
               <s.icon className="w-5 h-5 text-white" />
             </div>
             <span className="text-xs font-semibold text-foreground/75 font-heading leading-tight group-hover:text-foreground/90 transition-colors">
@@ -117,7 +117,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
-        className="mt-10 flex items-center gap-1.5 text-[11px] text-muted-foreground/50"
+        className="mt-5 flex items-center gap-1.5 text-[11px] text-muted-foreground/50"
       >
         <Sparkles className="w-3 h-3" />
         <span className="font-heading">Powered by NCTB Curriculum</span>
