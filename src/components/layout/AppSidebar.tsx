@@ -41,7 +41,6 @@ const mainItems = [
 
 const insightItems = [
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
-  { title: "Subjects", url: "/subjects", icon: BookOpen },
   { title: "Profile", url: "/profile", icon: User },
 ];
 
