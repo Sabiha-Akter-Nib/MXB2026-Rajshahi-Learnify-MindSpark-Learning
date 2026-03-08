@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import AvatarUpload from "@/components/avatar/AvatarUpload";
+import VerifiedBadge, { isVerifiedEmail } from "@/components/VerifiedBadge";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
