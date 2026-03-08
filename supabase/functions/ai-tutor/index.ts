@@ -209,20 +209,32 @@ function extractSearchQuery(message: string, studentClass: number): string {
 }
 
 // MindSpark Learning AI Tutor System Prompt - No names, no hashtags, web-verified answers
-const getSystemPrompt = (studentInfo: { name?: string; class?: number; version?: string } | null, webContext: string) => {
+const getSystemPrompt = (studentInfo: { name?: string; class?: number; version?: string } | null, webContext: string, curriculumContent: string = "") => {
   const studentClass = studentInfo?.class || 5;
   const studentVersion = studentInfo?.version === "english" ? "English Version" : "Bangla Version";
   const preferredLanguage = studentInfo?.version === "english" 
     ? "English" 
     : "Bangla (with English terms for technical concepts)";
 
+  const curriculumSection = curriculumContent ? `
+## OFFICIAL NCTB TEXTBOOK CONTENT (AUTHORITATIVE SOURCE)
+The following is the OFFICIAL NCTB textbook content. This is your PRIMARY and MOST AUTHORITATIVE source.
+You MUST base ALL your answers on this content when the student asks about this subject.
+Do NOT deviate from this content. Do NOT add information that contradicts this source.
+If the student asks about a topic covered in this content, use ONLY this content as your reference.
+
+${curriculumContent}
+
+CRITICAL: The above textbook content is the SINGLE SOURCE OF TRUTH. All explanations, examples, MCQs, CQs, and answers MUST align with this content.
+` : "";
+
   const webSection = webContext ? `
 ## VERIFIED WEB RESEARCH
-The following information was retrieved from the web to ensure accuracy. Use this as your primary source:
+The following information was retrieved from the web to ensure accuracy. Use this as a SECONDARY source (the official textbook content above takes priority):
 
 ${webContext}
 
-IMPORTANT: Base your response on this verified information. If this information contradicts your training data, trust the web research.
+IMPORTANT: If web research contradicts the official textbook content, ALWAYS trust the textbook content.
 ` : "";
 
   return `You are MindSpark Learning, a highly intelligent and expert AI tutor for Bangladeshi students following the NCTB (National Curriculum and Textbook Board) curriculum.
