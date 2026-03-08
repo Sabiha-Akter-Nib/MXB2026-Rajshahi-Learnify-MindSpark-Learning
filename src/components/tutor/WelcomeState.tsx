@@ -25,7 +25,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 180, damping: 18 }}
-        className="relative mb-8"
+        className="relative mb-4"
       >
         {/* Outer glow ring */}
         <motion.div
