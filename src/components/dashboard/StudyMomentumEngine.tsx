@@ -150,15 +150,7 @@ const StudyMomentumEngine = () => {
         }}
       >
         {/* Mascot icon */}
-        <div
-          className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex-shrink-0 flex items-center justify-center border border-white/[0.15] backdrop-blur-2xl"
-          style={{
-            background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
-          }}
-        >
-          <img src={rocket3d} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
-        </div>
+        <img src={rocket3d} alt="" className="w-16 h-16 sm:w-20 sm:h-20 object-contain flex-shrink-0 -ml-1 -my-1" />
 
         <div className="flex-1 min-w-0">
           <h3 className="text-white font-bold text-sm sm:text-lg leading-tight">Study Momentum Engine</h3>
