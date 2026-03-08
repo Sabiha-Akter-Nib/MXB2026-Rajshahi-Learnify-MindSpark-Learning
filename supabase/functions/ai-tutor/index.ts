@@ -131,11 +131,30 @@ async function fetchCurriculumContent(
   const fileName = curriculumFiles[fileKey];
 
   try {
-    // Fetch from the app's public data directory
-    const appUrl = "https://mindsparklearning.lovable.app";
-    const response = await fetch(`${appUrl}/data/${fileName}`);
-    if (!response.ok) {
-      console.error("Failed to fetch curriculum file:", response.status);
+    // Fetch from Supabase storage (most reliable) or app's public data directory
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "https://vprrgfzwaueklfnfpfrh.supabase.co";
+    const storageUrl = `${supabaseUrl}/storage/v1/object/public/curriculum/${fileName}`;
+    const appUrls = [
+      storageUrl,
+      `https://mindsparklearning.lovable.app/data/${fileName}`,
+      `https://id-preview--310998ff-41ae-4b6d-9124-fe3ed7a58df6.lovable.app/data/${fileName}`,
+    ];
+    
+    let response: Response | null = null;
+    for (const url of appUrls) {
+      try {
+        const r = await fetch(url);
+        if (r.ok) {
+          response = r;
+          console.log("Curriculum fetched from:", url);
+          break;
+        }
+        await r.text(); // consume body
+      } catch { /* try next */ }
+    }
+    
+    if (!response) {
+      console.error("Failed to fetch curriculum file from all sources");
       return "";
     }
 
