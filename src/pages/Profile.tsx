@@ -228,6 +228,7 @@ const Profile = () => {
       // Exams
       const { data: exams } = await supabase.from("assessments").select("id, correct_answers, total_questions, bloom_level, subject_id").eq("user_id", targetUserId);
       setTotalExams(exams?.length || 0);
+      setTotalCorrect(exams?.reduce((sum, a) => sum + (a.correct_answers || 0), 0) || 0);
 
       // Leaderboard rank
       const { data: lb } = await supabase.from("leaderboard_entries").select("user_id, total_xp").eq("is_public", true).order("total_xp", { ascending: false });
