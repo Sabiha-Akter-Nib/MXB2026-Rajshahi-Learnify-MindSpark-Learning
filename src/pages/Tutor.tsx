@@ -654,11 +654,11 @@ What would you like to study today?`;
       />
 
       {/* Input Area */}
-      <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent pt-4 px-4 pb-4">
+      <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent pt-3 px-4 pb-4">
         <div className="max-w-4xl mx-auto">
-          {/* Subject selector row */}
-          {studentInfo && (
-            <div className="mb-2">
+          {/* Inline subject + persona row */}
+          <div className="flex items-center gap-2 mb-2 overflow-x-auto no-scrollbar">
+            {studentInfo && (
               <SubjectSelector
                 userId={user.id}
                 studentClass={studentInfo.class}
@@ -669,8 +669,27 @@ What would you like to study today?`;
                 }}
                 isBangla={isBangla}
               />
-            </div>
-          )}
+            )}
+            {/* Persona toggle pill */}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowPersonaSelector(!showPersonaSelector)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap",
+                "backdrop-blur-md border shadow-sm",
+                showPersonaSelector
+                  ? "bg-primary/10 border-primary/30 text-primary"
+                  : "bg-card/80 border-border/50 hover:bg-card hover:shadow-md text-foreground"
+              )}
+            >
+              <Settings2 className="w-4 h-4" />
+              <span className="max-w-[80px] truncate font-heading text-xs">
+                {isBangla ? "শিক্ষক মোড" : "Style"}
+              </span>
+            </motion.button>
+          </div>
+
           {/* Persona Selector */}
           <AnimatePresence>
             {showPersonaSelector && (
@@ -678,13 +697,13 @@ What would you like to study today?`;
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mb-4 overflow-hidden"
+                className="mb-3 overflow-hidden"
               >
-                <div className="bg-card/80 backdrop-blur-md rounded-3xl border border-border/50 p-4 shadow-xl">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Settings2 className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium">{isBangla ? "শিক্ষক মোড" : "Teaching Style"}</span>
-                  </div>
+                <div className="rounded-2xl p-3 border border-border/30 shadow-lg"
+                  style={{
+                    background: "linear-gradient(135deg, hsl(270 30% 97%) 0%, hsl(200 30% 97%) 100%)",
+                  }}
+                >
                   <PersonaSelector
                     selected={persona}
                     onSelect={(p) => {
@@ -710,9 +729,7 @@ What would you like to study today?`;
             isProcessing={isProcessing}
             onStartRecording={startRecording}
             onStopRecording={stopRecording}
-            onTogglePersona={() => setShowPersonaSelector(!showPersonaSelector)}
             onOpenUpload={() => setShowUploadModal(true)}
-            showPersonaSelector={showPersonaSelector}
             isBangla={isBangla}
             pendingAttachment={pendingAttachment}
             onRemoveAttachment={() => setPendingAttachment(null)}
