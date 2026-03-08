@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Brain,
   Settings2,
   Trash2,
   Sparkles,
@@ -23,6 +22,7 @@ import MessageBubble from "@/components/tutor/MessageBubble";
 import ThinkingIndicator from "@/components/tutor/ThinkingIndicator";
 import EnhancedInputBar from "@/components/tutor/EnhancedInputBar";
 import SubjectSelector from "@/components/tutor/SubjectSelector";
+import mascotImg from "@/assets/ai-mascot-3d.png";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -533,37 +533,34 @@ What would you like to learn today?`,
     <div className="min-h-screen flex flex-col relative">
       <TutorBackground />
 
-      {/* Header */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/60 border-b border-border/30">
+      {/* Header — clean, minimal */}
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-card/80 border-b border-border/30">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="ghost" size="icon" className="rounded-xl" asChild>
-                  <Link to="/dashboard">
-                    <ArrowLeft className="w-5 h-5" />
-                  </Link>
-                </Button>
-              </motion.div>
+              <Button variant="ghost" size="icon" className="rounded-xl" asChild>
+                <Link to="/dashboard">
+                  <ArrowLeft className="w-5 h-5" />
+                </Link>
+              </Button>
 
-              <div className="flex items-center gap-3">
-                <div className="relative w-11 h-11 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
-                  <Brain className="w-5 h-5 text-primary-foreground" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-background" />
+              <div className="flex items-center gap-2.5">
+                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#EFB995]/20 to-[#6A68DF]/20 flex items-center justify-center">
+                  <img src={mascotImg} alt="AI" className="w-9 h-9 object-contain" />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-card" />
                 </div>
 
                 <div>
-                  <h1 className="font-heading font-bold text-lg">AI Tutor</h1>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-success rounded-full" />
+                  <h1 className="font-['Poppins',sans-serif] font-bold text-base text-foreground">AI Tutor</h1>
+                  <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
                     {studentInfo ? `Class ${studentInfo.class} • ${isBangla ? "বাংলা" : "English"}` : "Online"}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Subject Selector */}
+            <div className="flex items-center gap-1.5">
               {studentInfo && (
                 <SubjectSelector
                   userId={user.id}
@@ -588,17 +585,15 @@ What would you like to learn today?`,
               )}
 
               {currentConversationId && (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    title={isBangla ? "এই চ্যাট মুছুন" : "Delete this chat"}
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
-                </motion.div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  title={isBangla ? "এই চ্যাট মুছুন" : "Delete this chat"}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               )}
             </div>
           </div>
