@@ -87,7 +87,7 @@ serve(async (req) => {
 
       const currentLevel = bloomLevel || "remember";
       const levelIndex = BLOOM_LEVELS.indexOf(currentLevel);
-      const isBangla = profile?.version === "bangla";
+      const isBangla = true;
 
       // Fetch curriculum content if available
       const subjectName = subject?.name || "";
