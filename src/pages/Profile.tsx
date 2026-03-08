@@ -260,20 +260,33 @@ const Profile = () => {
         setIsFollowing(!!followCheck);
       }
 
-      // Subject progress (from assessments)
-      const { data: subjects } = await supabase.from("subjects").select("id, name");
-      const subjectMap: Record<string, string> = {};
-      subjects?.forEach((s) => (subjectMap[s.id] = s.name));
+      // Subject progress - fetch actual subjects for student's class, then map assessment data
+      const studentClass = profileData?.class || 6;
+      const { data: subjectsData } = await supabase
+        .from("subjects")
+        .select("id, name, name_bn, icon, color")
+        .lte("min_class", studentClass)
+        .gte("max_class", studentClass);
 
-      const progressMap: Record<string, { correct: number; wrong: number; skipped: number }> = {};
+      // Build assessment stats per subject
+      const assessmentMap: Record<string, { correct: number; wrong: number; skipped: number }> = {};
       exams?.forEach((a) => {
-        const subName = a.subject_id ? subjectMap[a.subject_id] || "Other" : "Other";
-        if (!progressMap[subName]) progressMap[subName] = { correct: 0, wrong: 0, skipped: 0 };
-        progressMap[subName].correct += a.correct_answers || 0;
-        const wrong = (a.total_questions || 0) - (a.correct_answers || 0);
-        progressMap[subName].wrong += wrong > 0 ? wrong : 0;
+        if (a.subject_id) {
+          if (!assessmentMap[a.subject_id]) assessmentMap[a.subject_id] = { correct: 0, wrong: 0, skipped: 0 };
+          assessmentMap[a.subject_id].correct += a.correct_answers || 0;
+          const wrong = (a.total_questions || 0) - (a.correct_answers || 0);
+          assessmentMap[a.subject_id].wrong += wrong > 0 ? wrong : 0;
+        }
       });
-      setSubjectProgress(Object.entries(progressMap).map(([name, v]) => ({ name, ...v })));
+
+      if (subjectsData) {
+        setSubjectProgress(subjectsData.map((s) => ({
+          name: s.name,
+          correct: assessmentMap[s.id]?.correct || 0,
+          wrong: assessmentMap[s.id]?.wrong || 0,
+          skipped: assessmentMap[s.id]?.skipped || 0,
+        })));
+      }
 
       // Bloom levels
       const bloomMap: Record<string, number> = {};
