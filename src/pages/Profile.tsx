@@ -17,6 +17,10 @@ import {
   Calendar,
   BookOpen,
   GraduationCap,
+  Flame,
+  Zap,
+  ClipboardCheck,
+  CircleCheckBig,
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -162,6 +166,7 @@ const Profile = () => {
   const [totalXP, setTotalXP] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [totalExams, setTotalExams] = useState(0);
+  const [totalCorrect, setTotalCorrect] = useState(0);
   const [leaderboardRank, setLeaderboardRank] = useState<number | null>(null);
 
   // Follow
@@ -227,6 +232,7 @@ const Profile = () => {
       // Exams
       const { data: exams } = await supabase.from("assessments").select("id, correct_answers, total_questions, bloom_level, subject_id").eq("user_id", targetUserId);
       setTotalExams(exams?.length || 0);
+      setTotalCorrect(exams?.reduce((sum, a) => sum + (a.correct_answers || 0), 0) || 0);
 
       // Leaderboard rank
       const { data: lb } = await supabase.from("leaderboard_entries").select("user_id, total_xp").eq("is_public", true).order("total_xp", { ascending: false });
@@ -632,6 +638,127 @@ const Profile = () => {
               </div>
             </GlassCard>
           )}
+
+          {/* ── Milestone Badges ── */}
+          <GlassCard className="p-4 sm:p-5">
+            <h3 className="text-white font-bold text-sm sm:text-base mb-4 uppercase tracking-wider flex items-center gap-2">
+              <Award className="w-4 h-4 text-[#FD91D9]" />
+              Milestones
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {(() => {
+                const streakMilestones = [7, 14, 30, 50, 100, 200, 365];
+                const xpMilestones = Array.from({ length: 50 }, (_, i) => (i + 1) * 100);
+                const examMilestones = Array.from({ length: 50 }, (_, i) => (i + 1) * 10);
+                const correctMilestones = Array.from({ length: 50 }, (_, i) => (i + 1) * 100);
+
+                const getReached = (milestones: number[], current: number) => {
+                  const reached = milestones.filter((m) => current >= m);
+                  const highest = reached.length > 0 ? reached[reached.length - 1] : null;
+                  const next = milestones.find((m) => current < m) || milestones[milestones.length - 1];
+                  return { highest, next };
+                };
+
+                const badges = [
+                  {
+                    label: "Streak",
+                    icon: Flame,
+                    ...getReached(streakMilestones, currentStreak),
+                    current: currentStreak,
+                    suffix: "days",
+                    activeGrad: "linear-gradient(135deg, #FF6B35, #FF4500)",
+                    activeShadow: "0 0 24px rgba(255,69,0,0.4)",
+                    activeColor: "#FF6B35",
+                  },
+                  {
+                    label: "Total XP",
+                    icon: Zap,
+                    ...getReached(xpMilestones, totalXP),
+                    current: totalXP,
+                    suffix: "XP",
+                    activeGrad: "linear-gradient(135deg, #BBA7FD, #9B87F5)",
+                    activeShadow: "0 0 24px rgba(155,135,245,0.4)",
+                    activeColor: "#BBA7FD",
+                  },
+                  {
+                    label: "Exams",
+                    icon: ClipboardCheck,
+                    ...getReached(examMilestones, totalExams),
+                    current: totalExams,
+                    suffix: "exams",
+                    activeGrad: "linear-gradient(135deg, #FD91D9, #E040A0)",
+                    activeShadow: "0 0 24px rgba(253,145,217,0.4)",
+                    activeColor: "#FD91D9",
+                  },
+                  {
+                    label: "Correct",
+                    icon: CircleCheckBig,
+                    ...getReached(correctMilestones, totalCorrect),
+                    current: totalCorrect,
+                    suffix: "answers",
+                    activeGrad: "linear-gradient(135deg, #58CC02, #3DA101)",
+                    activeShadow: "0 0 24px rgba(88,204,2,0.4)",
+                    activeColor: "#58CC02",
+                  },
+                ];
+
+                return badges.map((b, i) => {
+                  const Icon = b.icon;
+                  const isReached = b.highest !== null;
+                  return (
+                    <motion.div
+                      key={b.label}
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.08 }}
+                      className="rounded-xl border border-white/[0.12] p-3.5 flex flex-col items-center text-center relative overflow-hidden"
+                      style={{
+                        background: isReached
+                          ? "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)"
+                          : "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
+                        boxShadow: isReached
+                          ? `${b.activeShadow}, inset 0 1px 0 rgba(255,255,255,0.15)`
+                          : "inset 0 1px 0 rgba(255,255,255,0.05)",
+                      }}
+                    >
+                      {isReached && (
+                        <div
+                          className="absolute inset-0 opacity-[0.06] pointer-events-none"
+                          style={{ background: b.activeGrad }}
+                        />
+                      )}
+                      <div
+                        className="w-11 h-11 rounded-full flex items-center justify-center mb-2"
+                        style={{
+                          background: isReached ? b.activeGrad : "rgba(255,255,255,0.06)",
+                          boxShadow: isReached ? b.activeShadow : "none",
+                        }}
+                      >
+                        <Icon className="w-5 h-5" style={{ color: isReached ? "#fff" : "rgba(255,255,255,0.25)" }} />
+                      </div>
+                      <p
+                        className="text-2xl font-extrabold leading-none"
+                        style={{
+                          fontFamily: "Poppins, sans-serif",
+                          background: isReached ? b.activeGrad : "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        {isReached ? b.highest : "—"}
+                      </p>
+                      <p className="text-white/40 text-[9px] font-bold uppercase tracking-wider mt-1">
+                        {isReached ? `${b.suffix}` : `Next: ${b.next} ${b.suffix}`}
+                      </p>
+                      <p className="text-[10px] font-semibold mt-1" style={{ color: isReached ? b.activeColor : "rgba(255,255,255,0.2)" }}>
+                        {b.label}
+                      </p>
+                    </motion.div>
+                  );
+                });
+              })()}
+            </div>
+          </GlassCard>
 
           {/* ── Achievements / Badges ── */}
           <GlassCard className="p-4 sm:p-5">
