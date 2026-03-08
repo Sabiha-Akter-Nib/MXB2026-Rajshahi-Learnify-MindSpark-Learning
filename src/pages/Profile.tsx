@@ -438,17 +438,17 @@ const Profile = () => {
 
             {/* Profile Info Row */}
             <div className="px-4 sm:px-6 pb-5">
-              <div className="flex items-end gap-3 -mt-10 sm:-mt-12">
+              <div className="flex items-center gap-3 -mt-8 sm:-mt-10">
                 {/* Avatar */}
                 <div className="shrink-0 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 rounded-full overflow-hidden">
                   <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
                 </div>
 
                 {/* Name + Username */}
-                <div className="flex-1 min-w-0 pb-1 overflow-hidden">
+                <div className="flex-1 min-w-0 pt-8 sm:pt-10 overflow-hidden">
                   <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight">{displayName}</h2>
                   {profile.username && (
-                    <p className="text-white/60 text-sm sm:text-base font-semibold truncate">@{profile.username}</p>
+                    <p className="text-white/60 text-sm sm:text-base font-semibold truncate leading-snug">@{profile.username}</p>
                   )}
                 </div>
               </div>
