@@ -759,16 +759,16 @@ const Analytics = () => {
 
               {/* Bar chart */}
               <div className="h-28 sm:h-32 mb-3">
-                <BarResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={monthlyBarData} barSize={8}>
-                    <BarXAxis
+                    <XAxis
                       dataKey="label"
                       tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
                     />
-                    <BarYAxis hide />
-                    <BarTooltip
+                    <YAxis hide />
+                    <Tooltip
                       contentStyle={{
                         background: "rgba(30,15,45,0.95)",
                         border: "1px solid rgba(255,255,255,0.1)",
@@ -784,7 +784,7 @@ const Analytics = () => {
                       fill="rgba(188,150,240,0.6)"
                     />
                   </BarChart>
-                </BarResponsiveContainer>
+                </ResponsiveContainer>
               </div>
 
               {/* Time range pills */}
