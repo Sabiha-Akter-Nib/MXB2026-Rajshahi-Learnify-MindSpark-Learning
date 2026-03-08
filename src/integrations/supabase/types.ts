@@ -359,6 +359,7 @@ export type Database = {
       profiles: {
         Row: {
           class: number
+          cover_color: string | null
           created_at: string
           division: string | null
           email: string
@@ -372,6 +373,7 @@ export type Database = {
         }
         Insert: {
           class: number
+          cover_color?: string | null
           created_at?: string
           division?: string | null
           email: string
@@ -385,6 +387,7 @@ export type Database = {
         }
         Update: {
           class?: number
+          cover_color?: string | null
           created_at?: string
           division?: string | null
           email?: string
