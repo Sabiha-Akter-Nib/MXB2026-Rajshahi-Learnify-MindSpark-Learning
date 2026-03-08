@@ -630,11 +630,13 @@ const Profile = () => {
               return reached.length > 0 ? reached[reached.length - 1] : null;
             };
 
+            const makeBadge = (icon: typeof Flame, highest: number | null, descFn: (h: number) => string, grad: string, shadow: string) => ({ icon, highest, desc: highest !== null ? descFn(highest) : "", grad, shadow });
+
             const allBadges = [
-              { label: "Streak", desc: `${currentStreak} day streak`, icon: Flame, highest: getHighest(streakMilestones, currentStreak), grad: "linear-gradient(135deg, #FF6B35, #FF4500)", shadow: "0 0 16px rgba(255,69,0,0.35)" },
-              { label: "XP", desc: `Earned ${totalXP} XP`, icon: Zap, highest: getHighest(xpMilestones, totalXP), grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", shadow: "0 0 16px rgba(155,135,245,0.35)" },
-              { label: "Exams", desc: `Completed ${totalExams} exams`, icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), grad: "linear-gradient(135deg, #FD91D9, #E040A0)", shadow: "0 0 16px rgba(253,145,217,0.35)" },
-              { label: "Correct", desc: `${totalCorrect} correct answers`, icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), grad: "linear-gradient(135deg, #58CC02, #3DA101)", shadow: "0 0 16px rgba(88,204,2,0.35)" },
+              makeBadge(Flame, getHighest(streakMilestones, currentStreak), (h) => `${h} Day Streak`, "linear-gradient(135deg, #FF6B35, #FF4500)", "0 0 16px rgba(255,69,0,0.35)"),
+              makeBadge(Zap, getHighest(xpMilestones, totalXP), (h) => `${h.toLocaleString()} XP Earned`, "linear-gradient(135deg, #BBA7FD, #9B87F5)", "0 0 16px rgba(155,135,245,0.35)"),
+              makeBadge(ClipboardCheck, getHighest(examMilestones, totalExams), (h) => `${h} Exams Done`, "linear-gradient(135deg, #FD91D9, #E040A0)", "0 0 16px rgba(253,145,217,0.35)"),
+              makeBadge(CircleCheckBig, getHighest(correctMilestones, totalCorrect), (h) => `${h.toLocaleString()} Correct`, "linear-gradient(135deg, #58CC02, #3DA101)", "0 0 16px rgba(88,204,2,0.35)"),
             ];
 
             const achieved = allBadges.filter((b) => b.highest !== null);
@@ -643,14 +645,14 @@ const Profile = () => {
             return (
               <GlassCard className="px-3 py-2.5 sm:px-4 sm:py-3">
                 <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                  {achieved.map((b) => {
+                  {achieved.map((b, i) => {
                     const Icon = b.icon;
                     return (
                       <motion.div
-                        key={b.label}
+                        key={i}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2.5"
                       >
                         <div
                           className="w-11 h-11 sm:w-13 sm:h-13 rounded-full flex flex-col items-center justify-center shrink-0"
@@ -661,7 +663,7 @@ const Profile = () => {
                             {b.highest}
                           </span>
                         </div>
-                        <p className="text-white/60 text-[9px] sm:text-[10px] font-medium leading-tight">{b.desc}</p>
+                        <p className="text-white/70 text-[9px] sm:text-[10px] font-semibold leading-snug" style={{ fontFamily: "Poppins, sans-serif" }}>{b.desc}</p>
                       </motion.div>
                     );
                   })}
