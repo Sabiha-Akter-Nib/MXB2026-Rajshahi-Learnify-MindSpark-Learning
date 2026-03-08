@@ -117,7 +117,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
-        className="mt-10 flex items-center gap-1.5 text-[11px] text-muted-foreground/50"
+        className="mt-5 flex items-center gap-1.5 text-[11px] text-muted-foreground/50"
       >
         <Sparkles className="w-3 h-3" />
         <span className="font-heading">Powered by NCTB Curriculum</span>
