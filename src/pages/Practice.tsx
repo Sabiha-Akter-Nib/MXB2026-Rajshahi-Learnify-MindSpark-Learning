@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Brain, Sparkles, CheckCircle2, XCircle, ChevronRight, ChevronLeft,
-  Loader2, RefreshCw, Trophy, Target, Lightbulb, BookOpen, Zap, Star, Clock, Award,
+  Loader2, RefreshCw, Trophy, Target, Lightbulb, BookOpen, Zap, Star, Clock, Award, Plus, X,
+
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
