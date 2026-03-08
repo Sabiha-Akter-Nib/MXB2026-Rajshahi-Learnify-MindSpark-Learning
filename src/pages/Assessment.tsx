@@ -37,6 +37,22 @@ interface Subject {
 // ── Constants ──
 const GRADIENT = "linear-gradient(135deg, hsl(300, 65%, 52%) 0%, hsl(270, 60%, 55%) 40%, hsl(30, 78%, 76%) 100%)";
 const QUESTION_COUNTS = [10, 15, 20, 25, 30, 40, 50];
+const TIME_LIMITS = [
+  { value: 0, label: "No Limit", labelBn: "সীমাহীন" },
+  { value: 10, label: "10 min", labelBn: "১০ মি" },
+  { value: 15, label: "15 min", labelBn: "১৫ মি" },
+  { value: 20, label: "20 min", labelBn: "২০ মি" },
+  { value: 30, label: "30 min", labelBn: "৩০ মি" },
+  { value: 45, label: "45 min", labelBn: "৪৫ মি" },
+  { value: 60, label: "60 min", labelBn: "৬০ মি" },
+  { value: 90, label: "90 min", labelBn: "৯০ মি" },
+];
+
+interface AdditionalSubjectEntry {
+  subject: Subject | null;
+  topic: string;
+  chapter: string;
+}
 
 const iconMap: Record<string, React.ElementType> = {
   "book-text": BookText, languages: Languages, calculator: Calculator,
