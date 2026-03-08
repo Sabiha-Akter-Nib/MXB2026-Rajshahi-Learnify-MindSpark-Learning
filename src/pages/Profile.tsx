@@ -328,7 +328,7 @@ const Profile = () => {
 
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: editName, username: editUsername.trim() || null, school_name: editSchool })
+      .update({ full_name: editName, username: editUsername.trim() || null, school_name: editSchool, cover_color: editCoverColor } as any)
       .eq("user_id", user.id);
 
     if (error?.message?.includes("unique")) {
@@ -336,7 +336,7 @@ const Profile = () => {
       return;
     }
 
-    setProfile((p) => (p ? { ...p, full_name: editName, username: editUsername.trim(), school_name: editSchool } : p));
+    setProfile((p) => (p ? { ...p, full_name: editName, username: editUsername.trim(), school_name: editSchool, cover_color: editCoverColor } : p));
     setIsEditing(false);
   };
 
