@@ -123,7 +123,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.35, duration: 0.5 }}
-        className="grid grid-cols-2 gap-3.5 w-full max-w-sm"
+        className="grid grid-cols-4 gap-2.5 w-full max-w-md"
       >
         {suggestions.map((s, i) => (
           <motion.button
