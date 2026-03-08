@@ -17,6 +17,10 @@ import {
   Calendar,
   BookOpen,
   GraduationCap,
+  Flame,
+  Zap,
+  ClipboardCheck,
+  CircleCheckBig,
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
