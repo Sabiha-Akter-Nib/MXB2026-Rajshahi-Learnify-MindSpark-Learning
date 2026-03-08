@@ -100,7 +100,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
             whileHover={{ scale: 1.04, y: -3 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => onQuickAction(isBangla ? s.promptBn : s.prompt)}
-            className="group flex flex-col items-center gap-3 p-5 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/30 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 text-center"
+            className="group flex flex-col items-center gap-2 p-3.5 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/30 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 text-center"
           >
             <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300`}>
               <s.icon className="w-5 h-5 text-white" />
