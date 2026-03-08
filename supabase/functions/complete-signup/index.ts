@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, school_name, class: studentClass, version, division } = await req.json();
+    const { email, password, full_name, school_name, class: studentClass, version, division, username } = await req.json();
 
     if (!email || !password || !full_name || !school_name || !studentClass || !version) {
       return new Response(JSON.stringify({ error: "All fields are required" }), {
@@ -68,6 +68,11 @@ Deno.serve(async (req) => {
 
     // Clean up used OTP codes
     await supabase.from("otp_codes").delete().eq("email", email).eq("type", "signup");
+
+    // Set username if provided
+    if (username) {
+      await supabase.from("profiles").update({ username }).eq("user_id", userData.user.id);
+    }
 
     return new Response(JSON.stringify({ success: true, user_id: userData.user.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

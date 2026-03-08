@@ -66,8 +66,8 @@ const SignupParticleCanvas = () => {
   return <canvas ref={canvasRef} className="absolute inset-0 z-[1]" />;
 };
 
-// ─── Steps: 0=email, 1=otp, 2=password, 3=name, 4=school, 5=class+division, 6=version ───
-const TOTAL_STEPS = 7;
+// ─── Steps: 0=email, 1=otp, 2=password, 3=name, 4=school, 5=class+division, 6=version, 7=username ───
+const TOTAL_STEPS = 8;
 
 const stepTugiMap: Record<number, string> = {
   0: tugiGlassesImg,
@@ -77,6 +77,7 @@ const stepTugiMap: Record<number, string> = {
   4: tugiSchoolImg,
   5: tugiGradesImg,
   6: tugiGradesImg,
+  7: tugiMascotImg,
 };
 
 const gradeData = [
@@ -139,7 +140,7 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "", password: "", name: "", school: "",
-    class: "", version: "", division: "",
+    class: "", version: "", division: "", username: "",
   });
 
   const { user, loading } = useAuth();
@@ -215,6 +216,22 @@ const Signup = () => {
         }
         case 6: {
           if (!formData.version) { setError("ভার্সন নির্বাচন করুন"); break; }
+          setStep(7);
+          break;
+        }
+        case 7: {
+          // Validate username
+          const uname = formData.username.trim();
+          if (uname.length < 3) { setError("ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে"); break; }
+          if (!/^[a-zA-Z0-9_]+$/.test(uname)) { setError("শুধু ইংরেজি অক্ষর, সংখ্যা এবং _ ব্যবহার করুন"); break; }
+          // Check uniqueness
+          const { data: existing } = await supabase
+            .from("profiles")
+            .select("user_id")
+            .eq("username", uname)
+            .maybeSingle();
+          if (existing) { setError("এই ইউজারনেম ইতোমধ্যে ব্যবহৃত হয়েছে"); break; }
+          // Complete signup
           await invokeEdge("complete-signup", {
             email: formData.email,
             password: formData.password,
@@ -222,6 +239,7 @@ const Signup = () => {
             school_name: formData.school,
             class: formData.class,
             version: formData.version,
+            username: uname,
             ...(showDivision && formData.division ? { division: formData.division } : {}),
           });
           toast({ title: "অ্যাকাউন্ট তৈরি হয়েছে!", description: "এখন লগ ইন করুন।" });
@@ -375,6 +393,20 @@ const Signup = () => {
                 );
               })}
             </div>
+          </motion.div>
+        );
+      case 7:
+        return (
+          <motion.div key="step7" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>একটি ইউজারনেম বেছে নাও</label>
+            <input type="text" placeholder="your_username" value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 30) })}
+              onKeyDown={(e) => e.key === "Enter" && handleNext()}
+              className="w-full py-3.5 px-5 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2"
+              style={error ? inputErrorStyle : inputStyle} />
+            <p className="text-[10px] mt-1.5 opacity-60" style={{ color: labelColor }}>
+              শুধু ইংরেজি অক্ষর, সংখ্যা এবং _ ব্যবহার করা যাবে
+            </p>
           </motion.div>
         );
       default:
