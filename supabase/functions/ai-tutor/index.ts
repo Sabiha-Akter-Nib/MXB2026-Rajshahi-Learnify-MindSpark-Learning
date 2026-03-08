@@ -501,8 +501,8 @@ serve(async (req) => {
       }
     }
 
-    // Perform supplementary web search (secondary source)
-    if (!imageBase64 && PERPLEXITY_API_KEY && latestMessage?.content?.length > 10) {
+    // Skip slow web search when we already have curriculum content (major speed boost)
+    if (!curriculumContent && !imageBase64 && PERPLEXITY_API_KEY && latestMessage?.content?.length > 10) {
       const searchQuery = extractSearchQuery(latestMessage.content, studentInfo?.class || 5);
       if (searchQuery) {
         webContext = await searchWeb(searchQuery, PERPLEXITY_API_KEY);
