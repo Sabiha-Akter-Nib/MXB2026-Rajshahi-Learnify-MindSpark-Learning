@@ -369,29 +369,6 @@ const Signup = () => {
       case 6:
         return (
           <motion.div key="step6" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
-            <label className="block text-sm font-semibold mb-3 text-center" style={{ color: labelColor }}>ভার্সন নির্বাচন করো</label>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { value: "bangla", label: "বাংলা ভার্সন", icon: BookOpen },
-                { value: "english", label: "English Version", icon: Globe },
-              ].map((v) => {
-                const Icon = v.icon;
-                return (
-                  <button key={v.value} type="button"
-                    onClick={() => setFormData({ ...formData, version: v.value })}
-                    className="flex flex-col items-center gap-2 py-5 px-4 rounded-2xl transition-all duration-200"
-                    style={formData.version === v.value ? selectedChip : unselectedChip}>
-                    <Icon className="w-7 h-7" />
-                    <span className="text-sm font-semibold">{v.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
-        );
-      case 7:
-        return (
-          <motion.div key="step7" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
             <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>একটি ইউজারনেম বেছে নাও</label>
             <input type="text" placeholder="your_username" value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 30) })}
