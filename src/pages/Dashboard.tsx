@@ -25,6 +25,7 @@ import AvatarUpload from "@/components/avatar/AvatarUpload";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import DailyNotificationTrigger from "@/components/notifications/DailyNotificationTrigger";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import StreakCard from "@/components/dashboard/StreakCard";
 
 // 3D Assets
 import aiTutor3d from "@/assets/module-ai-tutor-3d.png";
@@ -388,75 +389,12 @@ const Dashboard = () => {
         </GlassCard>
 
         {/* ========== STREAK CARD ========== */}
-        <GlassCard className="px-3 py-3 sm:px-4 sm:py-3.5 flex items-center gap-3">
-          {/* Fire with overlaid number in rounded container */}
-          <div className="flex-shrink-0 relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-            <motion.img
-              src={streakFlame3d}
-              alt="Streak Fire"
-              className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
-              animate={currentStreak > 0 ? { scale: [1, 1.08, 1], rotate: [0, -3, 3, 0] } : {}}
-              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }} />
-            <span
-              className="absolute bottom-0 text-2xl sm:text-3xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
-              style={{
-                fontFamily: "'Black Han Sans', sans-serif",
-                WebkitTextStroke: '1.5px rgba(140,80,220,0.8)',
-              }}>
-              {currentStreak}
-            </span>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <h3 className="text-white text-sm sm:text-lg leading-snug font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
-              {currentStreak > 0 ?
-              `${currentStreak} days streak, well done!` :
-              "0 days streak, study to achieve!"}
-            </h3>
-            <p className="text-white/50 mb-2 font-light text-[11px] sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">{streakComment}</p>
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              {DAYS_EN.map((day, i) => {
-                const bdIndex = dayMapping[i];
-                const isActive = weeklyStats.activeDaysThisWeek.has(bdIndex);
-                const now = new Date();
-                const jsDay = now.getDay();
-                const todayBdIndex = jsDay === 6 ? 0 : jsDay + 1;
-                const isToday = bdIndex === todayBdIndex;
-                const isTodayActive = isToday && isActive;
-                return (
-                  <div key={day} className="flex flex-col items-center gap-0.5">
-                    {/* Outer circle */}
-                    <div
-                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center relative"
-                      style={{
-                        backgroundColor: isActive
-                          ? 'rgba(187, 167, 253, 0.7)'
-                          : 'rgba(217, 217, 217, 0.7)',
-                      }}>
-                      {/* Inner circle */}
-                      <div
-                        className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center"
-                        style={{
-                          backgroundColor: isActive
-                            ? 'rgba(187, 167, 253, 0.3)'
-                            : 'rgba(217, 217, 217, 0.3)',
-                        }}>
-                      </div>
-                      {/* Flame sitting on circle, bottom-aligned */}
-                      {isTodayActive && (
-                        <img
-                          src={streakFlame3d}
-                          alt=""
-                          className="absolute bottom-0 w-7 h-7 sm:w-8 sm:h-8 object-contain z-10"
-                        />
-                      )}
-                    </div>
-                    <span className="text-[8px] sm:text-[9px] text-white/40">{day}</span>
-                  </div>);
-              })}
-            </div>
-          </div>
-        </GlassCard>
+        <StreakCard
+          currentStreak={currentStreak}
+          totalStudyMinutes={weeklyStats.today_study_minutes}
+          isFirstTimeUser={weeklyStats.isFirstTimeUser}
+          userId={user?.id}
+        />
 
         {/* ========== AI PRACTICE CTA ========== */}
         <Link to="/tutor">

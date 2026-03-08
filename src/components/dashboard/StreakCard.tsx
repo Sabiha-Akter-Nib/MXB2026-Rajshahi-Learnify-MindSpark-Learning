@@ -1,191 +1,302 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Flame } from "lucide-react";
-import streakFlame from "@/assets/streak-flame.png";
-import streakBg1 from "@/assets/streak-bg-1.png";
-import streakBg2 from "@/assets/streak-bg-2.png";
-import streakBg3 from "@/assets/streak-bg-3.png";
-import streakBg4 from "@/assets/streak-bg-4.png";
-import streakBg5 from "@/assets/streak-bg-5.png";
-import streakBg6 from "@/assets/streak-bg-6.png";
-import streakBg7 from "@/assets/streak-bg-7.png";
-import streakBg8 from "@/assets/streak-bg-8.png";
-import streakBgAngry from "@/assets/streak-bg-angry.png";
-import streakBgAngry2 from "@/assets/streak-bg-angry-2.png";
-
-const goodImages = [streakBg1, streakBg2, streakBg3, streakBg4, streakBg5, streakBg6, streakBg7, streakBg8];
-const angryImages = [streakBgAngry, streakBgAngry2];
-
-const goodComments = [
-  "আরেহহহহ, আমি তো এভাবেই চেয়েছিলাম! 🎉",
-  "চালিয়ে যাও! 🔥",
-  "তোমাকেই তো দরকার! 💪",
-  "Performance এইরকম হইতেই হবে! ⭐",
-  "দারুণ! থামবে না কিন্তু! 🚀",
-  "বাহ্, একদম ঝড় তুলছো! 🌟",
-  "গুরু, তোমার জুড়ি নেই! 👑",
-];
-
-const badComments = [
-  "এভাবে পড়ালেখা না করলে exam এ ভালো করবা? 😤",
-  "কই গেলে? পড়তে বসো! 📚",
-  "Streak ভেঙে গেছে! আবার শুরু করো! 😠",
-  "আজকে কিচ্ছু পড়নি? চলো চলো! 🫤",
-];
-
-const DAYS_BN = ["শনি", "রবি", "সোম", "মঙ্গল", "বুধ", "বৃহ", "শুক্র"];
+import { Flame, Droplets } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import tugiHappy from "@/assets/tugi-streak-happy.png";
+import tugiSad from "@/assets/tugi-streak-sad.png";
 
 interface StreakCardProps {
   currentStreak: number;
-  /** TODAY's study minutes (not all-time) */
   totalStudyMinutes: number;
   isFirstTimeUser: boolean;
-  /** Active day indices this BD week: 0=Sat … 6=Fri */
-  activeDaysThisWeek: Set<number>;
+  userId: string | undefined;
 }
+
+const DAY_HEADERS = ["S", "M", "T", "W", "T", "F", "S"];
 
 const StreakCard = ({
   currentStreak,
   totalStudyMinutes,
   isFirstTimeUser,
-  activeDaysThisWeek,
+  userId,
 }: StreakCardProps) => {
-  // todayStudied = user has ≥1 min study today
+  const [activeDates, setActiveDates] = useState<Set<number>>(new Set());
+
   const todayStudied = totalStudyMinutes >= 1;
+  const showAngry = !isFirstTimeUser && !todayStudied && currentStreak === 0;
 
-  // If user hasn't studied today yet → show angry (unless first-time user)
-  // If streak is 0 and not studied today → angry
-  const showAngry = !isFirstTimeUser && !todayStudied;
+  // Fetch activity dates for current month
+  useEffect(() => {
+    if (!userId) return;
+    const fetchMonthActivity = async () => {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  // Effective streak: what we display
-  const effectiveStreak = currentStreak;
+      const [{ data: sessions }, { data: assessments }] = await Promise.all([
+        supabase
+          .from("study_sessions")
+          .select("created_at, duration_minutes")
+          .eq("user_id", userId)
+          .gte("created_at", monthStart.toISOString())
+          .lte("created_at", monthEnd.toISOString()),
+        supabase
+          .from("assessments")
+          .select("completed_at")
+          .eq("user_id", userId)
+          .gte("completed_at", monthStart.toISOString())
+          .lte("completed_at", monthEnd.toISOString()),
+      ]);
 
-  // Always show actual activity days regardless of streak status
-  const effectiveActiveDays = activeDaysThisWeek;
+      const dates = new Set<number>();
+      sessions?.forEach((s) => {
+        if (s.duration_minutes >= 1) {
+          dates.add(new Date(s.created_at).getDate());
+        }
+      });
+      assessments?.forEach((a) => {
+        dates.add(new Date(a.completed_at).getDate());
+      });
+      setActiveDates(dates);
+    };
+    fetchMonthActivity();
+  }, [userId, totalStudyMinutes]);
 
-  // Pick a random image – stable per render via useMemo
-  const backgroundImage = useMemo(() => {
-    if (showAngry) return angryImages[Math.floor(Math.random() * angryImages.length)];
-    return goodImages[Math.floor(Math.random() * goodImages.length)];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showAngry]);
+  // Calendar data for current month
+  const calendarData = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const today = now.getDate();
+    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const comment = useMemo(() => {
-    if (showAngry) return badComments[Math.floor(Math.random() * badComments.length)];
-    return goodComments[Math.floor(Math.random() * goodComments.length)];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showAngry]);
+    const weeks: (number | null)[][] = [];
+    let currentWeek: (number | null)[] = [];
 
-  // Today is which day index (Sat=0)
-  const todayIndex = (() => {
-    const d = new Date();
-    // JS: 0=Sun, 6=Sat → Bangladesh: Sat=0
-    const jsDay = d.getDay(); // 0=Sun
-    // Map: Sat(6)->0, Sun(0)->1, Mon(1)->2, Tue(2)->3, Wed(3)->4, Thu(4)->5, Fri(5)->6
-    return jsDay === 6 ? 0 : jsDay + 1;
-  })();
+    // Fill leading empty cells
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      currentWeek.push(null);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      currentWeek.push(day);
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+    }
+
+    // Fill trailing empty cells
+    if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        currentWeek.push(null);
+      }
+      weeks.push(currentWeek);
+    }
+
+    return { weeks, today, daysInMonth };
+  }, []);
+
+  const { weeks, today } = calendarData;
+
+  // Find the last active date before today for "latest streak milestone"
+  const latestStreakStart = useMemo(() => {
+    if (currentStreak <= 0) return null;
+    // The streak start day
+    const startDate = today - currentStreak + 1;
+    return startDate > 0 ? startDate : 1;
+  }, [currentStreak, today]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.96 }}
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: 0.15, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="relative w-full overflow-hidden rounded-2xl shadow-xl"
-      style={{ height: "clamp(140px, 22vw, 220px)" }}
+      className="relative w-full overflow-hidden rounded-3xl"
+      style={{
+        background: showAngry
+          ? "linear-gradient(145deg, #9B8EC4 0%, #7B68AE 50%, #9078C0 100%)"
+          : "linear-gradient(145deg, #C5F5C0 0%, #A8EDAC 50%, #D4F7D0 100%)",
+        minHeight: "180px",
+      }}
     >
-      {/* Background image */}
-      <img
-        src={backgroundImage}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-
-      {/* Dark overlay for text readability */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: showAngry
-            ? "linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.25) 60%, transparent 100%)"
-            : "linear-gradient(90deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)",
-        }}
-      />
-
-      {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-between p-4 sm:p-5">
-        {/* Top: Day circles */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {DAYS_BN.map((day, i) => {
-            const isActive = effectiveActiveDays.has(i);
-            const isToday = i === todayIndex;
-            return (
-              <motion.div
-                key={day}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3 + i * 0.05 }}
-                className="flex flex-col items-center gap-0.5"
+      <div className="relative z-10 flex h-full" style={{ minHeight: "180px" }}>
+        {/* Left: Calendar */}
+        <div className="flex-1 p-3 sm:p-4 flex flex-col justify-center">
+          {/* Day headers */}
+          <div className="grid grid-cols-7 gap-x-1 mb-1">
+            {DAY_HEADERS.map((d, i) => (
+              <span
+                key={i}
+                className="text-center text-[9px] sm:text-[11px] font-bold"
+                style={{
+                  color: showAngry ? "rgba(255,255,255,0.5)" : "rgba(80,120,80,0.5)",
+                }}
               >
-                <span className="text-[8px] sm:text-[10px] font-bold text-white/80">
-                  {day}
-                </span>
-                <div
-                  className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 transition-all ${
-                    isActive
-                      ? "bg-[hsl(45,100%,55%)] border-[hsl(45,100%,65%)] shadow-[0_0_8px_hsl(45,100%,55%)]"
-                      : isToday
-                        ? "border-white/60 bg-white/15"
-                        : "border-white/25 bg-white/5"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 300 }}
+                {d}
+              </span>
+            ))}
+          </div>
+
+          {/* Calendar grid */}
+          {weeks.map((week, wi) => (
+            <div key={wi} className="grid grid-cols-7 gap-x-1 gap-y-0.5">
+              {week.map((day, di) => {
+                if (day === null) {
+                  return <div key={di} className="w-full aspect-square" />;
+                }
+
+                const isActive = activeDates.has(day);
+                const isToday = day === today;
+                const isPast = day < today;
+                const isStreakStart = day === latestStreakStart;
+
+                // Determine styling
+                let bgColor = "transparent";
+                let textColor = showAngry ? "rgba(255,255,255,0.35)" : "rgba(80,120,80,0.4)";
+                let borderRadius = "6px";
+                let border = "none";
+                let fontWeight = "500";
+
+                if (isActive && isPast) {
+                  // Active day - golden yellow pill
+                  bgColor = showAngry
+                    ? "rgba(255,255,255,0.18)"
+                    : "rgba(230,195,90,0.35)";
+                  textColor = showAngry ? "#FFD54F" : "#B8860B";
+                  fontWeight = "700";
+                  borderRadius = "8px";
+                }
+
+                if (isToday) {
+                  // Today - special circle marker
+                  bgColor = showAngry
+                    ? "rgba(100,100,100,0.5)"
+                    : "rgba(100,160,255,0.3)";
+                  textColor = showAngry ? "#BDBDBD" : "#4A90D9";
+                  borderRadius = "50%";
+                  border = showAngry
+                    ? "2px solid rgba(150,150,150,0.5)"
+                    : "2px solid rgba(100,160,255,0.5)";
+                  fontWeight = "800";
+                }
+
+                if (isActive && isToday) {
+                  bgColor = showAngry
+                    ? "rgba(100,100,100,0.5)"
+                    : "rgba(100,160,255,0.4)";
+                  textColor = showAngry ? "#FFD54F" : "#2E7D32";
+                  border = showAngry
+                    ? "2px solid rgba(150,150,150,0.5)"
+                    : "2px solid rgba(100,160,255,0.6)";
+                }
+
+                // Streak milestone (first day of current streak)
+                if (isStreakStart && !isToday) {
+                  bgColor = showAngry
+                    ? "rgba(255,152,0,0.3)"
+                    : "rgba(255,152,0,0.4)";
+                  textColor = showAngry ? "#FFB74D" : "#E65100";
+                  borderRadius = "50%";
+                  fontWeight = "800";
+                }
+
+                // Future days that aren't active
+                if (!isPast && !isToday) {
+                  textColor = showAngry ? "rgba(255,255,255,0.25)" : "rgba(80,120,80,0.35)";
+                }
+
+                return (
+                  <div
+                    key={di}
+                    className="w-full aspect-square flex items-center justify-center relative"
+                  >
+                    <div
+                      className="w-[85%] h-[85%] flex items-center justify-center transition-all"
+                      style={{
+                        backgroundColor: bgColor,
+                        borderRadius,
+                        border,
+                      }}
                     >
-                      <Flame className="w-3 h-3 text-[hsl(20,90%,40%)]" />
-                    </motion.div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+                      <span
+                        className="text-[9px] sm:text-[11px] leading-none"
+                        style={{ color: textColor, fontWeight, fontFamily: "Poppins, sans-serif" }}
+                      >
+                        {day}
+                      </span>
+                    </div>
+                    {/* Sad face for missed days in angry mode */}
+                    {showAngry && isPast && !isActive && !isToday && (
+                      <Droplets
+                        className="absolute -bottom-0.5 -right-0.5 opacity-30"
+                        size={7}
+                        color="#9E9E9E"
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
-        {/* Bottom: Streak count + comment */}
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <motion.div
-              className="flex items-center gap-2"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              <span className="font-heading font-black text-4xl sm:text-5xl text-white drop-shadow-lg">
-                {effectiveStreak}
-              </span>
-              <span className="font-heading font-bold text-base sm:text-lg text-white/90">
-                Day Streak
-              </span>
-              {!showAngry && effectiveStreak > 0 && (
-                <motion.img
-                  src={streakFlame}
-                  alt="🔥"
-                  className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
-                  animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.15, 1] }}
-                  transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 2 }}
+        {/* Right: Streak count + Mascot */}
+        <div className="w-[42%] sm:w-[40%] flex flex-col items-center justify-center p-2 sm:p-3 relative">
+          {/* Streak icon + number */}
+          <div className="flex items-center gap-1 mb-1">
+            {showAngry ? (
+              <Droplets
+                size={24}
+                className="sm:w-7 sm:h-7"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+              />
+            ) : (
+              <motion.div
+                animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+              >
+                <Flame
+                  size={28}
+                  className="sm:w-8 sm:h-8"
+                  style={{ color: "#FF8F00", fill: "#FFB300" }}
                 />
-              )}
-            </motion.div>
+              </motion.div>
+            )}
+            <span
+              className="text-3xl sm:text-4xl leading-none"
+              style={{
+                fontFamily: "'Black Han Sans', sans-serif",
+                color: showAngry ? "rgba(255,255,255,0.4)" : "#FF8F00",
+                letterSpacing: "-1px",
+              }}
+            >
+              {currentStreak}
+            </span>
+          </div>
+
+          {/* "Practice now?" for angry state */}
+          {showAngry && (
             <motion.p
-              className="text-xs sm:text-sm font-semibold text-white/90 mt-0.5 max-w-[260px] sm:max-w-[360px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
+              className="text-[11px] sm:text-xs font-semibold mb-1"
+              style={{ color: "rgba(255,255,255,0.5)", fontFamily: "Poppins, sans-serif" }}
             >
-              {comment}
+              Practice now?
             </motion.p>
-          </div>
+          )}
+
+          {/* Mascot */}
+          <motion.img
+            src={showAngry ? tugiSad : tugiHappy}
+            alt="Tugi"
+            className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+          />
         </div>
       </div>
     </motion.div>
