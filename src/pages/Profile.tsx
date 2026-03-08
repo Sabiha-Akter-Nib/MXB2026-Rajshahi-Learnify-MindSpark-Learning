@@ -309,6 +309,41 @@ const Profile = () => {
       } else {
         setEarnedBadges([]);
       }
+
+      // Weekly XP chart data (last 7 days) for target user
+      const sevenDaysAgo = subDays(new Date(), 6);
+      const buildWeekData = () => {
+        const data: { label: string; xp: number }[] = [];
+        const keyMap: Record<string, number> = {};
+        for (let i = 6; i >= 0; i--) {
+          const d = subDays(new Date(), i);
+          const key = format(d, "yyyy-MM-dd");
+          const dayLabel = format(d, "EEE");
+          keyMap[key] = data.length;
+          data.push({ label: dayLabel, xp: 0 });
+        }
+        return { data, keyMap };
+      };
+
+      // Target user's XP
+      const targetWeek = buildWeekData();
+      const { data: targetSessions } = await supabase.from("study_sessions").select("created_at, xp_earned").eq("user_id", targetUserId).gte("created_at", sevenDaysAgo.toISOString());
+      const { data: targetAssess } = await supabase.from("assessments").select("completed_at, xp_earned").eq("user_id", targetUserId).gte("completed_at", sevenDaysAgo.toISOString());
+      targetSessions?.forEach((s) => { const k = format(new Date(s.created_at), "yyyy-MM-dd"); if (targetWeek.keyMap[k] !== undefined) targetWeek.data[targetWeek.keyMap[k]].xp += s.xp_earned || 0; });
+      targetAssess?.forEach((a) => { const k = format(new Date(a.completed_at), "yyyy-MM-dd"); if (targetWeek.keyMap[k] !== undefined) targetWeek.data[targetWeek.keyMap[k]].xp += a.xp_earned || 0; });
+      setWeeklyXpTarget(targetWeek.data);
+
+      // Current user's XP (for comparison when viewing others)
+      if (!isOwnProfile && user) {
+        const selfWeek = buildWeekData();
+        const { data: selfSessions } = await supabase.from("study_sessions").select("created_at, xp_earned").eq("user_id", user.id).gte("created_at", sevenDaysAgo.toISOString());
+        const { data: selfAssess } = await supabase.from("assessments").select("completed_at, xp_earned").eq("user_id", user.id).gte("completed_at", sevenDaysAgo.toISOString());
+        selfSessions?.forEach((s) => { const k = format(new Date(s.created_at), "yyyy-MM-dd"); if (selfWeek.keyMap[k] !== undefined) selfWeek.data[selfWeek.keyMap[k]].xp += s.xp_earned || 0; });
+        selfAssess?.forEach((a) => { const k = format(new Date(a.completed_at), "yyyy-MM-dd"); if (selfWeek.keyMap[k] !== undefined) selfWeek.data[selfWeek.keyMap[k]].xp += a.xp_earned || 0; });
+        setWeeklyXpSelf(selfWeek.data);
+      } else {
+        setWeeklyXpSelf([]);
+      }
     } catch (err) {
       console.error("Profile fetch error:", err);
     } finally {
