@@ -413,7 +413,7 @@ const Profile = () => {
           <GlassCard className="p-5 sm:p-6">
             <div className="flex flex-col items-center text-center">
               <div className="mb-3 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0">
-                <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={isOwnProfile} />
+                <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
               </div>
               <h2 className="text-white font-extrabold text-xl sm:text-2xl">{displayName}</h2>
               {profile.username && (
