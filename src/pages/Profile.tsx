@@ -438,27 +438,32 @@ const Profile = () => {
 
             {/* Profile Info Row */}
             <div className="px-4 sm:px-6 pb-5">
-              <div className="flex items-end gap-4 -mt-10 sm:-mt-12">
+              <div className="flex items-end gap-3 -mt-10 sm:-mt-12">
                 {/* Avatar */}
                 <div className="shrink-0 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 rounded-full overflow-hidden">
                   <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
                 </div>
 
-                {/* Name + Username + School */}
-                <div className="flex-1 min-w-0 pb-1">
+                {/* Name + Username */}
+                <div className="flex-1 min-w-0 pb-1 overflow-hidden">
                   <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight">{displayName}</h2>
                   {profile.username && (
                     <p className="text-white/60 text-sm sm:text-base font-semibold truncate">@{profile.username}</p>
                   )}
-                  <p className="text-white/40 text-xs sm:text-sm truncate mt-0.5 flex items-center gap-1">
-                    <GraduationCap className="w-3.5 h-3.5 shrink-0" />
-                    {profile.school_name}
-                  </p>
-                  <p className="text-white/40 text-[10px] sm:text-xs mt-0.5 flex items-center gap-1">
-                    <Calendar className="w-3 h-3 shrink-0" />
-                    Joined {joinedDate}
-                  </p>
                 </div>
+              </div>
+
+              {/* School + Joined */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-white/40 text-xs">
+                <span className="flex items-center gap-1 truncate">
+                  <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                  {profile.school_name}
+                </span>
+                <span className="text-white/20">•</span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 shrink-0" />
+                  Joined {joinedDate}
+                </span>
               </div>
 
               {/* Class / Following / Followers */}
