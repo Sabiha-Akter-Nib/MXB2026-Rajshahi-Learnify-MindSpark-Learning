@@ -671,7 +671,7 @@ const Profile = () => {
       {/* ── Edit Profile Dialog ── */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent
-          className="border-white/[0.15] max-w-md"
+          className="border-white/[0.15] max-w-md max-h-[85vh] overflow-y-auto mx-4"
           style={{
             background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)",
             boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
