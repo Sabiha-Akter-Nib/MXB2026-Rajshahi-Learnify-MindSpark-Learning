@@ -33,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, Trash2 } from "lucide-react";
 
 interface Attachment {
   type: "image" | "pdf";
