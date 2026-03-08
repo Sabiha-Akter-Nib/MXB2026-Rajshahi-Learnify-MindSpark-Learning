@@ -37,7 +37,7 @@ const subjectColors = [
   { from: "hsl(300, 65%, 52%)", to: "hsl(320, 60%, 60%)", shadow: "hsla(300, 65%, 52%, 0.3)", text: "hsl(300, 65%, 42%)" },
   { from: "hsl(330, 70%, 55%)", to: "hsl(345, 65%, 62%)", shadow: "hsla(330, 70%, 55%, 0.3)", text: "hsl(330, 70%, 42%)" },
   { from: "hsl(270, 60%, 55%)", to: "hsl(285, 55%, 62%)", shadow: "hsla(270, 60%, 55%, 0.3)", text: "hsl(270, 60%, 42%)" },
-  { from: "hsl(42, 85%, 52%)", to: "hsl(35, 80%, 58%)", shadow: "hsla(42, 85%, 52%, 0.3)", text: "hsl(42, 85%, 38%)" },
+  { from: "hsl(30, 78%, 68%)", to: "hsl(25, 72%, 76%)", shadow: "hsla(30, 78%, 68%, 0.3)", text: "hsl(30, 70%, 42%)" },
 ];
 
 const SubjectSelector = ({ userId, studentClass, selectedSubject, onSubjectChange, isBangla = false }: SubjectSelectorProps) => {
