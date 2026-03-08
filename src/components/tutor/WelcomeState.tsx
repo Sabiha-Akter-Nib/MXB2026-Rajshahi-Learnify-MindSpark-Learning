@@ -8,6 +8,7 @@ interface WelcomeStateProps {
   onQuickAction: (prompt: string) => void;
 }
 
+// Colors: magenta, pink, purple, golden on #FEFEFE glass
 const suggestions = [
   {
     icon: BookOpen,
@@ -15,9 +16,10 @@ const suggestions = [
     labelBn: "ব্যাখ্যা",
     prompt: "Please explain in detail ",
     promptBn: "দয়া করে বিস্তারিতভাবে ব্যাখ্যা করো ",
-    gradient: "from-[hsl(245,58%,64%)] to-[hsl(260,55%,72%)]",
-    shadow: "hsla(245,58%,64%,0.35)",
-    emoji: "📖",
+    gradientFrom: "hsl(280, 65%, 55%)",
+    gradientTo: "hsl(300, 60%, 65%)",
+    shadow: "hsla(280, 65%, 55%, 0.4)",
+    textColor: "hsl(280, 65%, 45%)",
   },
   {
     icon: Brain,
@@ -25,9 +27,10 @@ const suggestions = [
     labelBn: "অনুশীলন",
     prompt: "Give me practice questions on ",
     promptBn: "অনুশীলনের জন্য প্রশ্ন দাও ",
-    gradient: "from-[hsl(340,65%,60%)] to-[hsl(0,70%,65%)]",
-    shadow: "hsla(340,65%,60%,0.35)",
-    emoji: "🧠",
+    gradientFrom: "hsl(330, 70%, 55%)",
+    gradientTo: "hsl(345, 65%, 65%)",
+    shadow: "hsla(330, 70%, 55%, 0.4)",
+    textColor: "hsl(330, 70%, 45%)",
   },
   {
     icon: Upload,
@@ -35,9 +38,10 @@ const suggestions = [
     labelBn: "বিশ্লেষণ",
     prompt: "Analyze this image and explain ",
     promptBn: "এই ছবিটি বিশ্লেষণ করো এবং ব্যাখ্যা করো ",
-    gradient: "from-[hsl(25,80%,60%)] to-[hsl(35,75%,68%)]",
-    shadow: "hsla(25,80%,60%,0.35)",
-    emoji: "📸",
+    gradientFrom: "hsl(265, 58%, 52%)",
+    gradientTo: "hsl(285, 55%, 62%)",
+    shadow: "hsla(265, 58%, 52%, 0.4)",
+    textColor: "hsl(265, 58%, 42%)",
   },
   {
     icon: Sparkles,
@@ -45,9 +49,10 @@ const suggestions = [
     labelBn: "রিভিশন",
     prompt: "Help me revise ",
     promptBn: "রিভিশন করতে সাহায্য করো ",
-    gradient: "from-[hsl(152,60%,42%)] to-[hsl(170,55%,50%)]",
-    shadow: "hsla(152,60%,42%,0.35)",
-    emoji: "✨",
+    gradientFrom: "hsl(42, 85%, 52%)",
+    gradientTo: "hsl(35, 80%, 58%)",
+    shadow: "hsla(42, 85%, 52%, 0.4)",
+    textColor: "hsl(42, 85%, 38%)",
   },
 ];
 
@@ -68,7 +73,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           className="absolute inset-0 rounded-full scale-[2.5]"
           style={{
-            background: `radial-gradient(circle, hsla(270, 55%, 65%, 0.25) 0%, hsla(200, 80%, 70%, 0.12) 40%, transparent 70%)`,
+            background: `radial-gradient(circle, hsla(300, 55%, 65%, 0.2) 0%, hsla(270, 60%, 70%, 0.12) 40%, transparent 70%)`,
           }}
         />
         <motion.img
@@ -94,7 +99,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         </motion.div>
       </motion.div>
 
-      {/* Greeting — catchy, compact */}
+      {/* Greeting */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -113,12 +118,12 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
         </p>
       </motion.div>
 
-      {/* 4 Glass Cards — like profile streak/rank/xp/exams */}
+      {/* 4 Glass Cards — BIGGER with magenta/pink/purple/golden */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.35, duration: 0.5 }}
-        className="grid grid-cols-4 gap-2.5 w-full max-w-sm"
+        className="grid grid-cols-2 gap-3.5 w-full max-w-sm"
       >
         {suggestions.map((s, i) => (
           <motion.button
@@ -126,26 +131,33 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 + i * 0.08, type: "spring", stiffness: 200 }}
-            whileHover={{ scale: 1.08, y: -6 }}
+            whileHover={{ scale: 1.06, y: -5 }}
             whileTap={{ scale: 0.93 }}
             onClick={() => onQuickAction(isBangla ? s.promptBn : s.prompt)}
-            className="group relative flex flex-col items-center gap-2 p-3 rounded-2xl overflow-hidden"
+            className="group relative flex flex-col items-center gap-3 p-5 rounded-3xl overflow-hidden"
             style={{
-              background: "linear-gradient(-45deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.6) 100%)",
-              backdropFilter: "blur(20px) saturate(1.4)",
-              WebkitBackdropFilter: "blur(20px) saturate(1.4)",
-              border: "1px solid rgba(255,255,255,0.5)",
-              boxShadow: `0 4px 20px ${s.shadow}, inset 0 1px 0 rgba(255,255,255,0.6)`,
+              background: "linear-gradient(-45deg, rgba(254,254,254,0.92) 0%, rgba(254,254,254,0.7) 100%)",
+              backdropFilter: "blur(24px) saturate(1.5)",
+              WebkitBackdropFilter: "blur(24px) saturate(1.5)",
+              border: "1.5px solid rgba(255,255,255,0.6)",
+              boxShadow: `0 8px 32px ${s.shadow}, 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)`,
             }}
           >
-            {/* Gradient icon circle */}
-            <div
-              className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}
+            {/* Gradient icon */}
+            <motion.div
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110"
+              style={{
+                background: `linear-gradient(135deg, ${s.gradientFrom}, ${s.gradientTo})`,
+                boxShadow: `0 6px 24px ${s.shadow}`,
+              }}
             >
-              <s.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-            </div>
+              <s.icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+            </motion.div>
 
-            <span className="text-[10px] sm:text-[11px] font-bold text-foreground/80 font-heading leading-tight text-center">
+            <span
+              className="text-xs sm:text-sm font-extrabold font-heading leading-tight text-center"
+              style={{ color: s.textColor }}
+            >
               {isBangla ? s.labelBn : s.label}
             </span>
           </motion.button>

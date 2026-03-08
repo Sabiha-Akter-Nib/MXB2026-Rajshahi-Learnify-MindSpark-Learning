@@ -35,8 +35,9 @@ interface EnhancedInputBarProps {
   showPersonaActive?: boolean;
 }
 
-const GRADIENT = "linear-gradient(135deg, hsl(270 60% 50%) 0%, hsl(200 80% 60%) 100%)";
-const GRADIENT_SHADOW = "0 4px 20px hsl(270 55% 55% / 0.35), 0 2px 8px hsl(200 80% 70% / 0.2)";
+// Magenta → Purple gradient
+const GRADIENT = "linear-gradient(135deg, hsl(300, 65%, 52%) 0%, hsl(270, 60%, 55%) 50%, hsl(42, 85%, 55%) 100%)";
+const GRADIENT_SHADOW = "0 4px 20px hsla(300, 65%, 52%, 0.35), 0 2px 8px hsla(270, 60%, 55%, 0.2)";
 
 const EnhancedInputBar = ({
   input, setInput, onSend, onKeyDown, isTyping, isRecording, isProcessing,
@@ -120,19 +121,20 @@ const EnhancedInputBar = ({
           >
             <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl"
               style={{
-                background: "linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.04) 100%)",
-                border: "1px solid rgba(239,68,68,0.15)",
+                background: "linear-gradient(135deg, hsla(330, 70%, 55%, 0.1) 0%, hsla(330, 70%, 55%, 0.05) 100%)",
+                border: "1px solid hsla(330, 70%, 55%, 0.2)",
               }}
             >
               <motion.div
-                className="w-2.5 h-2.5 bg-destructive rounded-full"
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ background: "hsl(330, 70%, 55%)" }}
                 animate={{ opacity: [1, 0.3, 1], scale: [1, 1.3, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
               />
-              <span className="text-xs font-semibold text-destructive font-heading flex-1">
+              <span className="text-xs font-semibold font-heading flex-1" style={{ color: "hsl(330, 70%, 50%)" }}>
                 {isBangla ? "শুনছি... কথা বলুন" : "Listening... speak now"}
               </span>
-              <button onClick={handleVoiceToggle} className="text-xs font-medium text-destructive hover:underline">
+              <button onClick={handleVoiceToggle} className="text-xs font-medium hover:underline" style={{ color: "hsl(330, 70%, 50%)" }}>
                 {isBangla ? "থামান" : "Stop"}
               </button>
             </div>
@@ -142,18 +144,18 @@ const EnhancedInputBar = ({
 
       {/* Main input container */}
       <div className="relative">
-        {/* Outer animated glow */}
+        {/* Outer animated glow — magenta/purple/golden */}
         <motion.div
           className="absolute -inset-[3px] rounded-3xl pointer-events-none z-0"
           animate={{
             boxShadow: isFocused
-              ? "0 0 35px hsl(270 55% 55% / 0.3), 0 0 70px hsl(200 80% 60% / 0.12), inset 0 0 0 1px hsl(270 55% 55% / 0.25)"
-              : "0 0 18px hsl(270 55% 55% / 0.1), 0 0 35px hsl(200 80% 60% / 0.05)",
+              ? "0 0 35px hsla(300, 65%, 52%, 0.3), 0 0 70px hsla(270, 60%, 55%, 0.12), 0 0 20px hsla(42, 85%, 55%, 0.1), inset 0 0 0 1px hsla(300, 65%, 52%, 0.2)"
+              : "0 0 18px hsla(300, 65%, 52%, 0.08), 0 0 35px hsla(270, 60%, 55%, 0.04)",
           }}
           transition={{ duration: 0.4 }}
           style={{
             background: isFocused
-              ? "linear-gradient(135deg, hsl(270 55% 55% / 0.15) 0%, hsl(200 80% 60% / 0.1) 50%, hsl(270 55% 55% / 0.15) 100%)"
+              ? "linear-gradient(135deg, hsla(300, 65%, 52%, 0.12) 0%, hsla(270, 60%, 55%, 0.08) 50%, hsla(42, 85%, 55%, 0.08) 100%)"
               : "transparent",
             borderRadius: "1.5rem",
           }}
@@ -162,14 +164,14 @@ const EnhancedInputBar = ({
         <div
           className="relative z-10 rounded-3xl overflow-hidden transition-all duration-300"
           style={{
-            background: "linear-gradient(135deg, rgba(91,67,100,0.07) 0%, rgba(11,6,90,0.05) 100%)",
-            backdropFilter: "blur(16px)",
+            background: "linear-gradient(135deg, hsla(300, 30%, 96%, 0.9) 0%, hsla(270, 20%, 97%, 0.85) 50%, #FEFEFE 100%)",
+            backdropFilter: "blur(20px)",
             border: isFocused
-              ? "1.5px solid hsl(270 55% 55% / 0.35)"
-              : "1.5px solid hsl(270 20% 80% / 0.25)",
+              ? "1.5px solid hsla(300, 50%, 60%, 0.35)"
+              : "1.5px solid hsla(300, 20%, 85%, 0.3)",
             boxShadow: isFocused
-              ? "0 8px 32px hsl(270 55% 55% / 0.14), inset 0 1px 0 rgba(255,255,255,0.1)"
-              : "0 4px 16px hsl(240 10% 10% / 0.06), inset 0 1px 0 rgba(255,255,255,0.05)",
+              ? "0 8px 32px hsla(300, 65%, 52%, 0.14), inset 0 1px 0 rgba(255,255,255,0.3)"
+              : "0 4px 16px hsla(270, 20%, 50%, 0.06), inset 0 1px 0 rgba(255,255,255,0.15)",
           }}
         >
           {/* Top gradient accent line */}
@@ -181,56 +183,64 @@ const EnhancedInputBar = ({
             style={{ background: GRADIENT }}
           />
 
-          {/* Button row: Subject + Persona + Attach — inside bar */}
+          {/* Button row: Subject + Persona + Attach */}
           <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-0">
-            {/* Subject button */}
+            {/* Subject button — magenta */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onToggleSubject}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold font-heading transition-all",
-                showSubjectActive
-                  ? "text-white shadow-md"
-                  : "text-muted-foreground/70 hover:text-foreground bg-muted/40 hover:bg-muted/60"
-              )}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold font-heading transition-all"
               style={showSubjectActive ? {
-                background: GRADIENT,
-                boxShadow: GRADIENT_SHADOW,
-              } : undefined}
+                background: "linear-gradient(135deg, hsl(300, 65%, 52%), hsl(280, 60%, 58%))",
+                boxShadow: "0 4px 16px hsla(300, 65%, 52%, 0.35)",
+                color: "white",
+              } : {
+                background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))",
+                border: "1px solid rgba(255,255,255,0.5)",
+                boxShadow: "0 2px 10px hsla(300, 40%, 60%, 0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
+                color: "hsl(300, 50%, 40%)",
+              }}
             >
               <BookOpen className="w-3.5 h-3.5" />
               <span>{isBangla ? "বিষয়" : "Subject"}</span>
             </motion.button>
 
-            {/* Persona button */}
+            {/* Persona button — purple */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onTogglePersona}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold font-heading transition-all",
-                showPersonaActive
-                  ? "text-white shadow-md"
-                  : "text-muted-foreground/70 hover:text-foreground bg-muted/40 hover:bg-muted/60"
-              )}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold font-heading transition-all"
               style={showPersonaActive ? {
-                background: GRADIENT,
-                boxShadow: GRADIENT_SHADOW,
-              } : undefined}
+                background: "linear-gradient(135deg, hsl(270, 60%, 55%), hsl(285, 55%, 60%))",
+                boxShadow: "0 4px 16px hsla(270, 60%, 55%, 0.35)",
+                color: "white",
+              } : {
+                background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))",
+                border: "1px solid rgba(255,255,255,0.5)",
+                boxShadow: "0 2px 10px hsla(270, 40%, 60%, 0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
+                color: "hsl(270, 50%, 40%)",
+              }}
             >
               <Settings2 className="w-3.5 h-3.5" />
               <span>{isBangla ? "শিক্ষক" : "Style"}</span>
             </motion.button>
 
-            {/* Attach button */}
+            {/* Attach button — golden */}
             <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => imageInputRef.current?.click()}
               disabled={disabled}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold font-heading text-muted-foreground/70 hover:text-foreground bg-muted/40 hover:bg-muted/60 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold font-heading transition-all"
+              style={{
+                background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))",
+                border: "1px solid rgba(255,255,255,0.5)",
+                boxShadow: "0 2px 10px hsla(42, 70%, 55%, 0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
+                color: "hsl(42, 75%, 38%)",
+              }}
             >
               <Paperclip className="w-3.5 h-3.5" />
               <span>{isBangla ? "ফাইল" : "File"}</span>
@@ -238,7 +248,7 @@ const EnhancedInputBar = ({
           </div>
 
           {/* Textarea + Mic + Send row */}
-          <div className="flex items-end gap-2 px-3 pt-1.5 pb-2.5">
+          <div className="flex items-end gap-2 px-3 pt-1.5 pb-3">
             <textarea
               ref={textareaRef}
               value={input}
@@ -248,51 +258,51 @@ const EnhancedInputBar = ({
               onBlur={() => setIsFocused(false)}
               placeholder={isBangla ? "তোমার প্রশ্ন লেখো..." : "Ask OddhaboshAI..."}
               disabled={disabled || isTyping}
-              className="flex-1 bg-transparent border-none resize-none min-h-[44px] max-h-[140px] text-[14px] placeholder:text-muted-foreground/35 focus:ring-0 focus:outline-none py-2.5 font-heading text-foreground leading-relaxed"
+              className="flex-1 bg-transparent border-none resize-none min-h-[48px] max-h-[140px] text-[14px] placeholder:text-muted-foreground/35 focus:ring-0 focus:outline-none py-3 font-heading text-foreground leading-relaxed"
               rows={1}
             />
 
-            {/* Mic button — gradient style */}
+            {/* Mic button — pink gradient */}
             <motion.button
               onClick={handleVoiceToggle}
               disabled={isProcessing || disabled}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="relative h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0"
+              className="relative h-11 w-11 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0"
               style={isRecording ? {
-                background: "linear-gradient(135deg, hsl(0 84% 60%) 0%, hsl(340 70% 55%) 100%)",
-                boxShadow: "0 4px 20px hsl(0 84% 60% / 0.4)",
+                background: "linear-gradient(135deg, hsl(340, 75%, 55%) 0%, hsl(330, 70%, 50%) 100%)",
+                boxShadow: "0 4px 20px hsla(340, 75%, 55%, 0.45)",
                 color: "white",
               } : {
-                background: GRADIENT,
-                boxShadow: GRADIENT_SHADOW,
+                background: "linear-gradient(135deg, hsl(330, 70%, 55%) 0%, hsl(300, 65%, 52%) 100%)",
+                boxShadow: "0 4px 20px hsla(330, 70%, 55%, 0.35)",
                 color: "white",
               }}
             >
               {isRecording && (
                 <motion.div
                   className="absolute inset-0 rounded-xl"
-                  animate={{ boxShadow: ["0 0 0 0 hsl(0 84% 60% / 0.4)", "0 0 0 8px hsl(0 84% 60% / 0)", "0 0 0 0 hsl(0 84% 60% / 0)"] }}
+                  animate={{ boxShadow: ["0 0 0 0 hsla(340, 75%, 55%, 0.4)", "0 0 0 8px hsla(340, 75%, 55%, 0)", "0 0 0 0 hsla(340, 75%, 55%, 0)"] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
               )}
               {isProcessing ? (
-                <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : isRecording ? (
-                <MicOff className="w-4.5 h-4.5" />
+                <MicOff className="w-5 h-5" />
               ) : (
-                <Mic className="w-4.5 h-4.5" />
+                <Mic className="w-5 h-5" />
               )}
             </motion.button>
 
-            {/* Send button — gradient */}
+            {/* Send button — magenta→purple→golden gradient */}
             <motion.button
               whileTap={canSend ? { scale: 0.9 } : {}}
               whileHover={canSend ? { scale: 1.08 } : {}}
               onClick={canSend ? onSend : undefined}
               disabled={!canSend}
               className={cn(
-                "h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0",
+                "h-11 w-11 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0",
                 !canSend && "opacity-40"
               )}
               style={canSend ? {
@@ -300,14 +310,14 @@ const EnhancedInputBar = ({
                 boxShadow: GRADIENT_SHADOW,
                 color: "white",
               } : {
-                background: "hsl(240 10% 90%)",
-                color: "hsl(240 10% 60%)",
+                background: "hsl(300 10% 90%)",
+                color: "hsl(300 10% 60%)",
               }}
             >
               {isTyping ? (
-                <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <SendHorizontal className="w-4.5 h-4.5" />
+                <SendHorizontal className="w-5 h-5" />
               )}
             </motion.button>
           </div>

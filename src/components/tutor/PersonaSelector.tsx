@@ -19,8 +19,11 @@ interface Persona {
   descriptionBn: string;
   gradientFrom: string;
   gradientTo: string;
+  shadow: string;
+  textColor: string;
 }
 
+// magenta, pink, purple, golden palette
 const personas: Persona[] = [
   {
     id: "strict",
@@ -29,8 +32,10 @@ const personas: Persona[] = [
     icon: GraduationCap,
     description: "Formal & rigorous",
     descriptionBn: "আনুষ্ঠানিক এবং কঠোর",
-    gradientFrom: "hsl(0, 72%, 55%)",
-    gradientTo: "hsl(340, 65%, 60%)",
+    gradientFrom: "hsl(300, 65%, 52%)",
+    gradientTo: "hsl(320, 58%, 60%)",
+    shadow: "hsla(300, 65%, 52%, 0.35)",
+    textColor: "hsl(300, 65%, 42%)",
   },
   {
     id: "friendly",
@@ -39,8 +44,10 @@ const personas: Persona[] = [
     icon: Heart,
     description: "Warm & supportive",
     descriptionBn: "উষ্ণ এবং সহায়ক",
-    gradientFrom: "hsl(270, 60%, 55%)",
-    gradientTo: "hsl(290, 50%, 65%)",
+    gradientFrom: "hsl(330, 70%, 55%)",
+    gradientTo: "hsl(345, 65%, 63%)",
+    shadow: "hsla(330, 70%, 55%, 0.35)",
+    textColor: "hsl(330, 70%, 42%)",
   },
   {
     id: "scientist",
@@ -49,8 +56,10 @@ const personas: Persona[] = [
     icon: Beaker,
     description: "Curious & deep",
     descriptionBn: "কৌতূহলী এবং গভীর",
-    gradientFrom: "hsl(200, 80%, 50%)",
-    gradientTo: "hsl(180, 60%, 55%)",
+    gradientFrom: "hsl(270, 60%, 55%)",
+    gradientTo: "hsl(285, 55%, 63%)",
+    shadow: "hsla(270, 60%, 55%, 0.35)",
+    textColor: "hsl(270, 60%, 42%)",
   },
   {
     id: "revision",
@@ -59,8 +68,10 @@ const personas: Persona[] = [
     icon: Zap,
     description: "Quick key points",
     descriptionBn: "দ্রুত মূল পয়েন্ট",
-    gradientFrom: "hsl(35, 90%, 55%)",
-    gradientTo: "hsl(25, 85%, 60%)",
+    gradientFrom: "hsl(42, 85%, 52%)",
+    gradientTo: "hsl(35, 80%, 58%)",
+    shadow: "hsla(42, 85%, 52%, 0.35)",
+    textColor: "hsl(42, 85%, 38%)",
   },
   {
     id: "stepbystep",
@@ -69,8 +80,10 @@ const personas: Persona[] = [
     icon: ListOrdered,
     description: "Patient & thorough",
     descriptionBn: "ধৈর্যশীল এবং পুঙ্খানুপুঙ্খ",
-    gradientFrom: "hsl(152, 60%, 42%)",
-    gradientTo: "hsl(170, 50%, 50%)",
+    gradientFrom: "hsl(280, 55%, 52%)",
+    gradientTo: "hsl(300, 50%, 60%)",
+    shadow: "hsla(280, 55%, 52%, 0.35)",
+    textColor: "hsl(280, 55%, 42%)",
   },
 ];
 
@@ -90,7 +103,6 @@ export const PersonaSelector = ({
   const [hoveredId, setHoveredId] = useState<PersonaType | null>(null);
 
   if (compact) {
-    // Compact: horizontal scrollable glass pills
     return (
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-1">
         {personas.map((persona, index) => {
@@ -106,21 +118,22 @@ export const PersonaSelector = ({
               whileTap={{ scale: 0.95 }}
               whileHover={{ scale: 1.05, y: -2 }}
               onClick={() => onSelect(persona.id)}
-              className="relative flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap overflow-hidden flex-shrink-0"
+              className="relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap flex-shrink-0"
               style={isSelected ? {
                 background: `linear-gradient(135deg, ${persona.gradientFrom}, ${persona.gradientTo})`,
-                boxShadow: `0 6px 24px ${persona.gradientFrom.replace(')', ' / 0.4)')}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+                boxShadow: `0 6px 24px ${persona.shadow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
                 color: "white",
                 border: "1px solid transparent",
               } : {
-                background: "linear-gradient(-45deg, rgba(255,255,255,0.85), rgba(255,255,255,0.6))",
-                backdropFilter: "blur(16px)",
-                border: "1px solid rgba(255,255,255,0.5)",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)",
+                background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.68))",
+                backdropFilter: "blur(20px) saturate(1.4)",
+                border: "1.5px solid rgba(255,255,255,0.55)",
+                boxShadow: `0 3px 14px ${persona.shadow.replace('0.35', '0.12')}, inset 0 1px 0 rgba(255,255,255,0.7)`,
+                color: persona.textColor,
               }}
             >
-              <Icon className={cn("w-4 h-4", isSelected ? "text-white" : "text-muted-foreground")} />
-              <span className={cn("text-xs font-bold font-heading", !isSelected && "text-foreground/80")}>
+              <Icon className={cn("w-4 h-4", isSelected ? "text-white" : "")} />
+              <span className="text-xs font-bold font-heading">
                 {isBangla ? persona.nameBn : persona.name}
               </span>
               {isSelected && (
@@ -157,31 +170,30 @@ export const PersonaSelector = ({
             className="relative flex flex-col items-center gap-3 p-5 rounded-3xl transition-all overflow-hidden"
             style={isSelected ? {
               background: `linear-gradient(135deg, ${persona.gradientFrom}, ${persona.gradientTo})`,
-              boxShadow: `0 12px 40px ${persona.gradientFrom.replace(')', ' / 0.35)')}, inset 0 1px 0 rgba(255,255,255,0.2)`,
-              border: "1px solid transparent",
+              boxShadow: `0 12px 40px ${persona.shadow}, inset 0 1px 0 rgba(255,255,255,0.25)`,
+              border: "1.5px solid transparent",
             } : {
-              background: "linear-gradient(-45deg, rgba(255,255,255,0.9), rgba(255,255,255,0.65))",
-              backdropFilter: "blur(20px) saturate(1.4)",
-              border: "1px solid rgba(255,255,255,0.5)",
+              background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
+              backdropFilter: "blur(24px) saturate(1.5)",
+              border: "1.5px solid rgba(255,255,255,0.55)",
               boxShadow: isHovered
-                ? "0 8px 30px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.7)"
-                : "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)",
+                ? `0 8px 30px ${persona.shadow.replace('0.35', '0.2')}, inset 0 1px 0 rgba(255,255,255,0.8)`
+                : `0 4px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.7)`,
             }}
           >
             {/* Icon */}
             <motion.div
-              className={cn(
-                "w-14 h-14 rounded-2xl flex items-center justify-center",
-                isSelected ? "bg-white/20" : ""
-              )}
-              style={!isSelected ? {
+              className="w-14 h-14 rounded-2xl flex items-center justify-center relative"
+              style={isSelected ? {
+                background: "rgba(255,255,255,0.2)",
+              } : {
                 background: `linear-gradient(135deg, ${persona.gradientFrom}, ${persona.gradientTo})`,
-                boxShadow: `0 4px 16px ${persona.gradientFrom.replace(')', ' / 0.3)')}`,
-              } : undefined}
+                boxShadow: `0 4px 16px ${persona.shadow}`,
+              }}
               animate={isSelected || isHovered ? { y: [0, -4, 0], scale: [1, 1.08, 1] } : {}}
               transition={{ duration: 0.5 }}
             >
-              <Icon className={cn("w-7 h-7", isSelected ? "text-white" : "text-white")} />
+              <Icon className="w-7 h-7 text-white" />
               {isSelected && (
                 <motion.div
                   className="absolute -top-1 -right-1"
@@ -196,7 +208,9 @@ export const PersonaSelector = ({
 
             {/* Text */}
             <div className="text-center z-10">
-              <p className={cn("font-semibold text-sm mb-0.5 font-heading", isSelected ? "text-white" : "text-foreground")}>
+              <p className={cn("font-semibold text-sm mb-0.5 font-heading", isSelected ? "text-white" : "")}
+                style={!isSelected ? { color: persona.textColor } : undefined}
+              >
                 {isBangla ? persona.nameBn : persona.name}
               </p>
               <p className={cn("text-xs", isSelected ? "text-white/80" : "text-muted-foreground")}>
