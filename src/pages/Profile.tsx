@@ -137,6 +137,7 @@ interface FollowUser {
   username: string | null;
   school_name: string;
   class: number;
+  email: string;
 }
 
 const Profile = () => {
