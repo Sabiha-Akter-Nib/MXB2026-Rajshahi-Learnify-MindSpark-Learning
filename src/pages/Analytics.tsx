@@ -26,6 +26,9 @@ import streakFlame3d from "@/assets/streak-flame-3d.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
 import analytics3d from "@/assets/analytics-3d.png";
 import tugiWave from "@/assets/tugi-wave.png";
+import statStreak3d from "@/assets/stat-streak-3d.webp";
+import statRank3d from "@/assets/stat-rank-3d.png";
+import statExams3d from "@/assets/stat-exams-3d.png";
 
 interface Profile {
   full_name: string;
