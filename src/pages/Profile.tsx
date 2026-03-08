@@ -477,7 +477,10 @@ const Profile = () => {
 
                 {/* Name + Username */}
                 <div className="flex-1 min-w-0 pt-8 sm:pt-10 overflow-hidden">
-                  <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight">{displayName}</h2>
+                  <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight flex items-center gap-1.5">
+                    <span className="truncate">{displayName}</span>
+                    {isVerifiedEmail(profile.email) && <VerifiedBadge size={18} />}
+                  </h2>
                   {profile.username && (
                     <p className="text-white/60 text-sm sm:text-base font-semibold truncate leading-snug">@{profile.username}</p>
                   )}
