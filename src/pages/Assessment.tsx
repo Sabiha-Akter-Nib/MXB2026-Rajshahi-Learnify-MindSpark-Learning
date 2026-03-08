@@ -150,16 +150,24 @@ const Assessment = () => {
     setLockedAnswers({});
     setShowResult(false);
     setResultData(null);
+    setTimeExpired(false);
     setSessionStartTime(new Date());
+
+    // Combine all subjects + topics + chapters
+    const allTopics = [topicInput, ...additionalEntries.map(e => e.topic)].filter(Boolean).join(", ");
+    const allChapters = [chapterInput, ...additionalEntries.map(e => e.chapter)].filter(Boolean).join(", ");
+    const allSubjectNames = [selectedSubject.name, ...additionalEntries.map(e => e.subject?.name).filter(Boolean)].join(", ");
+    const combinedTopic = [allTopics, allChapters ? `Chapters: ${allChapters}` : ""].filter(Boolean).join(" | ") || (isBangla ? selectedSubject.name_bn : selectedSubject.name);
+
     try {
       const { data, error } = await supabase.functions.invoke("run-assessment", {
         body: {
           action: "generate",
           subjectId: selectedSubject.id,
-          topic: topicInput || (isBangla ? selectedSubject.name_bn : selectedSubject.name),
+          topic: combinedTopic,
           bloomLevel: "mixed",
           count: questionCount,
-          subjectName: selectedSubject.name,
+          subjectName: allSubjectNames,
         },
       });
       if (error) throw error;
@@ -171,6 +179,43 @@ const Assessment = () => {
       toast({ title: "Error", description: "Failed to generate model test.", variant: "destructive" });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleTimeExpired = () => {
+    setTimeExpired(true);
+    toast({ title: isBangla ? "⏰ সময় শেষ!" : "⏰ Time's up!", description: isBangla ? "স্বয়ংক্রিয়ভাবে জমা দেওয়া হচ্ছে..." : "Auto-submitting your test..." });
+    // Auto-submit with whatever answers exist
+    setTimeout(() => autoSubmitOnExpiry(), 500);
+  };
+
+  const autoSubmitOnExpiry = async () => {
+    setIsSubmitting(true);
+    const finalAnswers = questions.map((_, i) => lockedAnswers[i] ?? -1);
+    try {
+      const { data, error } = await supabase.functions.invoke("run-assessment", {
+        body: {
+          action: "submit",
+          subjectId: selectedSubject?.id,
+          topic: topicInput || (selectedSubject ? (isBangla ? selectedSubject.name_bn : selectedSubject.name) : ""),
+          bloomLevel: "mixed",
+          answers: finalAnswers,
+          questions,
+        },
+      });
+      if (error) throw error;
+      const timeTaken = sessionStartTime ? Math.round((Date.now() - sessionStartTime.getTime()) / 1000) : 0;
+      try {
+        await supabase.functions.invoke("track-session", {
+          body: { userId: user?.id, subjectId: selectedSubject?.id, topic: topicInput || selectedSubject?.name, duration: Math.max(1, Math.round(timeTaken / 60)), xpEarned: Math.round((data as any)?.xpEarned || 0), bloomLevel: "mixed" },
+        });
+      } catch (e) {}
+      setResultData({ ...(data as any), timeTaken });
+      setShowResult(true);
+    } catch (err) {
+      console.error("Auto-submit error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
