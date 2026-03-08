@@ -75,7 +75,7 @@ serve(async (req) => {
       // Generate assessment questions from tutor context
       const { data: profile } = await supabase
         .from("profiles")
-        .select("class, version")
+        .select("class")
         .eq("user_id", userId)
         .single();
 
