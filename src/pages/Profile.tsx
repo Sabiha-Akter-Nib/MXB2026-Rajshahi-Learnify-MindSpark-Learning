@@ -127,6 +127,7 @@ interface ProfileData {
   version: string;
   created_at: string;
   division: string | null;
+  cover_color: string | null;
 }
 
 interface FollowUser {
