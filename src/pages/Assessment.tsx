@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import TutorBackground from "@/components/tutor/TutorBackground";
 import mascotImg from "@/assets/ai-mascot-3d.png";
 import tugiImg from "@/assets/tugi-wave.png";
+import subjectIcon3d from "@/assets/subject-icon-3d.png";
 
 // ── Types ──
 interface Question {
