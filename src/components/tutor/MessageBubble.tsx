@@ -140,14 +140,14 @@ const AIBubble = ({ content, timestamp, isStreaming = false, thinkingTime, attac
 
         <AttachmentList attachments={attachments} />
 
-        {/* AI bubble — #FEFEFE glass with magenta/purple tint */}
+        {/* AI bubble — magenta/pink/purple/peach gradient glass */}
         <div
           className="rounded-2xl rounded-bl-md px-5 py-4 shadow-sm font-heading"
           style={{
-            background: "linear-gradient(-45deg, rgba(254,254,254,0.95) 0%, hsla(300, 20%, 98%, 0.9) 50%, hsla(270, 15%, 97%, 0.9) 100%)",
-            border: "1.5px solid rgba(255,255,255,0.55)",
-            boxShadow: "0 4px 20px hsla(300, 30%, 60%, 0.06), inset 0 1px 0 rgba(255,255,255,0.7)",
-            backdropFilter: "blur(16px)",
+            background: "linear-gradient(-45deg, rgba(254,254,254,0.95) 0%, hsla(300, 22%, 97%, 0.92) 25%, hsla(330, 18%, 97%, 0.9) 50%, hsla(30, 40%, 97%, 0.9) 100%)",
+            border: "1.5px solid hsla(300, 20%, 90%, 0.45)",
+            boxShadow: "0 4px 24px hsla(300, 30%, 60%, 0.07), 0 1px 4px hsla(30, 40%, 60%, 0.04), inset 0 1px 0 rgba(255,255,255,0.7)",
+            backdropFilter: "blur(20px) saturate(1.3)",
           }}
         >
           <StreamingMessage
