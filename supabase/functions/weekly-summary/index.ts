@@ -7,6 +7,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function getWeekStart(now: Date): string {
+  const d = new Date(now);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+  d.setDate(diff);
+  return d.toISOString().split("T")[0];
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -23,9 +31,12 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     });
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     const {
       data: { user },
@@ -38,6 +49,24 @@ serve(async (req) => {
       });
     }
 
+    const now = new Date();
+    const weekStart = getWeekStart(now);
+
+    // Check for cached summary this week
+    const { data: cached } = await supabase
+      .from("weekly_summaries")
+      .select("summary, stats")
+      .eq("user_id", user.id)
+      .eq("week_start", weekStart)
+      .maybeSingle();
+
+    if (cached) {
+      return new Response(
+        JSON.stringify({ summary: cached.summary, stats: cached.stats, cached: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Fetch profile
     const { data: profile } = await supabase
       .from("profiles")
@@ -45,13 +74,7 @@ serve(async (req) => {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    // Fetch this week's data
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
-    weekStart.setHours(0, 0, 0, 0);
-
-    const weekStartISO = weekStart.toISOString();
+    const weekStartISO = new Date(weekStart).toISOString();
 
     // Study sessions this week
     const { data: sessions } = await supabase
@@ -140,38 +163,44 @@ Generate a brief, personalized weekly performance summary.`;
     if (!aiResponse.ok) {
       if (aiResponse.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (aiResponse.status === 402) {
         return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const errText = await aiResponse.text();
       console.error("AI gateway error:", aiResponse.status, errText);
       return new Response(JSON.stringify({ error: "Failed to generate summary" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const aiData = await aiResponse.json();
     const summary = aiData.choices?.[0]?.message?.content || "Unable to generate summary at this time.";
 
-    return new Response(
-      JSON.stringify({
+    const summaryStats = {
+      studyMinutes: totalStudyMins,
+      xpEarned: totalXPEarned,
+      examsTaken,
+      accuracy,
+      streak: stats?.current_streak || 0,
+    };
+
+    // Save to DB using service role (bypasses RLS for upsert)
+    await supabaseAdmin
+      .from("weekly_summaries")
+      .upsert({
+        user_id: user.id,
+        week_start: weekStart,
         summary,
-        stats: {
-          studyMinutes: totalStudyMins,
-          xpEarned: totalXPEarned,
-          examsTaken,
-          accuracy,
-          streak: stats?.current_streak || 0,
-        },
-      }),
+        stats: summaryStats,
+      }, { onConflict: "user_id,week_start" });
+
+    return new Response(
+      JSON.stringify({ summary, stats: summaryStats, cached: false }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
