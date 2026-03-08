@@ -44,6 +44,26 @@ serve(async (req) => {
 
     const { action, subjectId, topic, bloomLevel, answers, assessmentId, questions, tutorContext } = await req.json();
 
+    // Helper: fetch curriculum content for known subject+class
+    async function fetchCurriculumForAssessment(subjectName: string, studentClass: number): Promise<string> {
+      const curriculumFiles: Record<string, string> = {
+        "Bangla 1st Paper|7": "bangla-1st-paper-class-7.txt",
+      };
+      for (const key of Object.keys(curriculumFiles)) {
+        const [subj, cls] = key.split("|");
+        if (parseInt(cls) === studentClass && subjectName.toLowerCase().includes(subj.toLowerCase())) {
+          try {
+            const resp = await fetch(`https://mindsparklearning.lovable.app/data/${curriculumFiles[key]}`);
+            if (resp.ok) {
+              const content = await resp.text();
+              return content.length > 60000 ? content.substring(0, 60000) : content;
+            }
+          } catch (e) { console.error("Curriculum fetch error:", e); }
+        }
+      }
+      return "";
+    }
+
     if (action === "generate") {
       // Generate assessment questions from tutor context
       const { data: profile } = await supabase
@@ -61,13 +81,24 @@ serve(async (req) => {
       const currentLevel = bloomLevel || "remember";
       const levelIndex = BLOOM_LEVELS.indexOf(currentLevel);
       const isBangla = profile?.version === "bangla";
+
+      // Fetch curriculum content if available
+      const subjectName = subject?.name || "";
+      const curriculumContent = subjectName ? await fetchCurriculumForAssessment(subjectName, profile?.class || 7) : "";
       
       // Use tutor context if available
       const contextInfo = tutorContext 
         ? `Based on this AI Tutor conversation content:\n${tutorContext.slice(0, 2000)}\n\n` 
         : "";
 
-      const prompt = `${contextInfo}Generate exactly 5 MCQ assessment questions for a Class ${profile?.class || 5} student (${profile?.version || "bangla"} medium).
+      const curriculumInfo = curriculumContent ? `
+OFFICIAL NCTB TEXTBOOK CONTENT (PRIMARY SOURCE - ALL questions MUST be based on this):
+${curriculumContent}
+
+CRITICAL: Generate questions ONLY from the official textbook content above.
+` : "";
+
+      const prompt = `${curriculumInfo}${contextInfo}Generate exactly 5 MCQ assessment questions for a Class ${profile?.class || 5} student (${profile?.version || "bangla"} medium).
 
 ${isBangla ? "IMPORTANT: Generate questions in Bengali language." : "Generate questions in English."}
 
