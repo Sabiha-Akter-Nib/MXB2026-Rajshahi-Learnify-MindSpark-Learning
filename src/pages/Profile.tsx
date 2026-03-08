@@ -678,10 +678,10 @@ const Profile = () => {
             ];
 
             const allBadges = [
-              { icon: Flame, highest: getHighest(streakMilestones, currentStreak), desc: (h: number) => `${h} Day Streak`, style: badgeStyles[0] },
-              { icon: Zap, highest: getHighest(xpMilestones, totalXP), desc: (h: number) => `${h.toLocaleString()} XP Earned`, style: badgeStyles[1] },
-              { icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), desc: (h: number) => `${h} Exams Done`, style: badgeStyles[2] },
-              { icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), desc: (h: number) => `${h.toLocaleString()} Correct`, style: badgeStyles[3] },
+              { icon: Flame, highest: getHighest(streakMilestones, currentStreak), topLabel: (h: number) => `${h}`, bottomLabel: "Streak", style: badgeStyles[0] },
+              { icon: Zap, highest: getHighest(xpMilestones, totalXP), topLabel: (h: number) => h >= 1000 ? `${(h/1000).toFixed(h%1000===0?0:1)}K` : `${h}`, bottomLabel: "XP", style: badgeStyles[1] },
+              { icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), topLabel: (h: number) => `${h}`, bottomLabel: "Exams", style: badgeStyles[2] },
+              { icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), topLabel: (h: number) => h >= 1000 ? `${(h/1000).toFixed(h%1000===0?0:1)}K` : `${h}`, bottomLabel: "Correct", style: badgeStyles[3] },
             ];
 
             const achieved = allBadges.filter((b) => b.highest !== null);
@@ -696,7 +696,7 @@ const Profile = () => {
                 </div>
 
                 {/* Header */}
-                <div className="relative z-10 flex items-center gap-2 mb-4">
+                <div className="relative z-10 flex items-center gap-2 mb-5">
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center"
                     style={{ background: "linear-gradient(135deg, #FD91D9, #9B87F5)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}
@@ -709,42 +709,59 @@ const Profile = () => {
                   <div className="flex-1 h-px ml-1" style={{ background: "linear-gradient(90deg, rgba(253,145,217,0.3), transparent)" }} />
                 </div>
 
-                {/* Badge Grid */}
-                <div className="relative z-10 grid grid-cols-2 gap-3 sm:gap-4">
+                {/* Badge Grid - centered showcase */}
+                <div className="relative z-10 flex flex-wrap justify-center gap-4 sm:gap-6">
                   {achieved.map((b, i) => {
                     const Icon = b.icon;
                     const s = b.style;
                     return (
                       <motion.div
                         key={i}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="flex items-center gap-3 rounded-xl p-2.5 sm:p-3 border border-white/[0.08]"
-                        style={{
-                          background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+                        initial={{ opacity: 0, scale: 0.7 }}
+                        animate={{ opacity: 1, scale: 1, y: [0, -6, 0] }}
+                        transition={{
+                          opacity: { delay: i * 0.12, duration: 0.4 },
+                          scale: { delay: i * 0.12, duration: 0.5, type: "spring", stiffness: 200 },
+                          y: { delay: i * 0.12 + 0.5, duration: 3, repeat: Infinity, ease: "easeInOut" },
                         }}
+                        className="flex flex-col items-center"
                       >
-                        <div className="relative shrink-0">
-                          {/* Glow ring */}
+                        <div className="relative">
+                          {/* Outer glow pulse */}
                           <div
-                            className="absolute -inset-1.5 rounded-full"
-                            style={{ background: s.ring, filter: "blur(6px)" }}
+                            className="absolute -inset-3 rounded-full animate-pulse"
+                            style={{ background: s.ring, filter: "blur(10px)", opacity: 0.6 }}
                           />
+                          {/* Badge circle */}
                           <div
-                            className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center border-2 border-white/25"
-                            style={{ background: s.grad, boxShadow: `${s.shadow}, inset 0 1px 0 rgba(255,255,255,0.3)` }}
+                            className="relative w-[72px] h-[72px] sm:w-[88px] sm:h-[88px] rounded-full flex flex-col items-center justify-center border-[2.5px] border-white/30"
+                            style={{
+                              background: s.grad,
+                              boxShadow: `${s.shadow}, inset 0 2px 0 rgba(255,255,255,0.35), 0 4px 20px rgba(0,0,0,0.3)`,
+                            }}
                           >
-                            <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg" strokeWidth={2.5} />
-                            <span className="text-white text-[10px] sm:text-xs font-extrabold leading-none mt-0.5 drop-shadow-md" style={{ fontFamily: "Poppins, sans-serif" }}>
-                              {b.highest}
+                            {/* Inner glass highlight */}
+                            <div
+                              className="absolute inset-0 rounded-full pointer-events-none"
+                              style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 45%)" }}
+                            />
+                            {/* Icon */}
+                            <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white/80 drop-shadow-lg mb-0.5" strokeWidth={2} />
+                            {/* Number */}
+                            <span
+                              className="text-white text-lg sm:text-xl font-extrabold leading-none drop-shadow-md"
+                              style={{ fontFamily: "Poppins, sans-serif" }}
+                            >
+                              {b.topLabel(b.highest!)}
+                            </span>
+                            {/* Sub-label */}
+                            <span
+                              className="text-white/80 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider leading-none mt-0.5 drop-shadow-sm"
+                              style={{ fontFamily: "Poppins, sans-serif" }}
+                            >
+                              {b.bottomLabel}
                             </span>
                           </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-[11px] sm:text-xs leading-snug" style={{ fontFamily: "Poppins, sans-serif", color: s.textColor }}>
-                            {b.desc(b.highest!)}
-                          </p>
                         </div>
                       </motion.div>
                     );
