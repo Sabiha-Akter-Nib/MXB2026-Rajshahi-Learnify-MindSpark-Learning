@@ -34,6 +34,7 @@ const AvatarUpload = ({
   userName = "",
   size = "md",
   showUploadButton = true,
+  interactive = false,
   className,
   onAvatarChange,
 }: AvatarUploadProps) => {
