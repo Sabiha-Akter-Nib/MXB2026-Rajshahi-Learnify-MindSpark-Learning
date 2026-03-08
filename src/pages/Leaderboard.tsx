@@ -29,6 +29,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
+import VerifiedBadge, { isVerifiedEmail } from "@/components/VerifiedBadge";
 
 interface LeaderboardEntry {
   rank: number;
@@ -544,10 +545,11 @@ const Leaderboard = () => {
                 <div className="absolute -top-1 -right-1 w-6 h-6 bg-slate-300 rounded-full flex items-center justify-center text-xs font-bold text-slate-700 shadow-lg">2</div>
               </motion.div>
               <p className={cn(
-                "font-semibold text-sm text-center truncate w-full px-2",
+                "font-semibold text-sm text-center truncate w-full px-2 flex items-center justify-center gap-1",
                 entries[1]?.isCurrentUser && "text-primary"
               )}>
                 {entries[1]?.displayName}
+                {entries[1]?.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={14} />}
                 {entries[1]?.isCurrentUser && " (You)"}
               </p>
               <p className="text-sm font-bold bg-gradient-to-r from-slate-500 to-slate-600 bg-clip-text text-transparent">
@@ -584,10 +586,11 @@ const Leaderboard = () => {
                 <Sparkles className="w-4 h-4 text-yellow-200 absolute bottom-2 right-0 animate-pulse delay-500" />
               </motion.div>
               <p className={cn(
-                "font-bold text-center truncate w-full px-2 text-lg",
+                "font-bold text-center truncate w-full px-2 text-lg flex items-center justify-center gap-1",
                 entries[0]?.isCurrentUser && "text-primary"
               )}>
                 {entries[0]?.displayName}
+                {entries[0]?.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}
                 {entries[0]?.isCurrentUser && " (You)"}
               </p>
               <p className="text-base font-black bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 bg-clip-text text-transparent">
@@ -615,10 +618,11 @@ const Leaderboard = () => {
                 <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center text-xs font-bold text-amber-900 shadow-lg">3</div>
               </motion.div>
               <p className={cn(
-                "font-semibold text-sm text-center truncate w-full px-2",
+                "font-semibold text-sm text-center truncate w-full px-2 flex items-center justify-center gap-1",
                 entries[2]?.isCurrentUser && "text-primary"
               )}>
                 {entries[2]?.displayName}
+                {entries[2]?.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={14} />}
                 {entries[2]?.isCurrentUser && " (You)"}
               </p>
               <p className="text-sm font-bold bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
@@ -688,12 +692,13 @@ const Leaderboard = () => {
 
                       <div className="flex-1 min-w-0">
                         <p className={cn(
-                          "font-semibold truncate group-hover:text-primary transition-colors",
+                          "font-semibold truncate group-hover:text-primary transition-colors flex items-center gap-1",
                           entry.isCurrentUser && "text-primary font-bold"
                         )}>
                           {entry.displayName}
+                          {entry.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={14} />}
                           {entry.isCurrentUser && (
-                            <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>
+                            <span className="ml-1 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>
                           )}
                         </p>
                         <p className="text-xs text-muted-foreground flex items-center gap-2">

@@ -18,6 +18,7 @@ import {
   Globe,
   Laptop } from
 "lucide-react";
+import VerifiedBadge, { isVerifiedEmail } from "@/components/VerifiedBadge";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -352,7 +353,7 @@ const Dashboard = () => {
               <AvatarUpload userId={user.id} userName={displayName} size="sm" showUploadButton={false} />
             </div>
             <div>
-              <h1 className="text-white font-semibold text-base sm:text-lg leading-tight">Hi, {displayName}!</h1>
+              <h1 className="text-white font-semibold text-base sm:text-lg leading-tight flex items-center gap-1">Hi, {displayName}!{isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}</h1>
               <p className="text-white/50 text-xs font-normal">{classText}, {versionText}</p>
             </div>
           </div>

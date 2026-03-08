@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import AvatarUpload from "@/components/avatar/AvatarUpload";
+import VerifiedBadge, { isVerifiedEmail } from "@/components/VerifiedBadge";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
@@ -136,6 +137,7 @@ interface FollowUser {
   username: string | null;
   school_name: string;
   class: number;
+  email: string;
 }
 
 const Profile = () => {
@@ -346,7 +348,7 @@ const Profile = () => {
     if (data) {
       const ids = data.map((d) => d.follower_id);
       if (ids.length > 0) {
-        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, username, school_name, class").in("user_id", ids);
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, username, school_name, class, email").in("user_id", ids);
         setFollowersList((profiles as FollowUser[]) || []);
       } else {
         setFollowersList([]);
@@ -361,7 +363,7 @@ const Profile = () => {
     if (data) {
       const ids = data.map((d) => d.following_id);
       if (ids.length > 0) {
-        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, username, school_name, class").in("user_id", ids);
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, username, school_name, class, email").in("user_id", ids);
         setFollowingList((profiles as FollowUser[]) || []);
       } else {
         setFollowingList([]);
@@ -476,7 +478,10 @@ const Profile = () => {
 
                 {/* Name + Username */}
                 <div className="flex-1 min-w-0 pt-8 sm:pt-10 overflow-hidden">
-                  <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight">{displayName}</h2>
+                  <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight flex items-center gap-1.5">
+                    <span className="truncate">{displayName}</span>
+                    {isVerifiedEmail(profile.email) && <VerifiedBadge size={18} />}
+                  </h2>
                   {profile.username && (
                     <p className="text-white/60 text-sm sm:text-base font-semibold truncate leading-snug">@{profile.username}</p>
                   )}
@@ -844,7 +849,7 @@ const Profile = () => {
                     <AvatarUpload userId={f.user_id} userName={f.full_name} size="sm" showUploadButton={false} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm truncate">{f.full_name}</p>
+                    <p className="text-white font-semibold text-sm truncate flex items-center gap-1">{f.full_name}{isVerifiedEmail(f.email) && <VerifiedBadge size={14} />}</p>
                     <p className="text-white/40 text-xs truncate">
                       {f.username ? `@${f.username} • ` : ""}Class {f.class} • {f.school_name}
                     </p>
@@ -883,7 +888,7 @@ const Profile = () => {
                     <AvatarUpload userId={f.user_id} userName={f.full_name} size="sm" showUploadButton={false} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm truncate">{f.full_name}</p>
+                    <p className="text-white font-semibold text-sm truncate flex items-center gap-1">{f.full_name}{isVerifiedEmail(f.email) && <VerifiedBadge size={14} />}</p>
                     <p className="text-white/40 text-xs truncate">
                       {f.username ? `@${f.username} • ` : ""}Class {f.class} • {f.school_name}
                     </p>
@@ -945,7 +950,7 @@ const Profile = () => {
                       <AvatarUpload userId={r.user_id} userName={r.full_name} size="sm" showUploadButton={false} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-sm truncate">{r.full_name}</p>
+                      <p className="text-white font-semibold text-sm truncate flex items-center gap-1">{r.full_name}{isVerifiedEmail(r.email) && <VerifiedBadge size={14} />}</p>
                       <p className="text-white/40 text-xs truncate">
                         {r.username ? `@${r.username} • ` : ""}Class {r.class} • {r.school_name}
                       </p>
