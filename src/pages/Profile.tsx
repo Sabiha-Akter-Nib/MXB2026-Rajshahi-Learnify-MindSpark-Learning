@@ -199,6 +199,10 @@ const Profile = () => {
   // Achievements
   const [earnedBadges, setEarnedBadges] = useState<{ name: string; icon: string; description: string; xp_reward: number }[]>([]);
 
+  // Weekly XP chart
+  const [weeklyXpTarget, setWeeklyXpTarget] = useState<{ label: string; xp: number }[]>([]);
+  const [weeklyXpSelf, setWeeklyXpSelf] = useState<{ label: string; xp: number }[]>([]);
+
   useEffect(() => {
     if (!loading && !user) navigate("/login");
   }, [user, loading]);
