@@ -598,19 +598,29 @@ What would you like to study today?`;
           {/* Messages */}
           {messages.length > 0 && (
             <AnimatePresence>
-              {messages.map((message, index) => (
-                <MessageBubble
-                  key={message.id}
-                  id={message.id}
-                  role={message.role}
-                  content={message.content}
-                  timestamp={message.timestamp}
-                  isStreaming={isTyping && index === messages.length - 1 && message.role === "assistant"}
-                  thinkingTime={message.thinkingTime}
-                  attachments={message.attachments}
-                  index={index}
-                />
-              ))}
+              {messages.map((message, index) => {
+                // Find last user message index
+                const lastUserIdx = messages.reduce((acc, m, i) => m.role === "user" ? i : acc, -1);
+                return (
+                  <MessageBubble
+                    key={message.id}
+                    id={message.id}
+                    role={message.role}
+                    content={message.content}
+                    timestamp={message.timestamp}
+                    isStreaming={isTyping && index === messages.length - 1 && message.role === "assistant"}
+                    thinkingTime={message.thinkingTime}
+                    attachments={message.attachments}
+                    index={index}
+                    isLastUserMessage={message.role === "user" && index === lastUserIdx && !isTyping}
+                    onEdit={(editedContent) => {
+                      // Remove messages from this point onward and re-send
+                      setMessages(prev => prev.slice(0, index));
+                      setInput(editedContent);
+                    }}
+                  />
+                );
+              })}
             </AnimatePresence>
           )}
 
