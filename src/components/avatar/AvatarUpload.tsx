@@ -12,6 +12,7 @@ interface AvatarUploadProps {
   userName?: string;
   size?: "sm" | "md" | "lg";
   showUploadButton?: boolean;
+  interactive?: boolean;
   className?: string;
   onAvatarChange?: (url: string) => void;
 }
