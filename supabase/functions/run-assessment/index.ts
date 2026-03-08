@@ -105,9 +105,9 @@ ${curriculumContent}
 CRITICAL: Generate questions ONLY from the official textbook content above.
 ` : "";
 
-      const prompt = `${curriculumInfo}${contextInfo}Generate exactly 5 MCQ assessment questions for a Class ${profile?.class || 5} student (${profile?.version || "bangla"} medium).
+      const prompt = `${curriculumInfo}${contextInfo}Generate exactly 5 MCQ assessment questions for a Class ${profile?.class || 5} student (bangla medium).
 
-${isBangla ? "IMPORTANT: Generate questions in Bengali language." : "Generate questions in English."}
+IMPORTANT: Generate questions in Bengali language.
 
 Subject: ${subject?.name || "General Knowledge"}
 Topic: ${topic || "Based on the conversation above"}
