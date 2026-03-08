@@ -4,10 +4,7 @@ import {
   TrendingUp,
   TrendingDown,
   Target,
-  ArrowRight,
   Zap,
-  Brain,
-  Calendar,
   Clock,
   CheckCircle2,
   AlertTriangle,
@@ -34,21 +31,12 @@ interface FutureScenario {
   color: string;
 }
 
-interface TopicForecast {
-  topicName: string;
-  currentMastery: number;
-  projectedMastery: number;
-  daysUntilForgotten: number;
-  revisionsNeeded: number;
-}
-
 interface SnapshotData {
   overallConfidence: number;
   masteryTrend: 'rising' | 'stable' | 'declining';
   topWeakTopic: string | null;
   averageRetentionDays: number;
   scenarios: FutureScenario[];
-  topicForecasts: TopicForecast[];
 }
 
 // --- Liquid glass card ---
@@ -65,6 +53,39 @@ const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLD
   >
     {children}
   </div>
+);
+
+// --- Outlined pill button (login-inspired) ---
+const OutlinedPillButton = ({
+  children,
+  isActive,
+  onClick,
+  className,
+}: {
+  children: React.ReactNode;
+  isActive?: boolean;
+  onClick?: () => void;
+  className?: string;
+}) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "px-4 py-2 rounded-full text-xs sm:text-sm font-bold tracking-wide transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] whitespace-nowrap",
+      className
+    )}
+    style={{
+      background: isActive ? "rgba(240, 235, 250, 0.92)" : "transparent",
+      color: isActive ? "#4A3A8A" : "rgba(240, 235, 250, 0.85)",
+      boxShadow: isActive
+        ? "0 4px 16px rgba(160, 130, 200, 0.4), inset 0 -2px 0 rgba(180, 150, 220, 0.4)"
+        : "none",
+      border: isActive
+        ? "2px solid rgba(180, 150, 220, 0.5)"
+        : "2px solid rgba(240, 235, 250, 0.3)",
+    }}
+  >
+    {children}
+  </button>
 );
 
 // --- Main Component ---
@@ -127,19 +148,6 @@ const FutureYouSnapshot = () => {
       ? revisions.reduce((sum, r) => sum + r.review_interval_days, 0) / revisions.length
       : 7;
 
-    const topicForecasts: TopicForecast[] = mastery.slice(0, 5).map(topic => {
-      const decayRate = 0.1;
-      const daysUntilForgotten = Math.ceil(topic.mastery_score / (decayRate * 100));
-      const projectedMastery = Math.max(0, topic.mastery_score - (decayRate * 14 * 100));
-      return {
-        topicName: topic.topic_name,
-        currentMastery: topic.mastery_score,
-        projectedMastery: studyConsistency > 0.5 ? Math.min(100, topic.mastery_score + 10) : projectedMastery,
-        daysUntilForgotten: studyConsistency > 0.5 ? daysUntilForgotten * 2 : daysUntilForgotten,
-        revisionsNeeded: Math.ceil((100 - topic.mastery_score) / 20),
-      };
-    });
-
     const scenarios: FutureScenario[] = [
       {
         id: 'current',
@@ -163,8 +171,8 @@ const FutureYouSnapshot = () => {
       },
       {
         id: 'better',
-        title: '+10 min daily revision',
-        titleBn: '+১০ মিনিট দৈনিক রিভিশন',
+        title: '+10 min revision',
+        titleBn: '+১০ মিনিট রিভিশন',
         description: 'Topics stay fresh until exams. Confidence doubles.',
         descriptionBn: 'পরীক্ষা পর্যন্ত টপিক মনে থাকবে। আত্মবিশ্বাস দ্বিগুণ।',
         masteryChange: 25,
@@ -175,8 +183,8 @@ const FutureYouSnapshot = () => {
       },
       {
         id: 'worse',
-        title: 'Skip revision for 2 weeks',
-        titleBn: '২ সপ্তাহ রিভিশন বাদ দিলে',
+        title: 'Skip 2 weeks',
+        titleBn: '২ সপ্তাহ বাদ',
         description: 'Most topics feel unfamiliar. Relearning required.',
         descriptionBn: 'বেশিরভাগ টপিক অপরিচিত মনে হবে। পুনরায় শিখতে হবে।',
         masteryChange: -35,
@@ -193,13 +201,11 @@ const FutureYouSnapshot = () => {
       topWeakTopic: weakTopics[0]?.topic_name || null,
       averageRetentionDays: Math.round(avgRetentionDays),
       scenarios,
-      topicForecasts,
     };
   };
 
   const activeScenarioData = snapshotData?.scenarios.find(s => s.id === activeScenario);
 
-  // --- Loading skeleton ---
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -224,14 +230,11 @@ const FutureYouSnapshot = () => {
         className="relative rounded-2xl overflow-hidden px-4 py-4 flex items-center gap-3"
         style={{ background: 'linear-gradient(135deg, #FD91D9 0%, #AF2D50 100%)' }}
       >
-        {/* 3D Icon */}
         <img
           src={futureSnapshot3d}
           alt=""
           className="w-[90px] h-[90px] object-contain shrink-0 -ml-2 -my-2"
         />
-
-        {/* Text */}
         <div className="flex-1 min-w-0">
           <h3 className="text-white font-bold text-base sm:text-lg leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
             {isBangla ? 'ভবিষ্যতের তুমি' : 'Future You Snapshot'}
@@ -240,10 +243,16 @@ const FutureYouSnapshot = () => {
             {isBangla ? 'আজকের শেখার ফলাফল' : 'Based on today\'s learning'}
           </p>
         </div>
-
-        {/* Trend Badge */}
-        <div className="shrink-0 rounded-full px-3 py-1.5 border border-white/30 bg-white/10 backdrop-blur-sm">
-          <span className="text-white text-xs sm:text-sm font-semibold whitespace-nowrap">
+        {/* Trend badge — outlined pill style */}
+        <div
+          className="shrink-0 rounded-full px-3.5 py-1.5"
+          style={{
+            background: 'rgba(240, 235, 250, 0.15)',
+            border: '2px solid rgba(240, 235, 250, 0.35)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          }}
+        >
+          <span className="text-white text-xs sm:text-sm font-bold whitespace-nowrap">
             {trendLabel}
           </span>
         </div>
@@ -267,7 +276,6 @@ const FutureYouSnapshot = () => {
                 ? `গড় ধারণ: ${snapshotData.averageRetentionDays} দিন`
                 : `Average retention: ${snapshotData.averageRetentionDays} days`}
             </p>
-            {/* Progress bar */}
             <div className="mt-2 flex items-center gap-2">
               <div className="flex-1 h-2.5 rounded-full overflow-hidden bg-white/10">
                 <motion.div
@@ -292,47 +300,29 @@ const FutureYouSnapshot = () => {
         </div>
       </GlassCard>
 
-      {/* ── Scenario Selector ── */}
+      {/* ── Scenario Selector (outlined pill buttons) ── */}
       <GlassCard className="px-4 py-3">
-        <p className="text-white/70 text-[11px] sm:text-xs font-semibold mb-2 flex items-center gap-1.5">
+        <p className="text-white/70 text-[11px] sm:text-xs font-semibold mb-3 flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-[#FD91D9]" />
           {isBangla ? 'সম্ভাব্য ভবিষ্যত' : 'Possible Futures'}
         </p>
 
-        {/* Scenario tabs */}
+        {/* Scenario pill buttons */}
         <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {snapshotData.scenarios.map((scenario) => {
-            const isActive = activeScenario === scenario.id;
-            return (
-              <motion.button
-                key={scenario.id}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setActiveScenario(scenario.id)}
-                className={cn(
-                  "relative flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-200 text-left",
-                  isActive
-                    ? "border-white/30 bg-white/15"
-                    : "border-white/10 bg-white/5 hover:bg-white/10"
-                )}
-              >
-                <div
-                  className={cn(
-                    "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                    scenario.icon === 'better' && "bg-emerald-500/20 text-emerald-400",
-                    scenario.icon === 'worse' && "bg-rose-500/20 text-rose-400",
-                    scenario.icon === 'current' && "bg-white/10 text-white/70"
-                  )}
-                >
-                  {scenario.icon === 'better' ? <TrendingUp className="w-4 h-4" /> :
-                    scenario.icon === 'worse' ? <TrendingDown className="w-4 h-4" /> :
-                      <Target className="w-4 h-4" />}
-                </div>
-                <span className="text-white text-[11px] sm:text-xs font-medium whitespace-nowrap">
-                  {isBangla ? scenario.titleBn : scenario.title}
-                </span>
-              </motion.button>
-            );
-          })}
+          {snapshotData.scenarios.map((scenario) => (
+            <OutlinedPillButton
+              key={scenario.id}
+              isActive={activeScenario === scenario.id}
+              onClick={() => setActiveScenario(scenario.id)}
+            >
+              <span className="flex items-center gap-1.5">
+                {scenario.icon === 'better' ? <TrendingUp className="w-3.5 h-3.5" /> :
+                  scenario.icon === 'worse' ? <TrendingDown className="w-3.5 h-3.5" /> :
+                    <Target className="w-3.5 h-3.5" />}
+                {isBangla ? scenario.titleBn : scenario.title}
+              </span>
+            </OutlinedPillButton>
+          ))}
         </div>
 
         {/* Active Scenario Detail */}
@@ -390,67 +380,6 @@ const FutureYouSnapshot = () => {
           )}
         </AnimatePresence>
       </GlassCard>
-
-      {/* ── Topic Forecasts ── */}
-      {snapshotData.topicForecasts.length > 0 && (
-        <GlassCard className="px-4 py-3">
-          <p className="text-white/70 text-[11px] sm:text-xs font-semibold mb-2 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-[#BC96F0]" />
-            {isBangla ? 'টপিক পূর্বাভাস' : 'Topic Forecasts'}
-          </p>
-          <div className="space-y-2">
-            {snapshotData.topicForecasts.slice(0, 3).map((topic, index) => (
-              <motion.div
-                key={topic.topicName}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/10"
-              >
-                <div className="flex-1 min-w-0 mr-2">
-                  <p className="text-white text-xs sm:text-sm font-medium truncate">{topic.topicName}</p>
-                  <div className="flex items-center gap-1.5 mt-1.5">
-                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${topic.currentMastery}%` }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                        className="h-full rounded-full"
-                        style={{ background: 'linear-gradient(90deg, #AED0FF, #2F6B81)' }}
-                      />
-                    </div>
-                    <ArrowRight className="w-3 h-3 text-white/30 shrink-0" />
-                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${topic.projectedMastery}%` }}
-                        transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
-                        className="h-full rounded-full"
-                        style={{
-                          background: topic.projectedMastery >= topic.currentMastery
-                            ? 'linear-gradient(90deg, #6EE7B7, #059669)'
-                            : 'linear-gradient(90deg, #FDA4AF, #E11D48)',
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <p
-                    className="text-xs font-bold"
-                    style={{
-                      color: topic.daysUntilForgotten > 14 ? '#6EE7B7' : topic.daysUntilForgotten > 7 ? '#FCD34D' : '#FDA4AF',
-                    }}
-                  >
-                    {topic.daysUntilForgotten}d
-                  </p>
-                  <p className="text-[10px] text-white/40">{isBangla ? 'বাকি' : 'left'}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </GlassCard>
-      )}
 
       {/* ── Insight Message ── */}
       {snapshotData.topWeakTopic && (
