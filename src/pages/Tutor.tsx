@@ -613,21 +613,35 @@ What would you like to learn today?`,
         className="flex-1 overflow-y-auto relative z-10 scroll-smooth"
       >
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <AnimatePresence>
-            {messages.map((message, index) => (
-              <MessageBubble
-                key={message.id}
-                id={message.id}
-                role={message.role}
-                content={message.content}
-                timestamp={message.timestamp}
-                isStreaming={isTyping && index === messages.length - 1 && message.role === "assistant"}
-                thinkingTime={message.thinkingTime}
-                attachments={message.attachments}
-                index={index}
-              />
-            ))}
-          </AnimatePresence>
+          {/* Welcome state when only the initial greeting exists */}
+          {messages.length <= 1 && !isTyping && (
+            <WelcomeState
+              studentName={studentInfo?.name}
+              isBangla={isBangla}
+              onQuickAction={(prompt) => {
+                setInput(prompt);
+              }}
+            />
+          )}
+
+          {/* Messages */}
+          {messages.length > 1 && (
+            <AnimatePresence>
+              {messages.map((message, index) => (
+                <MessageBubble
+                  key={message.id}
+                  id={message.id}
+                  role={message.role}
+                  content={message.content}
+                  timestamp={message.timestamp}
+                  isStreaming={isTyping && index === messages.length - 1 && message.role === "assistant"}
+                  thinkingTime={message.thinkingTime}
+                  attachments={message.attachments}
+                  index={index}
+                />
+              ))}
+            </AnimatePresence>
+          )}
 
           {/* Thinking indicator */}
           <AnimatePresence>
