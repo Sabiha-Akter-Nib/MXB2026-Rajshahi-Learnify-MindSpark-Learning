@@ -457,17 +457,13 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Meta Row */}
-              <div className="flex items-center gap-2 mt-3 text-white/40 text-xs">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>Joined {joinedDate}</span>
-                <span className="text-white/20">•</span>
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Class {profile.class}</span>
-              </div>
-
               {/* Class / Following / Followers */}
               <div className="flex items-center gap-5 mt-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-white font-extrabold text-lg">{profile.class}</span>
+                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Class</span>
+                </div>
+                <div className="w-px h-8 bg-white/10" />
                 <button onClick={loadFollowing} className="flex flex-col items-center hover:scale-105 transition-transform active:scale-95">
                   <span className="text-white font-extrabold text-lg">{followingCount}</span>
                   <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Following</span>
