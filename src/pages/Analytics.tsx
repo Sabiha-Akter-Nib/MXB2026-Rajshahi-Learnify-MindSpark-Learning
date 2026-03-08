@@ -733,7 +733,7 @@ const Analytics = () => {
             }}
           >
             <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.05) 40%, rgba(253,145,217,0.04) 50%, transparent 70%)" }} />
-            <div className="relative z-10 p-4 sm:p-5">
+            <div className="relative z-10 px-4 py-3 sm:px-5 sm:py-3.5">
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-white font-bold text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
                   Learn Time
@@ -747,9 +747,9 @@ const Analytics = () => {
               </div>
 
               {/* Big number */}
-              <div className="mb-4">
+              <div className="mb-2.5">
                 <span
-                  className="text-white text-4xl sm:text-5xl font-bold leading-none"
+                  className="text-white text-3xl sm:text-4xl font-bold leading-none"
                   style={{ fontFamily: "'Black Han Sans', sans-serif" }}
                 >
                   {studyHours[studyTimeRange]}
@@ -758,7 +758,7 @@ const Analytics = () => {
               </div>
 
               {/* Bar chart */}
-              <div className="h-28 sm:h-32 mb-3">
+              <div className="h-24 sm:h-28 mb-2.5">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={monthlyBarData} barSize={8}>
                     <XAxis
