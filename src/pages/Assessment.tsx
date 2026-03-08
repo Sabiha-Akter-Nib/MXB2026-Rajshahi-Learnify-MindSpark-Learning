@@ -666,7 +666,7 @@ const Assessment = () => {
                   {sessionStartTime && (
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" style={{ color: "hsl(270,60%,55%)" }} />
-                      <LiveTimer startTime={sessionStartTime} />
+                      <LiveTimer startTime={sessionStartTime} timeLimitMin={timeLimit} onTimeExpired={handleTimeExpired} />
                     </div>
                   )}
                 </div>
