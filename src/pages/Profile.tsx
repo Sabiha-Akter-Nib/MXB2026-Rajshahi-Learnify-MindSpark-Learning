@@ -815,14 +815,13 @@ const Profile = () => {
                     onClick={() => setShowSearch(false)}
                     className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.08] hover:bg-white/[0.04] transition-colors"
                   >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6A68DF] to-[#FD91D9] flex items-center justify-center text-white font-bold text-sm">
-                      {r.full_name?.charAt(0) || "?"}
+                    <div className="[&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 shrink-0">
+                      <AvatarUpload userId={r.user_id} userName={r.full_name} size="sm" showUploadButton={false} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-semibold text-sm truncate">{r.full_name}</p>
                       <p className="text-white/40 text-xs truncate">
-                        {r.username ? `@${r.username}` : r.email}
-                        <span className="ml-2">• Class {r.class}</span>
+                        {r.username ? `@${r.username} • ` : ""}Class {r.class} • {r.school_name}
                       </p>
                     </div>
                   </Link>
