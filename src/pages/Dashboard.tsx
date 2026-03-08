@@ -326,7 +326,6 @@ const Dashboard = () => {
 
   const displayName = profile?.full_name || "Student";
   const classText = profile?.class ? `Class ${profile.class}` : "";
-  const versionText = profile?.version === "bangla" ? "Bangla Version" : "English Version";
 
   const modules = [
   { label: "AI Tutor", img: aiTutor3d, href: "/tutor" },

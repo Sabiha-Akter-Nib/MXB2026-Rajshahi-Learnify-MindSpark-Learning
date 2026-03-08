@@ -479,7 +479,6 @@ const Analytics = () => {
 
   const displayName = profile?.full_name || "Student";
   const classText = profile?.class ? `Class ${profile.class}` : "";
-  const versionText = profile?.version === "bangla" ? "Bangla Version" : "English Version";
   const monthLabel = format(currentMonth, "MMMM");
 
   // Weekly chart date range label
