@@ -19,9 +19,8 @@ import FutureYouSnapshot from "@/components/dashboard/FutureYouSnapshot";
 import BlindSpotMirror from "@/components/dashboard/BlindSpotMirror";
 import KnowledgeAutopsy from "@/components/dashboard/KnowledgeAutopsy";
 import StudyMomentumEngine from "@/components/dashboard/StudyMomentumEngine";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isAfter, isBefore, startOfWeek, startOfQuarter, startOfYear, subMonths as subMonthsFn } from "date-fns";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar } from "recharts";
+import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isAfter, isBefore, startOfWeek, startOfQuarter, startOfYear, subMonths as subMonthsFn } from "date-fns";
 
 import streakFlame3d from "@/assets/streak-flame-3d.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
