@@ -369,22 +369,23 @@ const Assessment = () => {
                       whileHover={{ scale: 1.05, y: -4 }}
                       whileTap={{ scale: 0.96 }}
                       onClick={() => setSelectedSubject(subject)}
-                      className="rounded-2xl p-4 text-left transition-all relative overflow-hidden"
+                      className="rounded-[20px] relative overflow-hidden aspect-[4/3] flex items-end transition-all"
                       style={{
-                        background: colors.bg,
-                        backdropFilter: "blur(24px) saturate(1.5)",
                         border: `1.5px solid ${colors.border}`,
-                        boxShadow: `0 8px 24px ${colors.shadow}, inset 0 1px 0 rgba(255,255,255,0.7)`,
+                        boxShadow: `0 8px 28px ${colors.shadow}, inset 0 1px 0 rgba(255,255,255,0.5)`,
                       }}
                     >
+                      {/* Background image */}
+                      <img src={subjectIcon3d} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      {/* Color gradient overlay */}
+                      <div className="absolute inset-0" style={{
+                        background: `linear-gradient(180deg, ${colors.icon}30 0%, ${colors.icon}90 70%, ${colors.icon}CC 100%)`,
+                      }} />
                       {/* Glow orb */}
-                      <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-40" style={{ background: `radial-gradient(circle, ${colors.glow}, transparent 70%)` }} />
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                          style={{ background: `${colors.icon}15`, boxShadow: `0 2px 8px ${colors.shadow}` }}>
-                          <img src={subjectIcon3d} alt="" className="w-7 h-7 object-contain" />
-                        </div>
-                        <p className="font-heading font-bold text-sm text-foreground leading-tight">
+                      <div className="absolute top-2 right-2 w-12 h-12 rounded-full" style={{ background: `radial-gradient(circle, ${colors.glow}, transparent 70%)`, opacity: 0.6 }} />
+                      {/* Text */}
+                      <div className="relative z-10 w-full px-3.5 pb-3 pt-1">
+                        <p className="font-heading font-extrabold text-sm text-white leading-tight drop-shadow-md" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.3)" }}>
                           {isBangla ? subject.name_bn || subject.name : subject.name}
                         </p>
                       </div>
