@@ -692,12 +692,13 @@ const Leaderboard = () => {
 
                       <div className="flex-1 min-w-0">
                         <p className={cn(
-                          "font-semibold truncate group-hover:text-primary transition-colors",
+                          "font-semibold truncate group-hover:text-primary transition-colors flex items-center gap-1",
                           entry.isCurrentUser && "text-primary font-bold"
                         )}>
                           {entry.displayName}
+                          {entry.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={14} />}
                           {entry.isCurrentUser && (
-                            <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>
+                            <span className="ml-1 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>
                           )}
                         </p>
                         <p className="text-xs text-muted-foreground flex items-center gap-2">
