@@ -260,6 +260,8 @@ const Analytics = () => {
   const [lessonsCompleted, setLessonsCompleted] = useState(0);
   const [totalLessons, setTotalLessons] = useState(0);
   const [problemSolvingRate, setProblemSolvingRate] = useState(0);
+  const [totalExams, setTotalExams] = useState(0);
+  const [leaderboardRank, setLeaderboardRank] = useState<number | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
