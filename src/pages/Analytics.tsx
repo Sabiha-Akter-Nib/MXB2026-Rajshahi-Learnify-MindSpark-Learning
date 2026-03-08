@@ -694,16 +694,7 @@ const Analytics = () => {
                       tickLine={false}
                       width={30}
                     />
-                    <Tooltip
-                      contentStyle={{
-                        background: "rgba(30,15,45,0.95)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: 12,
-                        color: "#fff",
-                        fontSize: 12,
-                      }}
-                      labelStyle={{ color: "rgba(255,255,255,0.6)" }}
-                    />
+                    <Tooltip content={() => null} />
                     <Line
                       type="linear"
                       dataKey="xp"
@@ -768,16 +759,7 @@ const Analytics = () => {
                       tickLine={false}
                     />
                     <YAxis hide />
-                    <Tooltip
-                      contentStyle={{
-                        background: "rgba(30,15,45,0.95)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: 10,
-                        color: "#fff",
-                        fontSize: 11,
-                      }}
-                      formatter={(value: number) => [`${value} hrs`, "Study Time"]}
-                    />
+                    <Tooltip content={() => null} />
                     <Bar
                       dataKey="hours"
                       radius={[4, 4, 0, 0]}
