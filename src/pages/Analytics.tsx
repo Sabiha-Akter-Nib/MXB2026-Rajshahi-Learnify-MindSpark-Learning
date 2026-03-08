@@ -251,6 +251,12 @@ const Analytics = () => {
   const [activeDates, setActiveDates] = useState<Set<string>>(new Set());
   const [registrationDate, setRegistrationDate] = useState<Date | null>(null);
   const [weeklyChartData, setWeeklyChartData] = useState<{ label: string; xp: number }[]>([]);
+  const [studyHours, setStudyHours] = useState({ weekly: 0, monthly: 0, quarterly: 0, yearly: 0 });
+  const [studyTimeRange, setStudyTimeRange] = useState<"weekly" | "monthly" | "quarterly" | "yearly">("monthly");
+  const [monthlyBarData, setMonthlyBarData] = useState<{ label: string; hours: number }[]>([]);
+  const [lessonsCompleted, setLessonsCompleted] = useState(0);
+  const [totalLessons, setTotalLessons] = useState(0);
+  const [problemSolvingRate, setProblemSolvingRate] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
