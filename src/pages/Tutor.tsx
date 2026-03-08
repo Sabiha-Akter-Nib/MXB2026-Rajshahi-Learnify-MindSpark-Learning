@@ -87,7 +87,8 @@ const Tutor = () => {
   useEffect(() => {
     if (user) {
       const subjectParam = searchParams.get("subject");
-      startSession({ topic: subjectParam || undefined });
+      // AI Tutor chat: track study time but no XP
+      startSession({ topic: subjectParam || undefined, trackTimeOnly: true });
     }
     return () => {
       endSession();

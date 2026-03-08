@@ -6,6 +6,7 @@ interface SessionData {
   subjectId?: string;
   topic?: string;
   bloomLevel?: string;
+  trackTimeOnly?: boolean; // If true, track study time but no XP
 }
 
 export const useStudySession = () => {
@@ -35,9 +36,10 @@ export const useStudySession = () => {
     // Minimum 1 minute to count
     if (durationMinutes < 1) return;
 
-    // Calculate XP: base 10 XP per minute + accumulated bonus
-    const baseXP = durationMinutes * 10;
-    const totalXP = baseXP + xpAccumulatedRef.current;
+    // If trackTimeOnly is true (e.g., AI Tutor chat), no XP is awarded
+    const isTimeOnly = sessionDataRef.current.trackTimeOnly === true;
+    const baseXP = isTimeOnly ? 0 : durationMinutes * 10;
+    const totalXP = isTimeOnly ? 0 : baseXP + xpAccumulatedRef.current;
 
     try {
       await supabase.functions.invoke("track-session", {
@@ -50,7 +52,7 @@ export const useStudySession = () => {
         },
       });
 
-      console.log(`Session tracked: ${durationMinutes} mins, ${totalXP} XP`);
+      console.log(`Session tracked: ${durationMinutes} mins, ${totalXP} XP${isTimeOnly ? ' (time-only mode)' : ''}`);
     } catch (error) {
       console.error("Failed to track session:", error);
     }
