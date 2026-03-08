@@ -631,10 +631,10 @@ const Profile = () => {
             };
 
             const allBadges = [
-              { label: "Streak", icon: Flame, highest: getHighest(streakMilestones, currentStreak), grad: "linear-gradient(135deg, #FF6B35, #FF4500)", shadow: "0 0 16px rgba(255,69,0,0.35)" },
-              { label: "XP", icon: Zap, highest: getHighest(xpMilestones, totalXP), grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", shadow: "0 0 16px rgba(155,135,245,0.35)" },
-              { label: "Exams", icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), grad: "linear-gradient(135deg, #FD91D9, #E040A0)", shadow: "0 0 16px rgba(253,145,217,0.35)" },
-              { label: "Correct", icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), grad: "linear-gradient(135deg, #58CC02, #3DA101)", shadow: "0 0 16px rgba(88,204,2,0.35)" },
+              { label: "Streak", desc: `${currentStreak} day streak`, icon: Flame, highest: getHighest(streakMilestones, currentStreak), grad: "linear-gradient(135deg, #FF6B35, #FF4500)", shadow: "0 0 16px rgba(255,69,0,0.35)" },
+              { label: "XP", desc: `Earned ${totalXP} XP`, icon: Zap, highest: getHighest(xpMilestones, totalXP), grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", shadow: "0 0 16px rgba(155,135,245,0.35)" },
+              { label: "Exams", desc: `Completed ${totalExams} exams`, icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), grad: "linear-gradient(135deg, #FD91D9, #E040A0)", shadow: "0 0 16px rgba(253,145,217,0.35)" },
+              { label: "Correct", desc: `${totalCorrect} correct answers`, icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), grad: "linear-gradient(135deg, #58CC02, #3DA101)", shadow: "0 0 16px rgba(88,204,2,0.35)" },
             ];
 
             const achieved = allBadges.filter((b) => b.highest !== null);
@@ -642,7 +642,7 @@ const Profile = () => {
 
             return (
               <GlassCard className="px-3 py-2.5 sm:px-4 sm:py-3">
-                <div className="flex items-center justify-around gap-2">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                   {achieved.map((b) => {
                     const Icon = b.icon;
                     return (
@@ -650,18 +650,18 @@ const Profile = () => {
                         key={b.label}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="flex flex-col items-center gap-1"
+                        className="flex items-center gap-2"
                       >
                         <div
-                          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center"
+                          className="w-11 h-11 sm:w-13 sm:h-13 rounded-full flex flex-col items-center justify-center shrink-0"
                           style={{ background: b.grad, boxShadow: b.shadow }}
                         >
-                          <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" strokeWidth={2.5} />
-                          <span className="text-white text-[10px] sm:text-xs font-extrabold leading-none mt-0.5" style={{ fontFamily: "Poppins, sans-serif" }}>
+                          <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" strokeWidth={2.5} />
+                          <span className="text-white text-[9px] sm:text-[10px] font-extrabold leading-none mt-0.5" style={{ fontFamily: "Poppins, sans-serif" }}>
                             {b.highest}
                           </span>
                         </div>
-                        <span className="text-white/50 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider">{b.label}</span>
+                        <p className="text-white/60 text-[9px] sm:text-[10px] font-medium leading-tight">{b.desc}</p>
                       </motion.div>
                     );
                   })}
