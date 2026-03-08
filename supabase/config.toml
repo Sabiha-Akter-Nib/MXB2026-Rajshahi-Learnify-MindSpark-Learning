@@ -47,3 +47,9 @@ verify_jwt = false
 
 [functions.upload-curriculum]
 verify_jwt = false
+
+[functions.weekly-summary]
+verify_jwt = true
+
+[functions.upload-curriculum]
+verify_jwt = false

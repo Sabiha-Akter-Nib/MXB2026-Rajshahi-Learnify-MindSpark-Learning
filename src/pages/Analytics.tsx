@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
   Settings,
@@ -7,6 +7,8 @@ import {
   ChevronRight,
   Loader2,
   Clock,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -263,6 +265,25 @@ const Analytics = () => {
   const [problemSolvingRate, setProblemSolvingRate] = useState(0);
   const [totalExams, setTotalExams] = useState(0);
   const [leaderboardRank, setLeaderboardRank] = useState<number | null>(null);
+  const [weeklySummary, setWeeklySummary] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState(false);
+
+  const fetchWeeklySummary = useCallback(async () => {
+    if (!user) return;
+    setSummaryLoading(true);
+    setSummaryError(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("weekly-summary");
+      if (error) throw error;
+      setWeeklySummary(data?.summary || null);
+    } catch (err) {
+      console.error("Weekly summary error:", err);
+      setSummaryError(true);
+    } finally {
+      setSummaryLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
@@ -550,6 +571,142 @@ const Analytics = () => {
               className="absolute -bottom-4 -right-10 h-[140px] w-auto object-contain pointer-events-none"
             />
           </GlassCard>
+
+          {/* ========== AI WEEKLY SUMMARY CARD ========== */}
+          <div
+            className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+            style={{
+              background: "linear-gradient(135deg, rgba(106,104,223,0.28) 0%, rgba(253,145,217,0.2) 25%, rgba(239,185,149,0.15) 50%, rgba(254,254,254,0.1) 75%, rgba(188,150,240,0.22) 100%)",
+              boxShadow: "0 8px 40px rgba(106,104,223,0.2), 0 0 80px rgba(253,145,217,0.08), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.05)",
+            }}
+          >
+            {/* Holographic shimmer */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.07) 40%, rgba(253,145,217,0.06) 50%, transparent 70%)",
+              }}
+            />
+            <div className="relative z-10 p-4 sm:p-5">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{
+                      background: "linear-gradient(135deg, #6A68DF, #FD91D9)",
+                      boxShadow: "0 4px 16px rgba(106,104,223,0.4)",
+                    }}
+                  >
+                    <Sparkles className="w-4.5 h-4.5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
+                      {profile?.version === "bangla" ? "সাপ্তাহিক সারাংশ" : "Weekly Summary"}
+                    </h3>
+                    <p className="text-white/40 text-[9px] sm:text-[10px]">
+                      {profile?.version === "bangla" ? "AI দ্বারা তৈরি" : "AI-generated insight"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={fetchWeeklySummary}
+                  disabled={summaryLoading}
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                  style={{
+                    background: "rgba(255,255,255,0.1)",
+                    border: "1.5px solid rgba(255,255,255,0.15)",
+                  }}
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 text-white/70 ${summaryLoading ? "animate-spin" : ""}`} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <AnimatePresence mode="wait">
+                {weeklySummary ? (
+                  <motion.div
+                    key="summary"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="rounded-xl p-3.5"
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <p className="text-white/85 text-xs sm:text-sm leading-relaxed font-medium">
+                      {weeklySummary}
+                    </p>
+                  </motion.div>
+                ) : summaryLoading ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center justify-center py-6 gap-3"
+                  >
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Sparkles className="w-5 h-5 text-white/50" />
+                    </motion.div>
+                    <p className="text-white/50 text-xs font-medium">
+                      {profile?.version === "bangla" ? "সারাংশ তৈরি হচ্ছে..." : "Generating your summary..."}
+                    </p>
+                  </motion.div>
+                ) : summaryError ? (
+                  <motion.div
+                    key="error"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-4"
+                  >
+                    <p className="text-white/40 text-xs mb-2">Could not generate summary</p>
+                    <button
+                      onClick={fetchWeeklySummary}
+                      className="text-xs font-semibold px-4 py-1.5 rounded-full"
+                      style={{
+                        background: "rgba(255,255,255,0.1)",
+                        color: "rgba(255,255,255,0.7)",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                      }}
+                    >
+                      Try Again
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="generate"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={fetchWeeklySummary}
+                    className="w-full py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02]"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(106,104,223,0.2), rgba(253,145,217,0.15), rgba(239,185,149,0.1))",
+                      border: "1.5px solid rgba(254,254,254,0.12)",
+                      boxShadow: "0 4px 16px rgba(106,104,223,0.12)",
+                    }}
+                  >
+                    <Sparkles className="w-4 h-4 text-white/60" />
+                    <span
+                      className="text-xs sm:text-sm font-bold"
+                      style={{
+                        background: "linear-gradient(90deg, #FEFEFE, #FD91D9, #6A68DF, #EFB995)",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                      }}
+                    >
+                      {profile?.version === "bangla" ? "সাপ্তাহিক সারাংশ তৈরি করো" : "Generate Weekly Summary"}
+                    </span>
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
 
           {/* ========== PROFILE STAT CARDS (2x2 grid) ========== */}
           <div className="grid grid-cols-4 gap-2">
