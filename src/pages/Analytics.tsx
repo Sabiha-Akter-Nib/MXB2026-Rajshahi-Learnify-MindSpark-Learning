@@ -724,7 +724,155 @@ const Analytics = () => {
             isBangla={profile?.version === "bangla"}
           />
 
-          {/* ========== ADVANCED PANELS ========== */}
+          {/* ========== STUDY TIME CARD ========== */}
+          <div
+            className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+            style={{
+              background: "linear-gradient(135deg, rgba(106,104,223,0.3) 0%, rgba(253,145,217,0.2) 30%, rgba(239,185,149,0.15) 60%, rgba(254,254,254,0.1) 100%)",
+              boxShadow: "0 8px 40px rgba(106,104,223,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+            }}
+          >
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.05) 40%, rgba(253,145,217,0.04) 50%, transparent 70%)" }} />
+            <div className="relative z-10 p-4 sm:p-5">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-white font-bold text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
+                  Learn Time
+                </h3>
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.1)", border: "1.5px solid rgba(255,255,255,0.15)" }}
+                >
+                  <Clock className="w-4 h-4 text-white/70" />
+                </div>
+              </div>
+
+              {/* Big number */}
+              <div className="mb-4">
+                <span
+                  className="text-white text-4xl sm:text-5xl font-bold leading-none"
+                  style={{ fontFamily: "'Black Han Sans', sans-serif" }}
+                >
+                  {studyHours[studyTimeRange]}
+                </span>
+                <span className="text-white/60 text-sm sm:text-base font-medium ml-1">Hour</span>
+              </div>
+
+              {/* Bar chart */}
+              <div className="h-28 sm:h-32 mb-3">
+                <BarResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyBarData} barSize={8}>
+                    <BarXAxis
+                      dataKey="label"
+                      tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <BarYAxis hide />
+                    <BarTooltip
+                      contentStyle={{
+                        background: "rgba(30,15,45,0.95)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: 10,
+                        color: "#fff",
+                        fontSize: 11,
+                      }}
+                      formatter={(value: number) => [`${value} hrs`, "Study Time"]}
+                    />
+                    <Bar
+                      dataKey="hours"
+                      radius={[4, 4, 0, 0]}
+                      fill="rgba(188,150,240,0.6)"
+                    />
+                  </BarChart>
+                </BarResponsiveContainer>
+              </div>
+
+              {/* Time range pills */}
+              <div className="flex items-center justify-center gap-2">
+                {(["weekly", "monthly", "quarterly", "yearly"] as const).map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => setStudyTimeRange(range)}
+                    className="px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-wide transition-all duration-200"
+                    style={{
+                      background: studyTimeRange === range ? "rgba(240, 235, 250, 0.92)" : "transparent",
+                      color: studyTimeRange === range ? "#4A3A8A" : "rgba(240, 235, 250, 0.7)",
+                      border: studyTimeRange === range ? "2px solid rgba(180, 150, 220, 0.5)" : "2px solid rgba(240, 235, 250, 0.2)",
+                      boxShadow: studyTimeRange === range ? "0 4px 16px rgba(160, 130, 200, 0.4)" : "none",
+                    }}
+                  >
+                    {range.charAt(0).toUpperCase() + range.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ========== LESSONS & PROBLEM SOLVING (side by side) ========== */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {/* Lessons Completed */}
+            <div
+              className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+              style={{
+                background: "linear-gradient(150deg, rgba(106,104,223,0.3) 0%, rgba(188,150,240,0.2) 50%, rgba(253,145,217,0.12) 100%)",
+                boxShadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)",
+              }}
+            >
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.04) 50%, transparent 70%)" }} />
+              <div className="relative z-10 p-4 sm:p-5">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: "rgba(255,255,255,0.1)", border: "1.5px solid rgba(255,255,255,0.12)" }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(209,202,233,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5v-15A2.5 2.5 0 016.5 2H20v20H6.5a2.5 2.5 0 010-5H20" />
+                  </svg>
+                </div>
+                <p className="text-white/60 text-[10px] sm:text-xs font-medium mb-1">Lessons<br/>Completed</p>
+                <p
+                  className="text-white text-2xl sm:text-3xl font-bold leading-none"
+                  style={{ fontFamily: "'Black Han Sans', sans-serif" }}
+                >
+                  <span style={{ background: "linear-gradient(135deg, #D1CAE9, #BC96F0)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    {lessonsCompleted}/{totalLessons}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            {/* Problem Solving Rate */}
+            <div
+              className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+              style={{
+                background: "linear-gradient(150deg, rgba(253,145,217,0.2) 0%, rgba(239,185,149,0.15) 50%, rgba(106,104,223,0.15) 100%)",
+                boxShadow: "0 8px 32px rgba(253,145,217,0.12), inset 0 1px 0 rgba(255,255,255,0.2)",
+              }}
+            >
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.04) 50%, transparent 70%)" }} />
+              <div className="relative z-10 p-4 sm:p-5">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: "rgba(255,255,255,0.1)", border: "1.5px solid rgba(255,255,255,0.12)" }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,145,217,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                    <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                </div>
+                <p className="text-white/60 text-[10px] sm:text-xs font-medium mb-1">Problem<br/>Solving Rate</p>
+                <p
+                  className="text-white text-2xl sm:text-3xl font-bold leading-none"
+                  style={{ fontFamily: "'Black Han Sans', sans-serif" }}
+                >
+                  <span style={{ background: "linear-gradient(135deg, #FD91D9, #EFB995)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    {problemSolvingRate}%
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-5">
             <StudyMomentumEngine />
             <FutureYouSnapshot />
