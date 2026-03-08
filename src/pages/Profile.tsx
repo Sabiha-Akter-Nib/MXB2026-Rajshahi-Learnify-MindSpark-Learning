@@ -1013,7 +1013,7 @@ const Profile = () => {
       {/* ── Search Friends Dialog ── */}
       <Dialog open={showSearch} onOpenChange={setShowSearch}>
         <DialogContent
-          className="border-white/[0.15] max-w-md max-h-[80vh] overflow-y-auto"
+          className="border-white/[0.15] max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[80vh] overflow-y-auto overflow-x-hidden mx-4"
           style={{
             background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)",
             boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
