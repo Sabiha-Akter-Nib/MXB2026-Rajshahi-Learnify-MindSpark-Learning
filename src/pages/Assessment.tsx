@@ -366,27 +366,28 @@ const Assessment = () => {
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 + idx * 0.05 }}
-                      whileHover={{ scale: 1.03, y: -3 }}
-                      whileTap={{ scale: 0.97 }}
+                      whileHover={{ scale: 1.05, y: -4 }}
+                      whileTap={{ scale: 0.96 }}
                       onClick={() => setSelectedSubject(subject)}
-                      className="rounded-2xl p-4 text-left transition-all"
+                      className="rounded-2xl p-4 text-left transition-all relative overflow-hidden"
                       style={{
-                        background: `linear-gradient(-45deg, rgba(254,254,254,0.95), rgba(254,254,254,0.8))`,
+                        background: colors.bg,
                         backdropFilter: "blur(24px) saturate(1.5)",
                         border: `1.5px solid ${colors.border}`,
-                        boxShadow: `0 4px 16px ${colors.shadow}, inset 0 1px 0 rgba(255,255,255,0.8)`,
+                        boxShadow: `0 8px 24px ${colors.shadow}, inset 0 1px 0 rgba(255,255,255,0.7)`,
                       }}
                     >
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                        style={{ background: colors.bg, boxShadow: `0 2px 8px ${colors.shadow}` }}>
-                        <Icon className="w-5 h-5" style={{ color: colors.icon }} />
+                      {/* Glow orb */}
+                      <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-40" style={{ background: `radial-gradient(circle, ${colors.glow}, transparent 70%)` }} />
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ background: `${colors.icon}15`, boxShadow: `0 2px 8px ${colors.shadow}` }}>
+                          <img src={subjectIcon3d} alt="" className="w-7 h-7 object-contain" />
+                        </div>
+                        <p className="font-heading font-bold text-sm text-foreground leading-tight">
+                          {isBangla ? subject.name_bn || subject.name : subject.name}
+                        </p>
                       </div>
-                      <p className="font-heading font-bold text-sm text-foreground leading-tight">
-                        {isBangla ? subject.name_bn || subject.name : subject.name}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground mt-1 font-heading">
-                        {subject.total_chapters} {isBangla ? "অধ্যায়" : "chapters"}
-                      </p>
                     </motion.button>
                   );
                 })}
