@@ -747,7 +747,7 @@ const Analytics = () => {
               </div>
 
               {/* Big number */}
-              <div className="mb-4">
+              <div className="mb-2.5">
                 <span
                   className="text-white text-4xl sm:text-5xl font-bold leading-none"
                   style={{ fontFamily: "'Black Han Sans', sans-serif" }}
