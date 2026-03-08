@@ -343,9 +343,6 @@ const Assessment = () => {
                   className="absolute inset-0 rounded-full scale-[2.5]" style={{ background: "radial-gradient(circle, hsla(300, 55%, 65%, 0.2), transparent 70%)" }} />
                 <motion.img src={mascotImg} alt="AI" className="w-32 h-32 sm:w-40 sm:h-40 relative z-10 drop-shadow-2xl"
                   animate={{ y: [0, -10, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} />
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute -top-2 -right-2 z-20">
-                  <Brain className="w-7 h-7" style={{ color: "hsl(270, 60%, 55%)" }} />
-                </motion.div>
               </motion.div>
 
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="text-center mb-6">
