@@ -153,6 +153,7 @@ const Profile = () => {
   const [editName, setEditName] = useState("");
   const [editUsername, setEditUsername] = useState("");
   const [editSchool, setEditSchool] = useState("");
+  const [editCoverColor, setEditCoverColor] = useState("#6A68DF");
 
   // Stats
   const [totalXP, setTotalXP] = useState(0);
