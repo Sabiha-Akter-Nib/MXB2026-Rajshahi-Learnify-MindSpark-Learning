@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, school_name, class: studentClass, version, division } = await req.json();
+    const { email, password, full_name, school_name, class: studentClass, version, division, username } = await req.json();
 
     if (!email || !password || !full_name || !school_name || !studentClass || !version) {
       return new Response(JSON.stringify({ error: "All fields are required" }), {
