@@ -12,6 +12,7 @@ interface AvatarUploadProps {
   userName?: string;
   size?: "sm" | "md" | "lg";
   showUploadButton?: boolean;
+  interactive?: boolean;
   className?: string;
   onAvatarChange?: (url: string) => void;
 }
@@ -33,6 +34,7 @@ const AvatarUpload = ({
   userName = "",
   size = "md",
   showUploadButton = true,
+  interactive = false,
   className,
   onAvatarChange,
 }: AvatarUploadProps) => {
@@ -150,32 +152,35 @@ const AvatarUpload = ({
     <div className={cn("flex flex-col items-center gap-3", className)}>
       <motion.div
         className="relative"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        whileHover={{ scale: 1.05 }}
+        onMouseEnter={() => interactive && setIsHovered(true)}
+        onMouseLeave={() => interactive && setIsHovered(false)}
+        whileHover={interactive ? { scale: 1.05 } : {}}
         transition={{ type: "spring", stiffness: 300 }}
       >
-        {/* Glow effect */}
-        <motion.div
-          className={cn(
-            "absolute inset-0 rounded-full bg-gradient-to-r from-primary via-accent to-primary-light opacity-0",
-            sizeClasses[size]
-          )}
-          animate={{
-            opacity: isHovered ? 0.6 : 0,
-            scale: isHovered ? 1.15 : 1,
-          }}
-          style={{ filter: "blur(12px)" }}
-        />
+        {/* Glow effect - only when interactive */}
+        {interactive && (
+          <motion.div
+            className={cn(
+              "absolute inset-0 rounded-full bg-gradient-to-r from-primary via-accent to-primary-light opacity-0",
+              sizeClasses[size]
+            )}
+            animate={{
+              opacity: isHovered ? 0.6 : 0,
+              scale: isHovered ? 1.15 : 1,
+            }}
+            style={{ filter: "blur(12px)" }}
+          />
+        )}
 
         {/* Avatar container */}
         <Avatar
           className={cn(
-            "border-4 border-white shadow-xl cursor-pointer relative z-10 transition-all duration-300",
+            "border-4 border-white shadow-xl relative z-10 transition-all duration-300",
             sizeClasses[size],
-            isHovered && "border-accent"
+            interactive && "cursor-pointer",
+            interactive && isHovered && "border-accent"
           )}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => interactive && fileInputRef.current?.click()}
         >
           <AvatarImage src={avatarUrl || undefined} alt={userName} />
           <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-semibold text-lg">
@@ -183,35 +188,37 @@ const AvatarUpload = ({
           </AvatarFallback>
         </Avatar>
 
-        {/* Upload overlay */}
-        <AnimatePresence>
-          {(isHovered || isUploading) && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className={cn(
-                "absolute inset-0 rounded-full bg-black/50 flex items-center justify-center cursor-pointer z-20",
-                sizeClasses[size]
-              )}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {isUploading ? (
-                <Loader2 className="w-6 h-6 text-white animate-spin" />
-              ) : uploadSuccess ? (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring" }}
-                >
-                  <Check className="w-6 h-6 text-green-400" />
-                </motion.div>
-              ) : (
-                <Camera className="w-6 h-6 text-white" />
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Upload overlay - only when interactive */}
+        {interactive && (
+          <AnimatePresence>
+            {(isHovered || isUploading) && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className={cn(
+                  "absolute inset-0 rounded-full bg-black/50 flex items-center justify-center cursor-pointer z-20",
+                  sizeClasses[size]
+                )}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isUploading ? (
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                ) : uploadSuccess ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring" }}
+                  >
+                    <Check className="w-6 h-6 text-green-400" />
+                  </motion.div>
+                ) : (
+                  <Camera className="w-6 h-6 text-white" />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* Sparkle decorations */}
         {uploadSuccess && (
