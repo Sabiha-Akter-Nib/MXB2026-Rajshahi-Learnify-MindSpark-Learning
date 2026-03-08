@@ -238,7 +238,7 @@ const LearningProgressCard = ({
   );
 };
 
-
+const Analytics = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const streak = useStreakTracker(user?.id);
