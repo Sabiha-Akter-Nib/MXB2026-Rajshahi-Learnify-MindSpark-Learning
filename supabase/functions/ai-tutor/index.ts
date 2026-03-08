@@ -96,29 +96,30 @@ function parseChapterRequest(message: string): {
 }
 
 // Fetch official NCTB curriculum content for known subject+class combinations
-// Returns the full textbook content or a relevant chapter excerpt
 async function fetchCurriculumContent(
   subjectName: string | null,
   studentClass: number,
   userMessage: string
 ): Promise<string> {
-  // Map of available curriculum files: "subject|class" -> filename
   const curriculumFiles: Record<string, string> = {
     "Bangla 1st Paper|7": "bangla-1st-paper-class-7.txt",
   };
 
-  const normalizedSubject = subjectName?.trim() || "";
-  // Try to match subject from message or explicit subjectName
+  const normalizedSubject = (subjectName?.trim() || "").toLowerCase();
+  const msgLower = userMessage.toLowerCase();
+  
+  // Check both subject name AND user message for Bangla 1st Paper keywords
+  const isBangla1st = (text: string) =>
+    text.includes("bangla 1st") || text.includes("bangla 1st paper") ||
+    text.includes("বাংলা ১ম") || text.includes("বাংলা ১ম পত্র") ||
+    text.includes("সপ্তবর্ণা") || text.includes("soptoborna") ||
+    text.includes("bangla first");
+
   let fileKey = "";
   for (const key of Object.keys(curriculumFiles)) {
-    const [subj, cls] = key.split("|");
+    const [, cls] = key.split("|");
     if (parseInt(cls) === studentClass) {
-      if (
-        normalizedSubject.toLowerCase().includes(subj.toLowerCase()) ||
-        normalizedSubject.toLowerCase().includes("bangla 1st") ||
-        normalizedSubject.toLowerCase().includes("বাংলা ১ম") ||
-        normalizedSubject.toLowerCase().includes("সপ্তবর্ণা")
-      ) {
+      if (isBangla1st(normalizedSubject) || isBangla1st(msgLower)) {
         fileKey = key;
         break;
       }
