@@ -35,6 +35,7 @@ import leaderboard3d from "@/assets/module-leaderboard-3d.png";
 import streakFlame3d from "@/assets/streak-flame-3d.png";
 import statStudy3d from "@/assets/stat-study-3d.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
+import statStreakGlass from "@/assets/stat-streak-glass.png";
 import statStudyCardBg from "@/assets/stat-study-card-bg.png";
 import statXpCardBg from "@/assets/stat-xp-card-bg.png";
 import subjectBooks3dNew from "@/assets/subject-books-3d-new.png";
@@ -356,13 +357,27 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/settings" className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/10">
-              <Bell className="w-5 h-5 text-white/70" />
-            </Link>
-            <Link to="/settings" className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/10">
-              <Settings className="w-5 h-5 text-white/70" />
-            </Link>
-          </div>
+              <div
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.15] backdrop-blur-2xl"
+                style={{
+                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
+                }}
+              >
+                <img src={statStreakGlass} alt="" className="w-5 h-5 object-contain" />
+                <span className="text-white font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{currentStreak}</span>
+              </div>
+              <div
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.15] backdrop-blur-2xl"
+                style={{
+                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
+                }}
+              >
+                <img src={statXp3d} alt="" className="w-5 h-5 object-contain" />
+                <span className="text-white font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{stats?.total_xp || 0}</span>
+              </div>
+            </div>
         </header>
 
         {/* ========== NAVIGATION MODULES ========== */}
