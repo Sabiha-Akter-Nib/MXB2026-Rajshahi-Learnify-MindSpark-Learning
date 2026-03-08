@@ -363,7 +363,7 @@ const Profile = () => {
     if (data) {
       const ids = data.map((d) => d.following_id);
       if (ids.length > 0) {
-        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, username, school_name, class").in("user_id", ids);
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, username, school_name, class, email").in("user_id", ids);
         setFollowingList((profiles as FollowUser[]) || []);
       } else {
         setFollowingList([]);
