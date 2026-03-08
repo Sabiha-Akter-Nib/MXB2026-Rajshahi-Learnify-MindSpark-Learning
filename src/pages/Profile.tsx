@@ -685,6 +685,7 @@ const Profile = () => {
               { icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), topLabel: (h: number) => h >= 1000 ? `${(h/1000).toFixed(h%1000===0?0:1)}K` : `${h}`, bottomLabel: "Correct", style: badgeStyles[3] },
             ];
 
+            const achieved = allBadges.filter((b) => b.highest !== null);
             if (achieved.length === 0) return (
               <GlassCard className="p-4 sm:p-5 relative overflow-hidden">
                 <div className="flex items-center gap-2 mb-3">
