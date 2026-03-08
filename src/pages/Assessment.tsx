@@ -617,9 +617,11 @@ const Assessment = () => {
             {/* Action Buttons */}
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1.6 }} className="flex gap-3 pt-1 z-10">
               {fromPlan ? (
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: GRADIENT }} asChild>
-                  <Link to="/dashboard"><ArrowLeft className="w-4 h-4" />{isBangla ? "ড্যাশবোর্ড" : "Dashboard"}</Link>
-                </motion.button>
+                <Link to="/dashboard">
+                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: GRADIENT }}>
+                    <ArrowLeft className="w-4 h-4" />{isBangla ? "ড্যাশবোর্ড" : "Dashboard"}
+                  </motion.button>
+                </Link>
               ) : hasWrongAnswers ? (
                 <>
                   <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => { setSelectedSubject(null); setQuestions([]); setShowResult(false); }}
