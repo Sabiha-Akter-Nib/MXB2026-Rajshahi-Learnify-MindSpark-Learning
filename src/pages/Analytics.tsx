@@ -553,7 +553,7 @@ const Analytics = () => {
                 <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.04) 50%, transparent 70%)" }} />
                 <div className="relative z-10 p-3 sm:p-3.5 flex flex-col items-center text-center">
                   <img src={card.img} alt={card.label} className="w-14 h-14 sm:w-16 sm:h-16 object-contain mb-1.5" />
-                  <p className="text-white text-lg sm:text-xl font-extrabold leading-none tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
+                  <p className="text-white text-2xl sm:text-3xl font-extrabold leading-none tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
                     <span style={{ background: card.grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{card.value}</span>
                   </p>
                   <p className="text-white text-[10px] sm:text-xs font-bold mt-1 whitespace-nowrap tracking-wide uppercase">{card.label}</p>
