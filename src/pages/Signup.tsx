@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Eye, EyeOff, ArrowLeft, BookOpen, Globe, Beaker, Briefcase, Palette } from "lucide-react";
+import { Loader2, Eye, EyeOff, ArrowLeft, Beaker, Briefcase, Palette } from "lucide-react";
 import loginLogoImg from "@/assets/login-logo-card.png";
 import tugiGlassesImg from "@/assets/tugi-glasses.png";
 import tugiOtpImg from "@/assets/tugi-otp.png";
