@@ -367,6 +367,7 @@ export type Database = {
           school_name: string
           updated_at: string
           user_id: string
+          username: string | null
           version: Database["public"]["Enums"]["curriculum_version"]
         }
         Insert: {
@@ -379,6 +380,7 @@ export type Database = {
           school_name: string
           updated_at?: string
           user_id: string
+          username?: string | null
           version?: Database["public"]["Enums"]["curriculum_version"]
         }
         Update: {
@@ -391,6 +393,7 @@ export type Database = {
           school_name?: string
           updated_at?: string
           user_id?: string
+          username?: string | null
           version?: Database["public"]["Enums"]["curriculum_version"]
         }
         Relationships: []
@@ -751,6 +754,27 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
         }
         Relationships: []
       }

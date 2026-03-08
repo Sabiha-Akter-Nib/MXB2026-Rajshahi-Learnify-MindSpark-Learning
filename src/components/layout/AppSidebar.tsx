@@ -9,7 +9,8 @@ import {
   LayoutDashboard,
   BookOpen,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  User
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -41,6 +42,7 @@ const mainItems = [
 const insightItems = [
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Subjects", url: "/subjects", icon: BookOpen },
+  { title: "Profile", url: "/profile", icon: User },
 ];
 
 const bottomItems = [
