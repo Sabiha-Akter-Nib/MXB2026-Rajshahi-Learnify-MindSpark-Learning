@@ -867,7 +867,7 @@ const ResultsScreen = ({
             <RefreshCw className="w-4 h-4" />{isBangla ? "আবার চেষ্টা করো" : "Practice Again"}
           </motion.button>
         </div>
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => navigate('/dashboard')}
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => window.location.href = '/dashboard'}
           className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-semibold font-heading transition-all"
           style={{ background: "linear-gradient(135deg, rgba(254,254,254,0.95), rgba(254,254,254,0.8))", backdropFilter: "blur(20px)", border: "1.5px solid rgba(255,255,255,0.5)", color: "hsl(270, 60%, 45%)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
           <LayoutDashboard className="w-4 h-4" />{isBangla ? "ড্যাশবোর্ডে যাও" : "Go to Dashboard"}
