@@ -160,17 +160,20 @@ const Dashboard = () => {
         maybeSingle();
         if (profileData) setProfile(profileData);
 
-        const { data: statsData } = await supabase.
-        from("student_stats").
-        select("total_xp, current_streak, total_study_minutes").
-        eq("user_id", user.id).
-        maybeSingle();
-        if (statsData) {
-          setStats({
-            ...statsData,
-            current_streak: streak.currentStreak ?? statsData.current_streak
-          });
-        }
+        // Compute accurate totals from source tables
+        const [sessionsResult, assessmentsResult, statsData2] = await Promise.all([
+          supabase.from("study_sessions").select("xp_earned, duration_minutes").eq("user_id", user.id),
+          supabase.from("assessments").select("xp_earned").eq("user_id", user.id),
+          supabase.from("student_stats").select("current_streak").eq("user_id", user.id).maybeSingle(),
+        ]);
+        const sessionXP = (sessionsResult.data || []).reduce((s, r) => s + (r.xp_earned || 0), 0);
+        const assessmentXP = (assessmentsResult.data || []).reduce((s, r) => s + (r.xp_earned || 0), 0);
+        const totalMinutes = (sessionsResult.data || []).reduce((s, r) => s + (r.duration_minutes || 0), 0);
+        setStats({
+          total_xp: sessionXP + assessmentXP,
+          total_study_minutes: totalMinutes,
+          current_streak: streak.currentStreak ?? statsData2?.data?.current_streak ?? 0,
+        });
 
         const now = new Date();
         const jsDay = now.getDay();
