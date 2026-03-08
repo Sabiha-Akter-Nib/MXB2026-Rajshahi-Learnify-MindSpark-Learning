@@ -59,14 +59,14 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const subjectCardColors = [
-  { bg: "hsla(300, 65%, 52%, 0.08)", border: "hsla(300, 65%, 52%, 0.2)", icon: "hsl(300, 65%, 52%)", shadow: "hsla(300, 65%, 52%, 0.15)" },
-  { bg: "hsla(270, 60%, 55%, 0.08)", border: "hsla(270, 60%, 55%, 0.2)", icon: "hsl(270, 60%, 55%)", shadow: "hsla(270, 60%, 55%, 0.15)" },
-  { bg: "hsla(330, 70%, 55%, 0.08)", border: "hsla(330, 70%, 55%, 0.2)", icon: "hsl(330, 70%, 55%)", shadow: "hsla(330, 70%, 55%, 0.15)" },
-  { bg: "hsla(30, 78%, 60%, 0.08)", border: "hsla(30, 78%, 60%, 0.2)", icon: "hsl(30, 78%, 55%)", shadow: "hsla(30, 78%, 60%, 0.15)" },
-  { bg: "hsla(200, 65%, 52%, 0.08)", border: "hsla(200, 65%, 52%, 0.2)", icon: "hsl(200, 65%, 52%)", shadow: "hsla(200, 65%, 52%, 0.15)" },
-  { bg: "hsla(145, 60%, 45%, 0.08)", border: "hsla(145, 60%, 45%, 0.2)", icon: "hsl(145, 60%, 45%)", shadow: "hsla(145, 60%, 45%, 0.15)" },
-  { bg: "hsla(350, 65%, 55%, 0.08)", border: "hsla(350, 65%, 55%, 0.2)", icon: "hsl(350, 65%, 55%)", shadow: "hsla(350, 65%, 55%, 0.15)" },
-  { bg: "hsla(45, 80%, 50%, 0.08)", border: "hsla(45, 80%, 50%, 0.2)", icon: "hsl(45, 80%, 45%)", shadow: "hsla(45, 80%, 50%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(300, 65%, 52%, 0.25), hsla(300, 65%, 52%, 0.08))", border: "hsla(300, 65%, 52%, 0.3)", icon: "hsl(300, 65%, 52%)", shadow: "hsla(300, 65%, 52%, 0.2)", glow: "hsla(300, 65%, 52%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(270, 60%, 55%, 0.25), hsla(270, 60%, 55%, 0.08))", border: "hsla(270, 60%, 55%, 0.3)", icon: "hsl(270, 60%, 55%)", shadow: "hsla(270, 60%, 55%, 0.2)", glow: "hsla(270, 60%, 55%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(330, 70%, 55%, 0.25), hsla(330, 70%, 55%, 0.08))", border: "hsla(330, 70%, 55%, 0.3)", icon: "hsl(330, 70%, 55%)", shadow: "hsla(330, 70%, 55%, 0.2)", glow: "hsla(330, 70%, 55%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(30, 78%, 60%, 0.25), hsla(30, 78%, 60%, 0.08))", border: "hsla(30, 78%, 60%, 0.3)", icon: "hsl(30, 78%, 55%)", shadow: "hsla(30, 78%, 60%, 0.2)", glow: "hsla(30, 78%, 60%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(200, 65%, 52%, 0.25), hsla(200, 65%, 52%, 0.08))", border: "hsla(200, 65%, 52%, 0.3)", icon: "hsl(200, 65%, 52%)", shadow: "hsla(200, 65%, 52%, 0.2)", glow: "hsla(200, 65%, 52%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(145, 60%, 45%, 0.25), hsla(145, 60%, 45%, 0.08))", border: "hsla(145, 60%, 45%, 0.3)", icon: "hsl(145, 60%, 45%)", shadow: "hsla(145, 60%, 45%, 0.2)", glow: "hsla(145, 60%, 45%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(350, 65%, 55%, 0.25), hsla(350, 65%, 55%, 0.08))", border: "hsla(350, 65%, 55%, 0.3)", icon: "hsl(350, 65%, 55%)", shadow: "hsla(350, 65%, 55%, 0.2)", glow: "hsla(350, 65%, 55%, 0.15)" },
+  { bg: "linear-gradient(135deg, hsla(45, 80%, 50%, 0.25), hsla(45, 80%, 50%, 0.08))", border: "hsla(45, 80%, 50%, 0.3)", icon: "hsl(45, 80%, 45%)", shadow: "hsla(45, 80%, 50%, 0.2)", glow: "hsla(45, 80%, 50%, 0.15)" },
 ];
 
 const Assessment = () => {
