@@ -145,7 +145,7 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
           >
             {/* Gradient icon */}
             <motion.div
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110"
+              className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110"
               style={{
                 background: `linear-gradient(135deg, ${s.gradientFrom}, ${s.gradientTo})`,
                 boxShadow: `0 6px 24px ${s.shadow}`,
