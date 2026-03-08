@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Brain, Sparkles, CheckCircle2, XCircle, ChevronRight, ChevronLeft,
-  Loader2, RefreshCw, Trophy, Target, Lightbulb, BookOpen, Zap, Star, Clock, Award, Plus, X,
-
+  Loader2, RefreshCw, Trophy, Target, Lightbulb, BookOpen, Zap, Star, Clock, Award, Plus, X, LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -805,22 +804,28 @@ const ResultsScreen = ({
       </motion.div>
 
       {/* Stats Cards */}
+      {/* Stats Cards */}
       <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.9 }}
-        className="grid grid-cols-4 gap-2.5 w-full max-w-sm z-10">
+        className="grid grid-cols-2 gap-3 w-full max-w-sm z-10">
         {[
-          { value: correct, label: isBangla ? "সঠিক" : "Correct", color: "hsl(145, 63%, 52%)", icon: <CheckCircle2 className="w-4 h-4" /> },
-          { value: wrong, label: isBangla ? "ভুল" : "Wrong", color: "hsl(0, 70%, 60%)", icon: <XCircle className="w-4 h-4" /> },
-          { value: totalXP.toFixed(2), label: "XP", color: "hsl(270, 60%, 55%)", icon: <Zap className="w-4 h-4" /> },
-          { value: timeStr, label: isBangla ? "সময়" : "Time", color: "hsl(30, 78%, 55%)", icon: <Clock className="w-4 h-4" /> },
+          { value: correct, label: isBangla ? "সঠিক" : "Correct", color: "hsl(145, 63%, 52%)", icon: <CheckCircle2 className="w-5 h-5" />, bg: "rgba(34,197,94,0.08)" },
+          { value: wrong, label: isBangla ? "ভুল" : "Wrong", color: "hsl(0, 70%, 60%)", icon: <XCircle className="w-5 h-5" />, bg: "rgba(239,68,68,0.08)" },
+          { value: totalXP.toFixed(2), label: "XP", color: "hsl(270, 60%, 55%)", icon: <Zap className="w-5 h-5" />, bg: "rgba(139,92,246,0.08)" },
+          { value: timeStr, label: isBangla ? "সময়" : "Time", color: "hsl(30, 78%, 55%)", icon: <Clock className="w-5 h-5" />, bg: "rgba(249,115,22,0.08)" },
         ].map((item, i) => (
-          <motion.div key={item.label} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1.0 + i * 0.1 }}
-            className="rounded-2xl p-3 text-center" style={{
-              background: "linear-gradient(-45deg, rgba(254,254,254,0.95), rgba(254,254,254,0.75))", backdropFilter: "blur(24px)",
-              border: "1.5px solid rgba(255,255,255,0.6)", boxShadow: `0 4px 16px ${item.color}20`,
+          <motion.div key={item.label} initial={{ y: 30, opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }} transition={{ delay: 1.0 + i * 0.12, type: "spring", stiffness: 200 }}
+            whileHover={{ scale: 1.04, y: -3 }}
+            className="rounded-2xl p-4 flex items-center gap-3 cursor-default" style={{
+              background: `linear-gradient(135deg, ${item.bg}, rgba(254,254,254,0.92))`, backdropFilter: "blur(24px) saturate(1.4)",
+              border: `1.5px solid ${item.color}25`, boxShadow: `0 8px 24px ${item.color}15, 0 2px 8px rgba(0,0,0,0.04)`,
             }}>
-            <div className="flex justify-center mb-1.5" style={{ color: item.color }}>{item.icon}</div>
-            <p className="text-lg font-extrabold font-heading" style={{ color: item.color }}>{item.value}</p>
-            <p className="text-[9px] font-semibold text-muted-foreground mt-0.5">{item.label}</p>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${item.color}18`, color: item.color }}>
+              {item.icon}
+            </div>
+            <div>
+              <p className="text-xl font-extrabold font-heading leading-none" style={{ color: item.color }}>{item.value}</p>
+              <p className="text-[10px] font-semibold text-muted-foreground mt-1">{item.label}</p>
+            </div>
           </motion.div>
         ))}
       </motion.div>
@@ -849,16 +854,23 @@ const ResultsScreen = ({
 
       {/* Action Buttons */}
       <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1.6 }}
-        className="flex gap-3 pt-1 z-10">
-        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onNewTopic}
-          className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold font-heading transition-all"
-          style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))", backdropFilter: "blur(20px)", border: "1.5px solid rgba(255,255,255,0.5)", color: "hsl(270, 60%, 45%)" }}>
-          <Target className="w-4 h-4" />{isBangla ? "নতুন টপিক" : "New Topic"}
-        </motion.button>
-        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onRetry}
-          className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white transition-all shadow-lg"
-          style={{ background: GRADIENT, boxShadow: "0 6px 24px hsla(270, 60%, 55%, 0.35)" }}>
-          <RefreshCw className="w-4 h-4" />{isBangla ? "আবার চেষ্টা করো" : "Practice Again"}
+        className="flex flex-col gap-3 pt-1 z-10 w-full max-w-sm">
+        <div className="flex gap-3">
+          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onNewTopic}
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold font-heading transition-all"
+            style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))", backdropFilter: "blur(20px)", border: "1.5px solid rgba(255,255,255,0.5)", color: "hsl(270, 60%, 45%)" }}>
+            <Target className="w-4 h-4" />{isBangla ? "নতুন টপিক" : "New Topic"}
+          </motion.button>
+          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onRetry}
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white transition-all shadow-lg"
+            style={{ background: GRADIENT, boxShadow: "0 6px 24px hsla(270, 60%, 55%, 0.35)" }}>
+            <RefreshCw className="w-4 h-4" />{isBangla ? "আবার চেষ্টা করো" : "Practice Again"}
+          </motion.button>
+        </div>
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => window.location.href = '/dashboard'}
+          className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-semibold font-heading transition-all"
+          style={{ background: "linear-gradient(135deg, rgba(254,254,254,0.95), rgba(254,254,254,0.8))", backdropFilter: "blur(20px)", border: "1.5px solid rgba(255,255,255,0.5)", color: "hsl(270, 60%, 45%)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+          <LayoutDashboard className="w-4 h-4" />{isBangla ? "ড্যাশবোর্ডে যাও" : "Go to Dashboard"}
         </motion.button>
       </motion.div>
     </motion.div>
