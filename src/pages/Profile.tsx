@@ -747,7 +747,7 @@ const Profile = () => {
                               style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 45%)" }}
                             />
                             {/* Icon */}
-                            <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white/80 drop-shadow-lg mb-0.5" strokeWidth={2} />
+                            <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-lg mb-0.5" strokeWidth={2.5} />
                             {/* Number */}
                             <span
                               className="text-white text-lg sm:text-xl font-extrabold leading-none drop-shadow-md"
