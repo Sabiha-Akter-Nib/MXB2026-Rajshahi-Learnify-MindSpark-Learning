@@ -5,7 +5,7 @@ import {
   User,
   School,
   BookOpen,
-  Languages,
+  
   Save,
   ArrowLeft,
   Loader2,
@@ -359,25 +359,6 @@ const Settings = () => {
                 </div>
               )}
 
-              {/* Version Selection */}
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Languages className="w-4 h-4 text-muted-foreground" />
-                  Curriculum Version
-                </Label>
-                <Select
-                  value={profile.version}
-                  onValueChange={(val) => handleChange("version", val as "bangla" | "english")}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select version" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bangla">বাংলা (Bangla)</SelectItem>
-                    <SelectItem value="english">English</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
           </Card>
         </motion.div>

@@ -75,7 +75,7 @@ serve(async (req) => {
       // Generate assessment questions from tutor context
       const { data: profile } = await supabase
         .from("profiles")
-        .select("class, version")
+        .select("class")
         .eq("user_id", userId)
         .single();
 
@@ -87,7 +87,7 @@ serve(async (req) => {
 
       const currentLevel = bloomLevel || "remember";
       const levelIndex = BLOOM_LEVELS.indexOf(currentLevel);
-      const isBangla = profile?.version === "bangla";
+      const isBangla = true;
 
       // Fetch curriculum content if available
       const subjectName = subject?.name || "";
@@ -105,9 +105,9 @@ ${curriculumContent}
 CRITICAL: Generate questions ONLY from the official textbook content above.
 ` : "";
 
-      const prompt = `${curriculumInfo}${contextInfo}Generate exactly 5 MCQ assessment questions for a Class ${profile?.class || 5} student (${profile?.version || "bangla"} medium).
+      const prompt = `${curriculumInfo}${contextInfo}Generate exactly 5 MCQ assessment questions for a Class ${profile?.class || 5} student (bangla medium).
 
-${isBangla ? "IMPORTANT: Generate questions in Bengali language." : "Generate questions in English."}
+IMPORTANT: Generate questions in Bengali language.
 
 Subject: ${subject?.name || "General Knowledge"}
 Topic: ${topic || "Based on the conversation above"}

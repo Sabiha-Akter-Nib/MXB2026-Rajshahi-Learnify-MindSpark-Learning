@@ -72,7 +72,7 @@ serve(async (req) => {
       }
     }
 
-    const language = version === "english" ? "English" : "Bengali/Bangla";
+    const language = "Bengali/Bangla";
 
     console.log(`Generating ${count} practice questions for Class ${studentClass} on: ${topic}`);
 

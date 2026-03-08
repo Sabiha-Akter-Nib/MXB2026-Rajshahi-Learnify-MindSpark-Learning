@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Eye, EyeOff, ArrowLeft, BookOpen, Globe, Beaker, Briefcase, Palette } from "lucide-react";
+import { Loader2, Eye, EyeOff, ArrowLeft, Beaker, Briefcase, Palette } from "lucide-react";
 import loginLogoImg from "@/assets/login-logo-card.png";
 import tugiGlassesImg from "@/assets/tugi-glasses.png";
 import tugiOtpImg from "@/assets/tugi-otp.png";
@@ -66,8 +66,8 @@ const SignupParticleCanvas = () => {
   return <canvas ref={canvasRef} className="absolute inset-0 z-[1]" />;
 };
 
-// ─── Steps: 0=email, 1=otp, 2=password, 3=name, 4=school, 5=class+division, 6=version, 7=username ───
-const TOTAL_STEPS = 8;
+// ─── Steps: 0=email, 1=otp, 2=password, 3=name, 4=school, 5=class+division, 6=username ───
+const TOTAL_STEPS = 7;
 
 const stepTugiMap: Record<number, string> = {
   0: tugiGlassesImg,
@@ -76,8 +76,7 @@ const stepTugiMap: Record<number, string> = {
   3: tugiMascotImg,
   4: tugiSchoolImg,
   5: tugiGradesImg,
-  6: tugiGradesImg,
-  7: tugiMascotImg,
+  6: tugiMascotImg,
 };
 
 const gradeData = [
@@ -140,7 +139,7 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "", password: "", name: "", school: "",
-    class: "", version: "", division: "", username: "",
+    class: "", version: "bangla", division: "", username: "",
   });
 
   const { user, loading } = useAuth();
@@ -215,11 +214,6 @@ const Signup = () => {
           break;
         }
         case 6: {
-          if (!formData.version) { setError("ভার্সন নির্বাচন করুন"); break; }
-          setStep(7);
-          break;
-        }
-        case 7: {
           // Validate username
           const uname = formData.username.trim();
           if (uname.length < 3) { setError("ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে"); break; }
@@ -238,7 +232,7 @@ const Signup = () => {
             full_name: formData.name,
             school_name: formData.school,
             class: formData.class,
-            version: formData.version,
+            version: "bangla",
             username: uname,
             ...(showDivision && formData.division ? { division: formData.division } : {}),
           });
@@ -375,29 +369,6 @@ const Signup = () => {
       case 6:
         return (
           <motion.div key="step6" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
-            <label className="block text-sm font-semibold mb-3 text-center" style={{ color: labelColor }}>ভার্সন নির্বাচন করো</label>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { value: "bangla", label: "বাংলা ভার্সন", icon: BookOpen },
-                { value: "english", label: "English Version", icon: Globe },
-              ].map((v) => {
-                const Icon = v.icon;
-                return (
-                  <button key={v.value} type="button"
-                    onClick={() => setFormData({ ...formData, version: v.value })}
-                    className="flex flex-col items-center gap-2 py-5 px-4 rounded-2xl transition-all duration-200"
-                    style={formData.version === v.value ? selectedChip : unselectedChip}>
-                    <Icon className="w-7 h-7" />
-                    <span className="text-sm font-semibold">{v.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
-        );
-      case 7:
-        return (
-          <motion.div key="step7" variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }}>
             <label className="block text-sm font-semibold mb-2" style={{ color: labelColor }}>একটি ইউজারনেম বেছে নাও</label>
             <input type="text" placeholder="your_username" value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 30) })}
