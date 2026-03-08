@@ -428,13 +428,43 @@ const Profile = () => {
           <GlassCard className="overflow-hidden">
             {/* Cover Color Banner */}
             <div
-              className="h-28 sm:h-36 w-full relative"
+              className="h-28 sm:h-36 w-full relative overflow-hidden"
               style={{
                 background: profile.cover_color
                   ? `linear-gradient(135deg, ${profile.cover_color}, ${profile.cover_color}dd)`
                   : "linear-gradient(135deg, #6A68DF, #9B87F5)",
               }}
-            />
+            >
+              {/* Decorative stars / sparkles */}
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Large star */}
+                <svg className="absolute -right-3 top-3 w-20 h-20 sm:w-28 sm:h-28 opacity-[0.15]" viewBox="0 0 100 100" fill="white">
+                  <polygon points="50,5 61,35 95,35 68,57 79,90 50,70 21,90 32,57 5,35 39,35" />
+                </svg>
+                {/* Medium star */}
+                <svg className="absolute right-14 sm:right-20 top-1 w-10 h-10 sm:w-14 sm:h-14 opacity-[0.12]" viewBox="0 0 100 100" fill="white">
+                  <polygon points="50,5 61,35 95,35 68,57 79,90 50,70 21,90 32,57 5,35 39,35" />
+                </svg>
+                {/* Small star */}
+                <svg className="absolute right-8 sm:right-12 bottom-3 w-8 h-8 sm:w-10 sm:h-10 opacity-[0.1]" viewBox="0 0 100 100" fill="white">
+                  <polygon points="50,5 61,35 95,35 68,57 79,90 50,70 21,90 32,57 5,35 39,35" />
+                </svg>
+                {/* Tiny sparkle dots */}
+                <div className="absolute right-6 top-8 w-2 h-2 rounded-full bg-white/[0.2]" />
+                <div className="absolute right-24 sm:right-32 top-5 w-1.5 h-1.5 rounded-full bg-white/[0.15]" />
+                <div className="absolute right-16 bottom-6 w-1 h-1 rounded-full bg-white/[0.25]" />
+                <div className="absolute right-28 sm:right-40 bottom-4 w-2.5 h-2.5 rounded-full bg-white/[0.1]" />
+                {/* XP text watermark */}
+                <span
+                  className="absolute -right-1 bottom-1 text-[3rem] sm:text-[4rem] font-black tracking-tighter select-none"
+                  style={{ color: "rgba(255,255,255,0.06)", fontFamily: "Poppins, sans-serif" }}
+                >
+                  XP✦
+                </span>
+              </div>
+              {/* Light sweep */}
+              <div className="absolute inset-0" style={{ background: "linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.08) 55%, transparent 70%)" }} />
+            </div>
 
             {/* Profile Info Row */}
             <div className="px-4 sm:px-6 pb-5">
