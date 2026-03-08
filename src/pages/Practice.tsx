@@ -55,6 +55,12 @@ const quickTopics = [
 
 const questionCountOptions = [5, 10, 15, 20, 25];
 
+interface TopicEntry {
+  subjectId: string;
+  subjectName: string;
+  topic: string;
+}
+
 const Practice = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
@@ -75,6 +81,12 @@ const Practice = () => {
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [sessionEndTime, setSessionEndTime] = useState<Date | null>(null);
   const [resultsConfettiDone, setResultsConfettiDone] = useState(false);
+  const [additionalTopics, setAdditionalTopics] = useState<TopicEntry[]>([]);
+  const [showAddTopic, setShowAddTopic] = useState(false);
+  const [addTopicText, setAddTopicText] = useState("");
+  const [addSubjectId, setAddSubjectId] = useState("");
+  const [addSubjectName, setAddSubjectName] = useState("");
+  const [showAddSubjectSelector, setShowAddSubjectSelector] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { user } = useAuth();
@@ -96,6 +108,19 @@ const Practice = () => {
     if (subjectParam) setSelectedSubjectId(subjectParam);
     if (topicParam) setTopic(topicParam);
   }, [user, navigate, searchParams]);
+
+  const handleAddTopic = () => {
+    if (!addTopicText.trim()) return;
+    setAdditionalTopics(prev => [...prev, { subjectId: addSubjectId, subjectName: addSubjectName, topic: addTopicText.trim() }]);
+    setAddTopicText("");
+    setAddSubjectId("");
+    setAddSubjectName("");
+    setShowAddTopic(false);
+  };
+
+  const removeAdditionalTopic = (idx: number) => {
+    setAdditionalTopics(prev => prev.filter((_, i) => i !== idx));
+  };
 
   // ── Scoring logic: 1 XP correct, -0.25 wrong ──
   const calculateScore = () => {
