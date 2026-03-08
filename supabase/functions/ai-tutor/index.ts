@@ -96,29 +96,30 @@ function parseChapterRequest(message: string): {
 }
 
 // Fetch official NCTB curriculum content for known subject+class combinations
-// Returns the full textbook content or a relevant chapter excerpt
 async function fetchCurriculumContent(
   subjectName: string | null,
   studentClass: number,
   userMessage: string
 ): Promise<string> {
-  // Map of available curriculum files: "subject|class" -> filename
   const curriculumFiles: Record<string, string> = {
     "Bangla 1st Paper|7": "bangla-1st-paper-class-7.txt",
   };
 
-  const normalizedSubject = subjectName?.trim() || "";
-  // Try to match subject from message or explicit subjectName
+  const normalizedSubject = (subjectName?.trim() || "").toLowerCase();
+  const msgLower = userMessage.toLowerCase();
+  
+  // Check both subject name AND user message for Bangla 1st Paper keywords
+  const isBangla1st = (text: string) =>
+    text.includes("bangla 1st") || text.includes("bangla 1st paper") ||
+    text.includes("বাংলা ১ম") || text.includes("বাংলা ১ম পত্র") ||
+    text.includes("সপ্তবর্ণা") || text.includes("soptoborna") ||
+    text.includes("bangla first");
+
   let fileKey = "";
   for (const key of Object.keys(curriculumFiles)) {
-    const [subj, cls] = key.split("|");
+    const [, cls] = key.split("|");
     if (parseInt(cls) === studentClass) {
-      if (
-        normalizedSubject.toLowerCase().includes(subj.toLowerCase()) ||
-        normalizedSubject.toLowerCase().includes("bangla 1st") ||
-        normalizedSubject.toLowerCase().includes("বাংলা ১ম") ||
-        normalizedSubject.toLowerCase().includes("সপ্তবর্ণা")
-      ) {
+      if (isBangla1st(normalizedSubject) || isBangla1st(msgLower)) {
         fileKey = key;
         break;
       }
@@ -331,13 +332,20 @@ When answering any question (MCQ, CQ, SQ):
 
 ## CHAPTER EXPLANATIONS
 When asked to explain a chapter or topic:
+${curriculumContent ? `
+1. You ALREADY HAVE the official NCTB textbook content loaded below. Use it directly.
+2. Do NOT ask the student to upload pictures or specify chapter names — you have the full textbook.
+3. If they mention a chapter name, number, or any topic from the textbook, find it and explain it immediately.
+4. Structure the explanation following Bloom's Taxonomy.
+5. Include relevant examples, diagram descriptions, and practice questions from the textbook.
+6. NEVER say "I don't have this content" — search the loaded textbook content thoroughly.
+` : `
 1. First, confirm what specific chapter/topic is being asked about
 2. If the web research provides information, use it as your primary source
 3. Structure the explanation following Bloom's Taxonomy
-4. Include relevant examples, diagrams descriptions, and practice questions
-5. If you are not 100% certain about specific content, ask for clarification:
-   - Ask to specify the exact chapter name or number
-   - Ask if they can upload a photo of the textbook page
+4. Include relevant examples, diagram descriptions, and practice questions
+5. If you are not 100% certain about specific content, ask for clarification
+`}
 
 ## STUDY-ONLY POLICY
 Respond ONLY to study-related topics. For non-academic requests, respond:
@@ -493,8 +501,8 @@ serve(async (req) => {
       }
     }
 
-    // Perform supplementary web search (secondary source)
-    if (!imageBase64 && PERPLEXITY_API_KEY && latestMessage?.content?.length > 10) {
+    // Skip slow web search when we already have curriculum content (major speed boost)
+    if (!curriculumContent && !imageBase64 && PERPLEXITY_API_KEY && latestMessage?.content?.length > 10) {
       const searchQuery = extractSearchQuery(latestMessage.content, studentInfo?.class || 5);
       if (searchQuery) {
         webContext = await searchWeb(searchQuery, PERPLEXITY_API_KEY);
@@ -542,7 +550,10 @@ serve(async (req) => {
       apiMessages.push(messages[messages.length - 1]);
     }
 
-    // Use GPT-5 for superior reasoning and accuracy (supports vision)
+    // Use faster model when curriculum content is loaded (less reasoning needed, much faster)
+    const modelToUse = curriculumContent ? "google/gemini-3-flash-preview" : "openai/gpt-5";
+    console.log("Using model:", modelToUse);
+    
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -550,7 +561,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5",
+        model: modelToUse,
         messages: apiMessages,
         stream: true,
       }),
