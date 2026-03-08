@@ -394,7 +394,7 @@ const Analytics = () => {
                         <img
                           src={streakFlame3d}
                           alt=""
-                          className="absolute inset-[5px] w-auto h-auto object-contain z-20 pointer-events-none"
+                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-10px)] h-[calc(100%-10px)] object-contain z-20 pointer-events-none"
                         />
                       )}
                     </div>
