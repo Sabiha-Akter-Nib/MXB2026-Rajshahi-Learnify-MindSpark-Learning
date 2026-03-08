@@ -95,6 +95,84 @@ function parseChapterRequest(message: string): {
   return { chapterNumber: Number.isFinite(chapterNumber) ? chapterNumber : undefined, subjectHint, hasExplicitChapterTitle };
 }
 
+// Fetch official NCTB curriculum content for known subject+class combinations
+// Returns the full textbook content or a relevant chapter excerpt
+async function fetchCurriculumContent(
+  subjectName: string | null,
+  studentClass: number,
+  userMessage: string
+): Promise<string> {
+  // Map of available curriculum files: "subject|class" -> filename
+  const curriculumFiles: Record<string, string> = {
+    "Bangla 1st Paper|7": "bangla-1st-paper-class-7.txt",
+  };
+
+  const normalizedSubject = subjectName?.trim() || "";
+  // Try to match subject from message or explicit subjectName
+  let fileKey = "";
+  for (const key of Object.keys(curriculumFiles)) {
+    const [subj, cls] = key.split("|");
+    if (parseInt(cls) === studentClass) {
+      if (
+        normalizedSubject.toLowerCase().includes(subj.toLowerCase()) ||
+        normalizedSubject.toLowerCase().includes("bangla 1st") ||
+        normalizedSubject.toLowerCase().includes("বাংলা ১ম") ||
+        normalizedSubject.toLowerCase().includes("সপ্তবর্ণা")
+      ) {
+        fileKey = key;
+        break;
+      }
+    }
+  }
+
+  if (!fileKey) return "";
+
+  const fileName = curriculumFiles[fileKey];
+
+  try {
+    // Fetch from the app's public data directory
+    const appUrl = "https://mindsparklearning.lovable.app";
+    const response = await fetch(`${appUrl}/data/${fileName}`);
+    if (!response.ok) {
+      console.error("Failed to fetch curriculum file:", response.status);
+      return "";
+    }
+
+    const fullContent = await response.text();
+    console.log(`Fetched curriculum content: ${fullContent.length} chars`);
+
+    // Split into chapters by the separator
+    const chapters = fullContent.split("________________").map(c => c.trim()).filter(c => c.length > 0);
+
+    // Try to find the relevant chapter based on user message
+    const messageLower = userMessage.toLowerCase();
+    let relevantChapters: string[] = [];
+
+    for (const chapter of chapters) {
+      const chapterTitle = chapter.split("\n")[0]?.trim().toLowerCase() || "";
+      // Check if user is asking about a specific chapter/topic
+      if (chapterTitle && (
+        messageLower.includes(chapterTitle.substring(0, 20).toLowerCase()) ||
+        chapter.toLowerCase().includes(messageLower.substring(0, 50))
+      )) {
+        relevantChapters.push(chapter);
+      }
+    }
+
+    // If no specific match, include the full content (truncated if too long for context)
+    if (relevantChapters.length === 0) {
+      // Return the full content but capped at ~80K chars to fit in context
+      const maxChars = 80000;
+      return fullContent.length > maxChars ? fullContent.substring(0, maxChars) : fullContent;
+    }
+
+    return relevantChapters.join("\n\n---\n\n");
+  } catch (error) {
+    console.error("Error fetching curriculum content:", error);
+    return "";
+  }
+}
+
 // Extract topic/chapter from user message for web search (best-effort)
 function extractSearchQuery(message: string, studentClass: number): string {
   const { chapterNumber, subjectHint, hasExplicitChapterTitle } = parseChapterRequest(message);
