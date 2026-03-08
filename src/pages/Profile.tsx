@@ -618,6 +618,58 @@ const Profile = () => {
             ))}
           </div>
 
+          {/* ── Milestones (compact inline) ── */}
+          {(() => {
+            const streakMilestones = [7, 14, 30, 50, 100, 200, 365];
+            const xpMilestones = Array.from({ length: 50 }, (_, i) => (i + 1) * 100);
+            const examMilestones = Array.from({ length: 50 }, (_, i) => (i + 1) * 10);
+            const correctMilestones = Array.from({ length: 50 }, (_, i) => (i + 1) * 100);
+
+            const getHighest = (milestones: number[], current: number) => {
+              const reached = milestones.filter((m) => current >= m);
+              return reached.length > 0 ? reached[reached.length - 1] : null;
+            };
+
+            const allBadges = [
+              { label: "Streak", icon: Flame, highest: getHighest(streakMilestones, currentStreak), grad: "linear-gradient(135deg, #FF6B35, #FF4500)", shadow: "0 0 16px rgba(255,69,0,0.35)" },
+              { label: "XP", icon: Zap, highest: getHighest(xpMilestones, totalXP), grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", shadow: "0 0 16px rgba(155,135,245,0.35)" },
+              { label: "Exams", icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), grad: "linear-gradient(135deg, #FD91D9, #E040A0)", shadow: "0 0 16px rgba(253,145,217,0.35)" },
+              { label: "Correct", icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), grad: "linear-gradient(135deg, #58CC02, #3DA101)", shadow: "0 0 16px rgba(88,204,2,0.35)" },
+            ];
+
+            const achieved = allBadges.filter((b) => b.highest !== null);
+            if (achieved.length === 0) return null;
+
+            return (
+              <GlassCard className="px-3 py-2.5 sm:px-4 sm:py-3">
+                <div className="flex items-center justify-around gap-2">
+                  {achieved.map((b) => {
+                    const Icon = b.icon;
+                    return (
+                      <motion.div
+                        key={b.label}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex flex-col items-center gap-1"
+                      >
+                        <div
+                          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center"
+                          style={{ background: b.grad, boxShadow: b.shadow }}
+                        >
+                          <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" strokeWidth={2.5} />
+                          <span className="text-white text-[10px] sm:text-xs font-extrabold leading-none mt-0.5" style={{ fontFamily: "Poppins, sans-serif" }}>
+                            {b.highest}
+                          </span>
+                        </div>
+                        <span className="text-white/50 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider">{b.label}</span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </GlassCard>
+            );
+          })()}
+
           {/* ── Subject Progress ── */}
           <GlassCard className="p-4 sm:p-5">
             <div className="flex items-center gap-3 mb-4">
