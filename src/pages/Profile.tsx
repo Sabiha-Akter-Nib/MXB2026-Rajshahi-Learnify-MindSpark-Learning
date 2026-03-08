@@ -1200,7 +1200,7 @@ const Profile = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-semibold text-sm truncate flex items-center gap-1">{r.full_name}{isVerifiedEmail(r.email) && <VerifiedBadge size={14} />}</p>
                       <p className="text-white/40 text-xs truncate">
-                        {r.username ? `@${r.username} • ` : ""}Class {r.class} • {r.school_name}
+                        {r.username ? `@${r.username} • ` : ""}Class {r.class}
                       </p>
                     </div>
                   </Link>
