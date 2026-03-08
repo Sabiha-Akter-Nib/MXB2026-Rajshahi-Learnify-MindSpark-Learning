@@ -96,7 +96,7 @@ const MessageBubble = ({
     );
   }
 
-  // ── AI MESSAGE (no bubble) ──
+  // ── AI MESSAGE (with bubble) ──
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -119,12 +119,12 @@ const MessageBubble = ({
         </motion.div>
       </div>
 
-      {/* Content area — no bubble */}
-      <div className="flex-1 min-w-0">
+      {/* Content area — with bubble */}
+      <div className="flex-1 min-w-0 max-w-[85%]">
         {/* Name + time header */}
         <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-[10px] text-muted-foreground/60">{formatTime(timestamp)}</span>
           <span className="text-xs font-bold text-foreground/70 font-heading">OddhaboshAI</span>
+          <span className="text-[10px] text-muted-foreground/60">{formatTime(timestamp)}</span>
         </div>
 
         {/* Thinking time */}
@@ -154,12 +154,12 @@ const MessageBubble = ({
           </div>
         )}
 
-        {/* Message text — plain, no bubble */}
-        <div className="font-heading">
+        {/* Message bubble */}
+        <div className="rounded-2xl rounded-bl-md px-5 py-4 bg-card border border-border/40 shadow-sm font-heading">
           <StreamingMessage
             content={content}
             isComplete={!isStreaming}
-            className="text-sm text-foreground"
+            className="text-sm text-foreground leading-relaxed"
           />
         </div>
 
