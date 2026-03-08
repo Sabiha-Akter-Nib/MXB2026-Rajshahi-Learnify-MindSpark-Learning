@@ -499,7 +499,7 @@ const Analytics = () => {
               </div>
               <div>
                 <h1 className="text-white font-semibold text-base sm:text-lg leading-tight flex items-center gap-1">Hi, {displayName}!{isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}</h1>
-                <p className="text-white/50 text-xs font-normal">{classText}, {versionText}</p>
+                <p className="text-white/50 text-xs font-normal">{classText}, বাংলা ভার্সন</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
