@@ -214,11 +214,6 @@ const Signup = () => {
           break;
         }
         case 6: {
-          if (!formData.version) { setError("ভার্সন নির্বাচন করুন"); break; }
-          setStep(7);
-          break;
-        }
-        case 7: {
           // Validate username
           const uname = formData.username.trim();
           if (uname.length < 3) { setError("ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে"); break; }
@@ -237,7 +232,7 @@ const Signup = () => {
             full_name: formData.name,
             school_name: formData.school,
             class: formData.class,
-            version: formData.version,
+            version: "bangla",
             username: uname,
             ...(showDivision && formData.division ? { division: formData.division } : {}),
           });
