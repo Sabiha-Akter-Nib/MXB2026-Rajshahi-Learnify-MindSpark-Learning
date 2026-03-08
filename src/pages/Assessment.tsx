@@ -5,7 +5,7 @@ import {
   ArrowLeft, Brain, CheckCircle2, XCircle, Trophy, Sparkles, Loader2,
   Target, Lightbulb, Zap, Star, Clock, Award, BookOpen, Calculator,
   BookText, Atom, FlaskConical, Leaf, Globe, Laptop, Languages,
-  LayoutDashboard, RefreshCw,
+  LayoutDashboard, RefreshCw, Plus, X, Timer, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,22 @@ interface Subject {
 // ── Constants ──
 const GRADIENT = "linear-gradient(135deg, hsl(300, 65%, 52%) 0%, hsl(270, 60%, 55%) 40%, hsl(30, 78%, 76%) 100%)";
 const QUESTION_COUNTS = [10, 15, 20, 25, 30, 40, 50];
+const TIME_LIMITS = [
+  { value: 0, label: "No Limit", labelBn: "সীমাহীন" },
+  { value: 10, label: "10 min", labelBn: "১০ মি" },
+  { value: 15, label: "15 min", labelBn: "১৫ মি" },
+  { value: 20, label: "20 min", labelBn: "২০ মি" },
+  { value: 30, label: "30 min", labelBn: "৩০ মি" },
+  { value: 45, label: "45 min", labelBn: "৪৫ মি" },
+  { value: 60, label: "60 min", labelBn: "৬০ মি" },
+  { value: 90, label: "90 min", labelBn: "৯০ মি" },
+];
+
+interface AdditionalSubjectEntry {
+  subject: Subject | null;
+  topic: string;
+  chapter: string;
+}
 
 const iconMap: Record<string, React.ElementType> = {
   "book-text": BookText, languages: Languages, calculator: Calculator,
@@ -55,13 +71,29 @@ const subjectCardColors = [
   { bg: "linear-gradient(135deg, hsla(45, 80%, 50%, 0.25), hsla(45, 80%, 50%, 0.08))", border: "hsla(45, 80%, 50%, 0.3)", icon: "hsl(45, 80%, 45%)", shadow: "hsla(45, 80%, 50%, 0.2)", glow: "hsla(45, 80%, 50%, 0.15)" },
 ];
 
-// ── Live Timer ──
-const LiveTimer = ({ startTime }: { startTime: Date }) => {
+// ── Live Timer with time limit support ──
+const LiveTimer = ({ startTime, timeLimitMin, onTimeExpired }: { startTime: Date; timeLimitMin: number; onTimeExpired?: () => void }) => {
   const [elapsed, setElapsed] = useState(0);
+  const expiredRef = useRef(false);
   useEffect(() => {
-    const interval = setInterval(() => setElapsed(Math.floor((Date.now() - startTime.getTime()) / 1000)), 1000);
+    const interval = setInterval(() => {
+      const e = Math.floor((Date.now() - startTime.getTime()) / 1000);
+      setElapsed(e);
+      if (timeLimitMin > 0 && e >= timeLimitMin * 60 && !expiredRef.current) {
+        expiredRef.current = true;
+        onTimeExpired?.();
+      }
+    }, 1000);
     return () => clearInterval(interval);
-  }, [startTime]);
+  }, [startTime, timeLimitMin]);
+
+  if (timeLimitMin > 0) {
+    const remaining = Math.max(0, timeLimitMin * 60 - elapsed);
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    const isLow = remaining <= 60;
+    return <span className="font-bold text-xs font-heading" style={{ color: isLow ? "hsl(0,70%,55%)" : "hsl(270,60%,55%)" }}>{m}:{s.toString().padStart(2, "0")}</span>;
+  }
   const m = Math.floor(elapsed / 60);
   const s = elapsed % 60;
   return <span className="font-bold text-xs font-heading" style={{ color: "hsl(270,60%,55%)" }}>{m}:{s.toString().padStart(2, "0")}</span>;
@@ -78,9 +110,13 @@ const Assessment = () => {
   const [showResult, setShowResult] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
   const [topicInput, setTopicInput] = useState("");
+  const [chapterInput, setChapterInput] = useState("");
   const [questionCount, setQuestionCount] = useState(25);
+  const [timeLimit, setTimeLimit] = useState(0); // in minutes, 0 = no limit
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [additionalEntries, setAdditionalEntries] = useState<AdditionalSubjectEntry[]>([]);
+  const [timeExpired, setTimeExpired] = useState(false);
 
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
@@ -114,16 +150,24 @@ const Assessment = () => {
     setLockedAnswers({});
     setShowResult(false);
     setResultData(null);
+    setTimeExpired(false);
     setSessionStartTime(new Date());
+
+    // Combine all subjects + topics + chapters
+    const allTopics = [topicInput, ...additionalEntries.map(e => e.topic)].filter(Boolean).join(", ");
+    const allChapters = [chapterInput, ...additionalEntries.map(e => e.chapter)].filter(Boolean).join(", ");
+    const allSubjectNames = [selectedSubject.name, ...additionalEntries.map(e => e.subject?.name).filter(Boolean)].join(", ");
+    const combinedTopic = [allTopics, allChapters ? `Chapters: ${allChapters}` : ""].filter(Boolean).join(" | ") || (isBangla ? selectedSubject.name_bn : selectedSubject.name);
+
     try {
       const { data, error } = await supabase.functions.invoke("run-assessment", {
         body: {
           action: "generate",
           subjectId: selectedSubject.id,
-          topic: topicInput || (isBangla ? selectedSubject.name_bn : selectedSubject.name),
+          topic: combinedTopic,
           bloomLevel: "mixed",
           count: questionCount,
-          subjectName: selectedSubject.name,
+          subjectName: allSubjectNames,
         },
       });
       if (error) throw error;
@@ -135,6 +179,43 @@ const Assessment = () => {
       toast({ title: "Error", description: "Failed to generate model test.", variant: "destructive" });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleTimeExpired = () => {
+    setTimeExpired(true);
+    toast({ title: isBangla ? "⏰ সময় শেষ!" : "⏰ Time's up!", description: isBangla ? "স্বয়ংক্রিয়ভাবে জমা দেওয়া হচ্ছে..." : "Auto-submitting your test..." });
+    // Auto-submit with whatever answers exist
+    setTimeout(() => autoSubmitOnExpiry(), 500);
+  };
+
+  const autoSubmitOnExpiry = async () => {
+    setIsSubmitting(true);
+    const finalAnswers = questions.map((_, i) => lockedAnswers[i] ?? -1);
+    try {
+      const { data, error } = await supabase.functions.invoke("run-assessment", {
+        body: {
+          action: "submit",
+          subjectId: selectedSubject?.id,
+          topic: topicInput || (selectedSubject ? (isBangla ? selectedSubject.name_bn : selectedSubject.name) : ""),
+          bloomLevel: "mixed",
+          answers: finalAnswers,
+          questions,
+        },
+      });
+      if (error) throw error;
+      const timeTaken = sessionStartTime ? Math.round((Date.now() - sessionStartTime.getTime()) / 1000) : 0;
+      try {
+        await supabase.functions.invoke("track-session", {
+          body: { userId: user?.id, subjectId: selectedSubject?.id, topic: topicInput || selectedSubject?.name, duration: Math.max(1, Math.round(timeTaken / 60)), xpEarned: Math.round((data as any)?.xpEarned || 0), bloomLevel: "mixed" },
+        });
+      } catch (e) {}
+      setResultData({ ...(data as any), timeTaken });
+      setShowResult(true);
+    } catch (err) {
+      console.error("Auto-submit error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -483,7 +564,7 @@ const Assessment = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto relative z-10">
-          <div className="max-w-md mx-auto px-4 py-8 flex flex-col items-center gap-5">
+          <div className="max-w-md mx-auto px-4 py-8 flex flex-col items-center gap-4">
             {/* Topic Input */}
             <div className="w-full rounded-2xl overflow-hidden" style={{
               background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
@@ -493,6 +574,58 @@ const Assessment = () => {
                 placeholder={isBangla ? "নির্দিষ্ট টপিক লেখো (ঐচ্ছিক)..." : "Enter specific topic (optional)..."}
                 className="w-full px-4 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading" />
             </div>
+
+            {/* Chapter Input */}
+            <div className="w-full rounded-2xl overflow-hidden" style={{
+              background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
+              backdropFilter: "blur(24px) saturate(1.5)", border: "1.5px solid rgba(255,255,255,0.6)",
+            }}>
+              <input type="text" value={chapterInput} onChange={(e) => setChapterInput(e.target.value)}
+                placeholder={isBangla ? "অধ্যায়ের নাম বা নম্বর (ঐচ্ছিক)..." : "Chapter name or number (optional)..."}
+                className="w-full px-4 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading" />
+            </div>
+
+            {/* Additional Subject Entries */}
+            {additionalEntries.map((entry, idx) => (
+              <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                className="w-full rounded-2xl p-3 space-y-2 relative" style={{
+                  background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
+                  backdropFilter: "blur(24px) saturate(1.5)", border: "1.5px solid rgba(255,255,255,0.6)",
+                }}>
+                <button onClick={() => setAdditionalEntries(prev => prev.filter((_, i) => i !== idx))}
+                  className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center hover:bg-muted/50 transition-colors">
+                  <X className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+                <p className="text-[10px] font-bold text-muted-foreground font-heading">{isBangla ? `অতিরিক্ত বিষয় ${idx + 1}` : `Additional Subject ${idx + 1}`}</p>
+                <select
+                  value={entry.subject?.id || ""}
+                  onChange={(e) => {
+                    const s = subjects.find(s => s.id === e.target.value) || null;
+                    setAdditionalEntries(prev => prev.map((en, i) => i === idx ? { ...en, subject: s } : en));
+                  }}
+                  className="w-full px-3 py-2 bg-transparent text-sm text-foreground outline-none font-heading rounded-xl border border-border/20"
+                >
+                  <option value="">{isBangla ? "বিষয় নির্বাচন করো" : "Select subject"}</option>
+                  {subjects.map(s => <option key={s.id} value={s.id}>{isBangla ? s.name_bn || s.name : s.name}</option>)}
+                </select>
+                <input type="text" value={entry.topic}
+                  onChange={(e) => setAdditionalEntries(prev => prev.map((en, i) => i === idx ? { ...en, topic: e.target.value } : en))}
+                  placeholder={isBangla ? "টপিক..." : "Topic..."}
+                  className="w-full px-3 py-2 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading rounded-xl border border-border/20" />
+                <input type="text" value={entry.chapter}
+                  onChange={(e) => setAdditionalEntries(prev => prev.map((en, i) => i === idx ? { ...en, chapter: e.target.value } : en))}
+                  placeholder={isBangla ? "অধ্যায়..." : "Chapter..."}
+                  className="w-full px-3 py-2 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading rounded-xl border border-border/20" />
+              </motion.div>
+            ))}
+
+            {/* Add Another Subject Button */}
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+              onClick={() => setAdditionalEntries(prev => [...prev, { subject: null, topic: "", chapter: "" }])}
+              className="w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold font-heading transition-all"
+              style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.85), rgba(254,254,254,0.6))", backdropFilter: "blur(20px)", border: "1.5px dashed hsla(270,60%,55%,0.3)", color: "hsl(270,60%,55%)" }}>
+              <Plus className="w-4 h-4" />{isBangla ? "আরেকটি বিষয় + টপিক যোগ করো" : "Add another subject + topic"}
+            </motion.button>
 
             {/* Question Count Selector */}
             <div className="w-full">
@@ -517,6 +650,29 @@ const Assessment = () => {
               </div>
             </div>
 
+            {/* Time Limit Selector */}
+            <div className="w-full">
+              <p className="text-muted-foreground text-xs text-center mb-2 font-heading">{isBangla ? "⏱️ সময়সীমা" : "⏱️ Time Limit"}</p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {TIME_LIMITS.map((t) => (
+                  <motion.button key={t.value} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
+                    onClick={() => setTimeLimit(t.value)}
+                    className="px-3.5 py-2 rounded-full text-xs font-bold font-heading transition-all"
+                    style={timeLimit === t.value ? {
+                      background: "linear-gradient(135deg, hsl(30,78%,55%), hsl(345,65%,55%))", color: "white",
+                      boxShadow: "0 4px 16px hsla(30, 78%, 55%, 0.3)",
+                    } : {
+                      background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
+                      backdropFilter: "blur(20px)", border: "1.5px solid rgba(0,0,0,0.08)",
+                      color: "hsl(0, 0%, 50%)",
+                    }}
+                  >
+                    {isBangla ? t.labelBn : t.label}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
             {/* Info card */}
             <div className="rounded-2xl p-4 w-full" style={{
               background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
@@ -529,6 +685,7 @@ const Assessment = () => {
                   <p>{isBangla ? "• উত্তর একবার দিলে পরিবর্তন করা যাবে না" : "• Answers lock once selected"}</p>
                   <p>{isBangla ? "• প্রতিটি সঠিক উত্তরে +1 XP" : "• +1 XP per correct answer"}</p>
                   <p>{isBangla ? "• প্রতিটি ভুল উত্তরে -0.25 XP" : "• -0.25 XP per wrong answer"}</p>
+                  {timeLimit > 0 && <p className="font-bold" style={{ color: "hsl(30,78%,55%)" }}>⏱️ {isBangla ? `সময়সীমা: ${timeLimit} মিনিট — সময় শেষে স্বয়ংক্রিয় জমা` : `Time limit: ${timeLimit} min — auto-submit on expiry`}</p>}
                 </div>
               </div>
             </div>
@@ -585,7 +742,7 @@ const Assessment = () => {
                   {sessionStartTime && (
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" style={{ color: "hsl(270,60%,55%)" }} />
-                      <LiveTimer startTime={sessionStartTime} />
+                      <LiveTimer startTime={sessionStartTime} timeLimitMin={timeLimit} onTimeExpired={handleTimeExpired} />
                     </div>
                   )}
                 </div>
