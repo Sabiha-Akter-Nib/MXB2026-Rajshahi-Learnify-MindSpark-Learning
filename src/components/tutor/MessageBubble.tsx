@@ -57,12 +57,13 @@ const UserBubble = ({ content, timestamp, attachments, isLastUserMessage, onEdit
   >
     <div className="max-w-[80%] space-y-1">
       <AttachmentList attachments={attachments} />
-      {/* User bubble — light gradient */}
+      {/* User bubble — magenta/pink/purple gradient */}
       <div
         className="rounded-2xl rounded-br-md px-5 py-4 font-heading"
         style={{
-          background: "linear-gradient(135deg, hsl(270 55% 96%) 0%, hsl(200 60% 96%) 100%)",
-          border: "1px solid hsl(270 30% 90%)",
+          background: "linear-gradient(135deg, hsla(300, 40%, 96%, 1) 0%, hsla(330, 35%, 96%, 1) 50%, hsla(270, 30%, 96%, 1) 100%)",
+          border: "1px solid hsla(300, 30%, 88%, 0.6)",
+          boxShadow: "0 2px 12px hsla(300, 40%, 60%, 0.08)",
         }}
       >
         <div className="text-sm leading-relaxed text-foreground">
@@ -139,12 +140,14 @@ const AIBubble = ({ content, timestamp, isStreaming = false, thinkingTime, attac
 
         <AttachmentList attachments={attachments} />
 
-        {/* AI bubble — subtle gradient */}
+        {/* AI bubble — #FEFEFE glass with magenta/purple tint */}
         <div
           className="rounded-2xl rounded-bl-md px-5 py-4 shadow-sm font-heading"
           style={{
-            background: "linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(270 20% 98%) 50%, hsl(200 30% 97%) 100%)",
-            border: "1px solid hsl(270 20% 92%)",
+            background: "linear-gradient(-45deg, rgba(254,254,254,0.95) 0%, hsla(300, 20%, 98%, 0.9) 50%, hsla(270, 15%, 97%, 0.9) 100%)",
+            border: "1.5px solid rgba(255,255,255,0.55)",
+            boxShadow: "0 4px 20px hsla(300, 30%, 60%, 0.06), inset 0 1px 0 rgba(255,255,255,0.7)",
+            backdropFilter: "blur(16px)",
           }}
         >
           <StreamingMessage
