@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Settings2,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -66,6 +65,7 @@ const Tutor = () => {
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
   const [persona, setPersona] = useState<PersonaType>("friendly");
   const [showPersonaSelector, setShowPersonaSelector] = useState(false);
+  const [showSubjectSelector, setShowSubjectSelector] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
@@ -162,25 +162,21 @@ What would you like to study today?`;
     fetchProfile();
   }, [user, createInitialGreeting]);
 
-  // Only auto-scroll when user is at bottom, not when they scroll up
   const scrollToBottom = useCallback((behavior: "smooth" | "auto" = "smooth", force = false) => {
     if (chatContainerRef.current && !userScrolledUp || force) {
       messagesEndRef.current?.scrollIntoView({ behavior });
     }
   }, [userScrolledUp]);
 
-  // Track user scroll position
   const handleScroll = useCallback(() => {
     if (chatContainerRef.current) {
       const { scrollHeight, scrollTop, clientHeight } = chatContainerRef.current;
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      // If user scrolls up more than 100px from bottom, disable auto-scroll
       setUserScrolledUp(distanceFromBottom > 100);
     }
   }, []);
 
   useEffect(() => {
-    // Only scroll if user hasn't scrolled up
     if (!userScrolledUp) {
       scrollToBottom();
     }
@@ -203,11 +199,11 @@ What would you like to study today?`;
 
     if (!user) throw new Error("User not authenticated");
 
-    // Create title based on subject and message
+    // Generate a smart title from the message
     let title = firstUserMessage
       ? firstUserMessage.slice(0, 50) + (firstUserMessage.length > 50 ? "..." : "")
       : "New Conversation";
-    
+
     if (selectedSubjectName) {
       title = `${selectedSubjectName}: ${title}`;
     }
@@ -266,10 +262,7 @@ What would you like to study today?`;
     if (!currentConversationId || !user) return;
 
     try {
-      // Delete messages first
       await supabase.from("chat_messages").delete().eq("conversation_id", currentConversationId);
-
-      // Then delete conversation
       await supabase.from("chat_conversations").delete().eq("id", currentConversationId);
 
       handleNewConversation();
@@ -288,6 +281,8 @@ What would you like to study today?`;
       setShowDeleteConfirm(false);
     }
   };
+
+  const isBangla = studentInfo?.version === "bangla";
 
   const streamChat = async (userMessages: Array<{ role: string; content: string }>, attachment?: Attachment | null) => {
     const {
@@ -347,7 +342,6 @@ What would you like to study today?`;
 
     setThinkingStartTime(null);
 
-    // Robust SSE parsing (handles partial chunks + avoids getting stuck on malformed lines)
     const applyDelta = (delta: string) => {
       assistantContent += delta;
       setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m)));
@@ -360,7 +354,6 @@ What would you like to study today?`;
 
       buffer += decoder.decode(value, { stream: true });
 
-      // SSE events are separated by a blank line ("\n\n")
       while (true) {
         const sepIndex = buffer.indexOf("\n\n");
         if (sepIndex === -1) break;
@@ -382,18 +375,16 @@ What would you like to study today?`;
             const delta = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (delta) applyDelta(delta);
           } catch {
-            // Ignore malformed JSON chunks; next events will still render.
+            // ignore
           }
         }
       }
 
       if (sawDone) {
-        // Some streams send [DONE] before the connection fully closes.
-        // We still keep reading until done=true, but sawDone helps diagnostics if needed.
+        // keep reading
       }
     }
 
-    // Final best-effort parse for remaining buffer
     if (buffer.trim()) {
       const lines = buffer.split("\n");
       for (const l of lines) {
@@ -411,7 +402,6 @@ What would you like to study today?`;
       }
     }
 
-    // Absolute fallback: if we somehow got no deltas but request succeeded, show a friendly error.
     if (!assistantContent.trim()) {
       const fallback = isBangla
         ? "দুঃখিত, এইবার উত্তরটি প্রদর্শনে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করো।"
@@ -427,7 +417,7 @@ What would you like to study today?`;
     if ((!input.trim() && !pendingAttachment) || isTyping) return;
 
     const attachments = pendingAttachment ? [pendingAttachment] : undefined;
-    
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -441,7 +431,7 @@ What would you like to study today?`;
     const currentAttachment = pendingAttachment;
     setInput("");
     setPendingAttachment(null);
-    setUserScrolledUp(false); // Reset scroll state when user sends
+    setUserScrolledUp(false);
     setIsTyping(true);
 
     try {
@@ -450,10 +440,9 @@ What would you like to study today?`;
 
       const chatHistory = messages.filter((m) => m.id !== "1").map((m) => ({ role: m.role, content: m.content }));
 
-      // Build message content with attachment info
       let messageContent = currentInput;
       if (currentAttachment) {
-        const attachmentDesc = currentAttachment.type === "image" 
+        const attachmentDesc = currentAttachment.type === "image"
           ? `[Image uploaded: ${currentAttachment.name || "image"}]\n\nPlease analyze this image carefully and help me understand the content. If it's homework, a textbook page, or a diagram, explain the concepts shown step by step.`
           : `[PDF uploaded: ${currentAttachment.name || "document.pdf"}]\n\nPlease help me understand the content of this document.`;
         messageContent = messageContent ? `${attachmentDesc}\n\n${messageContent}` : attachmentDesc;
@@ -503,13 +492,11 @@ What would you like to study today?`;
     return null;
   }
 
-  const isBangla = studentInfo?.version === "bangla";
-
   return (
     <div className="min-h-screen flex flex-col relative">
       <TutorBackground />
 
-      {/* Header — premium glassmorphic */}
+      {/* Header */}
       <header className="sticky top-0 z-30 backdrop-blur-2xl bg-card/80 border-b border-border/15">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -564,13 +551,13 @@ What would you like to study today?`;
       </header>
 
       {/* Chat Area */}
-      <main 
-        ref={chatContainerRef} 
+      <main
+        ref={chatContainerRef}
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto relative z-10 scroll-smooth"
       >
         <div className="max-w-4xl mx-auto px-4 py-6">
-          {/* Welcome state when no messages */}
+          {/* Welcome state */}
           {messages.length === 0 && !isTyping && (
             <WelcomeState
               studentName={studentInfo?.name}
@@ -585,7 +572,6 @@ What would you like to study today?`;
           {messages.length > 0 && (
             <AnimatePresence>
               {messages.map((message, index) => {
-                // Find last user message index
                 const lastUserIdx = messages.reduce((acc, m, i) => m.role === "user" ? i : acc, -1);
                 return (
                   <MessageBubble
@@ -600,7 +586,6 @@ What would you like to study today?`;
                     index={index}
                     isLastUserMessage={message.role === "user" && index === lastUserIdx && !isTyping}
                     onEdit={(editedContent) => {
-                      // Remove messages from this point onward and re-send
                       setMessages(prev => prev.slice(0, index));
                       setInput(editedContent);
                     }}
@@ -642,39 +627,37 @@ What would you like to study today?`;
       {/* Input Area */}
       <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent pt-3 px-4 pb-4">
         <div className="max-w-4xl mx-auto">
-          {/* Inline subject + persona row */}
-          <div className="flex items-center gap-2 mb-2 overflow-x-auto no-scrollbar">
-            {studentInfo && (
-              <SubjectSelector
-                userId={user.id}
-                studentClass={studentInfo.class}
-                selectedSubject={selectedSubjectId}
-                onSubjectChange={(id, name) => {
-                  setSelectedSubjectId(id);
-                  setSelectedSubjectName(name);
-                }}
-                isBangla={isBangla}
-              />
+          {/* Subject Selector Popover — shown when toggled */}
+          <AnimatePresence>
+            {showSubjectSelector && studentInfo && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-3 overflow-hidden"
+              >
+                <div className="rounded-2xl p-3 border border-border/30 shadow-lg"
+                  style={{
+                    background: "linear-gradient(-45deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75))",
+                    backdropFilter: "blur(20px)",
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)",
+                  }}
+                >
+                  <SubjectSelector
+                    userId={user.id}
+                    studentClass={studentInfo.class}
+                    selectedSubject={selectedSubjectId}
+                    onSubjectChange={(id, name) => {
+                      setSelectedSubjectId(id);
+                      setSelectedSubjectName(name);
+                      setShowSubjectSelector(false);
+                    }}
+                    isBangla={isBangla}
+                  />
+                </div>
+              </motion.div>
             )}
-            {/* Persona toggle pill */}
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setShowPersonaSelector(!showPersonaSelector)}
-              className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap",
-                "backdrop-blur-md border shadow-sm",
-                showPersonaSelector
-                  ? "bg-primary/10 border-primary/30 text-primary"
-                  : "bg-card/80 border-border/50 hover:bg-card hover:shadow-md text-foreground"
-              )}
-            >
-              <Settings2 className="w-4 h-4" />
-              <span className="max-w-[80px] truncate font-heading text-xs">
-                {isBangla ? "শিক্ষক মোড" : "Style"}
-              </span>
-            </motion.button>
-          </div>
+          </AnimatePresence>
 
           {/* Persona Selector */}
           <AnimatePresence>
@@ -687,7 +670,9 @@ What would you like to study today?`;
               >
                 <div className="rounded-2xl p-3 border border-border/30 shadow-lg"
                   style={{
-                    background: "linear-gradient(135deg, hsl(270 30% 97%) 0%, hsl(200 30% 97%) 100%)",
+                    background: "linear-gradient(-45deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75))",
+                    backdropFilter: "blur(20px)",
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)",
                   }}
                 >
                   <PersonaSelector
@@ -719,6 +704,16 @@ What would you like to study today?`;
             isBangla={isBangla}
             pendingAttachment={pendingAttachment}
             onRemoveAttachment={() => setPendingAttachment(null)}
+            onToggleSubject={() => {
+              setShowSubjectSelector(!showSubjectSelector);
+              setShowPersonaSelector(false);
+            }}
+            onTogglePersona={() => {
+              setShowPersonaSelector(!showPersonaSelector);
+              setShowSubjectSelector(false);
+            }}
+            showSubjectActive={showSubjectSelector || !!selectedSubjectId}
+            showPersonaActive={showPersonaSelector}
           />
         </div>
       </div>
