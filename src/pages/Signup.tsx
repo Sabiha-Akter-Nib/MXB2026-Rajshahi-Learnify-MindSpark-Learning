@@ -66,8 +66,8 @@ const SignupParticleCanvas = () => {
   return <canvas ref={canvasRef} className="absolute inset-0 z-[1]" />;
 };
 
-// ─── Steps: 0=email, 1=otp, 2=password, 3=name, 4=school, 5=class+division, 6=version, 7=username ───
-const TOTAL_STEPS = 8;
+// ─── Steps: 0=email, 1=otp, 2=password, 3=name, 4=school, 5=class+division, 6=username ───
+const TOTAL_STEPS = 7;
 
 const stepTugiMap: Record<number, string> = {
   0: tugiGlassesImg,
@@ -76,8 +76,7 @@ const stepTugiMap: Record<number, string> = {
   3: tugiMascotImg,
   4: tugiSchoolImg,
   5: tugiGradesImg,
-  6: tugiGradesImg,
-  7: tugiMascotImg,
+  6: tugiMascotImg,
 };
 
 const gradeData = [
