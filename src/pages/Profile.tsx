@@ -618,7 +618,7 @@ const Profile = () => {
             ))}
           </div>
 
-          {/* ── Milestones (compact inline) ── */}
+          {/* ── Achievements ── */}
           {(() => {
             const streakMilestones = [7, 14, 30, 50, 100, 200, 365];
             const xpMilestones = Array.from({ length: 50 }, (_, i) => (i + 1) * 100);
@@ -630,56 +630,71 @@ const Profile = () => {
               return reached.length > 0 ? reached[reached.length - 1] : null;
             };
 
-            const getTier = (milestones: number[], current: number) => {
-              const reached = milestones.filter((m) => current >= m);
-              return reached.length;
-            };
-
-            // Color tiers that cycle as milestones are reached
-            const tierGradients = [
-              { grad: "linear-gradient(135deg, #FF6B35, #FF4500)", shadow: "0 0 20px rgba(255,69,0,0.5)", ring: "rgba(255,107,53,0.3)" },
-              { grad: "linear-gradient(135deg, #BBA7FD, #7C3AED)", shadow: "0 0 20px rgba(124,58,237,0.5)", ring: "rgba(187,167,253,0.3)" },
-              { grad: "linear-gradient(135deg, #FD91D9, #E040A0)", shadow: "0 0 20px rgba(224,64,160,0.5)", ring: "rgba(253,145,217,0.3)" },
-              { grad: "linear-gradient(135deg, #58CC02, #2D9B00)", shadow: "0 0 20px rgba(88,204,2,0.5)", ring: "rgba(88,204,2,0.3)" },
-              { grad: "linear-gradient(135deg, #00BCD4, #0097A7)", shadow: "0 0 20px rgba(0,188,212,0.5)", ring: "rgba(0,188,212,0.3)" },
-              { grad: "linear-gradient(135deg, #FFD700, #FFA000)", shadow: "0 0 20px rgba(255,215,0,0.5)", ring: "rgba(255,215,0,0.3)" },
-              { grad: "linear-gradient(135deg, #FF1744, #D50000)", shadow: "0 0 20px rgba(255,23,68,0.5)", ring: "rgba(255,23,68,0.3)" },
+            // Fixed pink/purple/pale palette — each badge always unique
+            const badgeStyles = [
+              { grad: "linear-gradient(135deg, #FD91D9, #E040A0)", shadow: "0 0 24px rgba(253,145,217,0.5)", ring: "rgba(253,145,217,0.25)", textColor: "#FD91D9" },
+              { grad: "linear-gradient(135deg, #9B87F5, #6A68DF)", shadow: "0 0 24px rgba(155,135,245,0.5)", ring: "rgba(155,135,245,0.25)", textColor: "#BBA7FD" },
+              { grad: "linear-gradient(135deg, #BBA7FD, #7C3AED)", shadow: "0 0 24px rgba(124,58,237,0.5)", ring: "rgba(187,167,253,0.25)", textColor: "#D4C4FF" },
+              { grad: "linear-gradient(135deg, #EFB995, #AF2D50)", shadow: "0 0 24px rgba(175,45,80,0.5)", ring: "rgba(239,185,149,0.25)", textColor: "#EFB995" },
             ];
 
-            const getColors = (tier: number) => tierGradients[(tier - 1) % tierGradients.length];
-
             const allBadges = [
-              { icon: Flame, highest: getHighest(streakMilestones, currentStreak), tier: getTier(streakMilestones, currentStreak), desc: (h: number) => `${h} Day Streak` },
-              { icon: Zap, highest: getHighest(xpMilestones, totalXP), tier: getTier(xpMilestones, totalXP), desc: (h: number) => `${h.toLocaleString()} XP Earned` },
-              { icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), tier: getTier(examMilestones, totalExams), desc: (h: number) => `${h} Exams Done` },
-              { icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), tier: getTier(correctMilestones, totalCorrect), desc: (h: number) => `${h.toLocaleString()} Correct` },
+              { icon: Flame, highest: getHighest(streakMilestones, currentStreak), desc: (h: number) => `${h} Day Streak`, style: badgeStyles[0] },
+              { icon: Zap, highest: getHighest(xpMilestones, totalXP), desc: (h: number) => `${h.toLocaleString()} XP Earned`, style: badgeStyles[1] },
+              { icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), desc: (h: number) => `${h} Exams Done`, style: badgeStyles[2] },
+              { icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), desc: (h: number) => `${h.toLocaleString()} Correct`, style: badgeStyles[3] },
             ];
 
             const achieved = allBadges.filter((b) => b.highest !== null);
             if (achieved.length === 0) return null;
 
             return (
-              <GlassCard className="px-3 py-3 sm:px-4 sm:py-4">
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <GlassCard className="p-4 sm:p-5 relative overflow-hidden">
+                {/* Background shimmer */}
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full opacity-[0.07]" style={{ background: "radial-gradient(circle, #FD91D9, transparent 70%)" }} />
+                  <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, #9B87F5, transparent 70%)" }} />
+                </div>
+
+                {/* Header */}
+                <div className="relative z-10 flex items-center gap-2 mb-4">
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg, #FD91D9, #9B87F5)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}
+                  >
+                    <Award className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="text-white font-bold text-sm sm:text-base uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>
+                    Achievements
+                  </h3>
+                  <div className="flex-1 h-px ml-1" style={{ background: "linear-gradient(90deg, rgba(253,145,217,0.3), transparent)" }} />
+                </div>
+
+                {/* Badge Grid */}
+                <div className="relative z-10 grid grid-cols-2 gap-3 sm:gap-4">
                   {achieved.map((b, i) => {
                     const Icon = b.icon;
-                    const colors = getColors(b.tier);
+                    const s = b.style;
                     return (
                       <motion.div
                         key={i}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center gap-3"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="flex items-center gap-3 rounded-xl p-2.5 sm:p-3 border border-white/[0.08]"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+                        }}
                       >
                         <div className="relative shrink-0">
-                          {/* Outer glow ring */}
+                          {/* Glow ring */}
                           <div
-                            className="absolute -inset-1 rounded-full animate-pulse"
-                            style={{ background: colors.ring, filter: "blur(4px)" }}
+                            className="absolute -inset-1.5 rounded-full"
+                            style={{ background: s.ring, filter: "blur(6px)" }}
                           />
                           <div
-                            className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center border-2 border-white/20"
-                            style={{ background: colors.grad, boxShadow: colors.shadow }}
+                            className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center border-2 border-white/25"
+                            style={{ background: s.grad, boxShadow: `${s.shadow}, inset 0 1px 0 rgba(255,255,255,0.3)` }}
                           >
                             <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg" strokeWidth={2.5} />
                             <span className="text-white text-[10px] sm:text-xs font-extrabold leading-none mt-0.5 drop-shadow-md" style={{ fontFamily: "Poppins, sans-serif" }}>
@@ -687,7 +702,11 @@ const Profile = () => {
                             </span>
                           </div>
                         </div>
-                        <p className="text-white/80 text-[10px] sm:text-xs font-bold leading-snug" style={{ fontFamily: "Poppins, sans-serif" }}>{b.desc(b.highest!)}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-[11px] sm:text-xs leading-snug" style={{ fontFamily: "Poppins, sans-serif", color: s.textColor }}>
+                            {b.desc(b.highest!)}
+                          </p>
+                        </div>
                       </motion.div>
                     );
                   })}
