@@ -1,145 +1,83 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   BookOpen,
   Calculator,
-  Beaker,
   Globe,
   Languages,
-  Monitor,
   FlaskConical,
-  Dna,
   Loader2,
-  TrendingUp,
-  Target,
-  CheckCircle2,
-  Clock,
-  Award,
   Atom,
   Leaf,
-  Mountain,
-  Landmark,
-  Scale,
-  Receipt,
-  Briefcase,
-  Home,
-  Wheat,
-  FileText,
-  Sigma,
-  HeartPulse,
-  Palette,
   BookText,
+  Laptop,
+  LucideIcon,
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+  ChevronDown,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import DashboardBackground from "@/components/dashboard/DashboardBackground";
+import subjectBooks3dNew from "@/assets/subject-books-3d-new.png";
+import subjectIcon3d from "@/assets/subject-icon-3d.png";
 
-interface Subject {
+interface SubjectWithStats {
   id: string;
   name: string;
   name_bn: string | null;
   icon: string;
   color: string;
   total_chapters: number;
-  min_class: number;
-  max_class: number;
-  division: string | null;
-  category: string;
-}
-
-interface SubjectProgress {
-  subject_id: string;
-  chapters_completed: number;
-  current_chapter: number;
-  xp_earned: number;
-  last_studied_at: string | null;
-}
-
-interface SubjectStats {
-  assessments_completed: number;
-  practice_sessions: number;
-  plan_tasks_completed: number;
+  progress: number;
+  correct: number;
+  wrong: number;
+  skipped: number;
   total_xp: number;
-  mastery_score: number;
 }
 
-interface Profile {
-  class: number;
-  version: string;
-  division: string | null;
-}
-
-const iconMap: Record<string, React.ElementType> = {
-  "book-open": BookOpen,
+const iconMap: Record<string, LucideIcon> = {
   "book-text": BookText,
-  calculator: Calculator,
-  flask: Beaker,
-  globe: Globe,
   languages: Languages,
-  monitor: Monitor,
-  "flask-conical": FlaskConical,
-  dna: Dna,
+  calculator: Calculator,
   atom: Atom,
+  "flask-conical": FlaskConical,
   leaf: Leaf,
-  sigma: Sigma,
-  landmark: Landmark,
-  mountain: Mountain,
-  "trending-up": TrendingUp,
-  scale: Scale,
-  receipt: Receipt,
-  briefcase: Briefcase,
-  home: Home,
-  wheat: Wheat,
-  "file-text": FileText,
-  "heart-pulse": HeartPulse,
-  palette: Palette,
+  globe: Globe,
+  laptop: Laptop,
+  book: BookOpen,
+  "book-open": BookOpen,
 };
 
-const colorMap: Record<string, string> = {
-  emerald: "from-emerald-500 to-emerald-700",
-  green: "from-green-500 to-green-700",
-  blue: "from-blue-500 to-blue-700",
-  sky: "from-sky-500 to-sky-700",
-  purple: "from-purple-500 to-purple-700",
-  cyan: "from-cyan-500 to-cyan-700",
-  amber: "from-amber-500 to-amber-700",
-  indigo: "from-indigo-500 to-indigo-700",
-  violet: "from-violet-500 to-violet-700",
-  lime: "from-lime-500 to-lime-700",
-  fuchsia: "from-fuchsia-500 to-fuchsia-700",
-  teal: "from-teal-500 to-teal-700",
-  yellow: "from-yellow-500 to-yellow-700",
-  slate: "from-slate-500 to-slate-700",
-  orange: "from-orange-500 to-orange-700",
-  pink: "from-pink-500 to-pink-700",
-  rose: "from-rose-500 to-rose-700",
-  primary: "from-primary to-primary-dark",
-};
-
-const categoryLabels: Record<string, { label: string; labelBn: string; color: string }> = {
-  compulsory: { label: "Compulsory", labelBn: "আবশ্যিক", color: "bg-primary/10 text-primary" },
-  division: { label: "Division Subject", labelBn: "বিভাগীয়", color: "bg-accent/10 text-accent" },
-  optional: { label: "Optional (4th Subject)", labelBn: "ঐচ্ছিক", color: "bg-warning/10 text-warning" },
-};
-
-const divisionLabels: Record<string, { label: string; labelBn: string }> = {
-  science: { label: "Science", labelBn: "বিজ্ঞান" },
-  commerce: { label: "Commerce", labelBn: "ব্যবসায় শিক্ষা" },
-  arts: { label: "Arts", labelBn: "মানবিক" },
-};
+// Liquid glass card wrapper
+const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "rounded-2xl border border-white/[0.15] backdrop-blur-2xl",
+      className
+    )}
+    style={{
+      background:
+        "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+      boxShadow:
+        "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 0 0 0.5px rgba(255,255,255,0.08)",
+    }}
+    {...props}
+  >
+    {children}
+  </div>
+);
 
 const Subjects = () => {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [progress, setProgress] = useState<Record<string, SubjectProgress>>({});
-  const [subjectStats, setSubjectStats] = useState<Record<string, SubjectStats>>({});
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [subjects, setSubjects] = useState<SubjectWithStats[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [profileVersion, setProfileVersion] = useState<string>("bangla");
+
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -151,136 +89,89 @@ const Subjects = () => {
 
     const fetchData = async () => {
       try {
-        // Fetch profile including division using select("*") to get all fields
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("*")
+          .select("class, version, division")
           .eq("user_id", user.id)
           .maybeSingle();
 
-        if (profileData) {
-          const userClass = profileData.class;
-          const userVersion = profileData.version;
-          // Get division from profile (may not be in types yet)
-          const userDivision = (profileData as any).division as string | null;
-          
-          const profileWithDivision: Profile = {
-            class: userClass,
-            version: userVersion,
-            division: userDivision,
-          };
-          setProfile(profileWithDivision);
+        if (!profileData) return;
 
-          // Fetch subjects for student's class
-          const { data: subjectsData } = await supabase
-            .from("subjects")
-            .select("*")
-            .lte("min_class", userClass)
-            .gte("max_class", userClass)
-            .order("category")
-            .order("name");
+        setProfileVersion(profileData.version);
+        const studentClass = profileData.class;
 
-          if (subjectsData) {
-            let filteredSubjects = subjectsData;
+        // Fetch subjects
+        const { data: subjectsData } = await supabase
+          .from("subjects")
+          .select("*")
+          .lte("min_class", studentClass)
+          .gte("max_class", studentClass);
 
-            // For classes 9-10, strictly filter by division
-            if (userClass >= 9 && userClass <= 10) {
-              filteredSubjects = subjectsData.filter(subject => {
-                const subjectDivision = (subject as any).division as string | null;
-                const subjectCategory = (subject as any).category as string;
-                
-                // Include compulsory subjects (no division restriction)
-                if (subjectCategory === 'compulsory' && !subjectDivision) {
-                  return true;
-                }
-                // Include optional subjects (no division restriction)
-                if (subjectCategory === 'optional' && !subjectDivision) {
-                  return true;
-                }
-                // Include ONLY the student's division subjects
-                if (subjectCategory === 'division' && subjectDivision === userDivision) {
-                  return true;
-                }
-                // Exclude other division's subjects
-                return false;
-              });
-            }
+        if (!subjectsData) return;
 
-            setSubjects(filteredSubjects);
-
-            // Fetch stats for each subject
-            const statsMap: Record<string, SubjectStats> = {};
-            
-            for (const subject of filteredSubjects) {
-              // Fetch assessments for this subject
-              const { data: assessmentsData } = await supabase
-                .from("assessments")
-                .select("xp_earned")
-                .eq("user_id", user.id)
-                .eq("subject_id", subject.id);
-
-              // Fetch study sessions for this subject
-              const { data: sessionsData } = await supabase
-                .from("study_sessions")
-                .select("xp_earned")
-                .eq("user_id", user.id)
-                .eq("subject_id", subject.id);
-
-              // Fetch completed learning plan tasks for this subject
-              const { data: planTasksData } = await supabase
-                .from("learning_plan_tasks")
-                .select("id, plan_id, is_completed")
-                .eq("subject_id", subject.id)
-                .eq("is_completed", true);
-
-              // Filter plan tasks by user (need to check plan ownership)
-              const { data: userPlans } = await supabase
-                .from("learning_plans")
-                .select("id")
-                .eq("user_id", user.id);
-
-              const userPlanIds = new Set(userPlans?.map(p => p.id) || []);
-              const userPlanTasks = planTasksData?.filter(t => userPlanIds.has(t.plan_id)) || [];
-
-              // Fetch topic mastery for this subject
-              const { data: masteryData } = await supabase
-                .from("topic_mastery")
-                .select("mastery_score")
-                .eq("user_id", user.id)
-                .eq("subject_id", subject.id);
-
-              const assessmentsXP = assessmentsData?.reduce((sum, a) => sum + (a.xp_earned || 0), 0) || 0;
-              const sessionsXP = sessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
-              const avgMastery = masteryData && masteryData.length > 0
-                ? Math.round(masteryData.reduce((sum, m) => sum + m.mastery_score, 0) / masteryData.length)
-                : 0;
-
-              statsMap[subject.id] = {
-                assessments_completed: assessmentsData?.length || 0,
-                practice_sessions: sessionsData?.length || 0,
-                plan_tasks_completed: userPlanTasks.length,
-                total_xp: assessmentsXP + sessionsXP,
-                mastery_score: avgMastery,
-              };
-            }
-
-            setSubjectStats(statsMap);
-          }
-
-          // Fetch progress
-          const { data: progressData } = await supabase
-            .from("student_progress")
-            .select("*")
-            .eq("user_id", user.id);
-
-          if (progressData) {
-            const progressMap: Record<string, SubjectProgress> = {};
-            progressData.forEach((p) => {
-              progressMap[p.subject_id] = p;
-            });
-            setProgress(progressMap);
-          }
+        // For class 9-10, filter by division
+        let filtered = subjectsData;
+        if (studentClass >= 9 && studentClass <= 10) {
+          filtered = subjectsData.filter((s) => {
+            const div = (s as any).division as string | null;
+            const cat = (s as any).category as string;
+            if (cat === "compulsory" && !div) return true;
+            if (cat === "optional" && !div) return true;
+            if (cat === "division" && div === profileData.division) return true;
+            return false;
+          });
         }
+
+        // Fetch progress
+        const { data: progressData } = await supabase
+          .from("student_progress")
+          .select("subject_id, chapters_completed, xp_earned")
+          .eq("user_id", user.id);
+
+        const progressMap = new Map(
+          (progressData || []).map((p) => [p.subject_id, p])
+        );
+
+        // Fetch assessment stats per subject
+        const { data: assessmentsData } = await supabase
+          .from("assessments")
+          .select("subject_id, correct_answers, total_questions")
+          .eq("user_id", user.id);
+
+        // Aggregate correct/wrong/skipped per subject
+        const assessmentMap = new Map<string, { correct: number; wrong: number; skipped: number }>();
+        (assessmentsData || []).forEach((a) => {
+          if (!a.subject_id) return;
+          const existing = assessmentMap.get(a.subject_id) || { correct: 0, wrong: 0, skipped: 0 };
+          const answered = a.correct_answers || 0;
+          const total = a.total_questions || 0;
+          const wrong = total - answered; // simplified: unanswered = wrong+skipped
+          existing.correct += answered;
+          existing.wrong += wrong;
+          assessmentMap.set(a.subject_id, existing);
+        });
+
+        const result: SubjectWithStats[] = filtered.map((subject) => {
+          const progress = progressMap.get(subject.id);
+          const completed = progress?.chapters_completed || 0;
+          const stats = assessmentMap.get(subject.id) || { correct: 0, wrong: 0, skipped: 0 };
+
+          return {
+            id: subject.id,
+            name: subject.name,
+            name_bn: subject.name_bn,
+            icon: subject.icon,
+            color: subject.color,
+            total_chapters: subject.total_chapters,
+            progress: Math.round((completed / subject.total_chapters) * 100),
+            correct: stats.correct,
+            wrong: stats.wrong,
+            skipped: stats.skipped,
+            total_xp: progress?.xp_earned || 0,
+          };
+        });
+
+        setSubjects(result);
       } catch (error) {
         console.error("Error fetching subjects:", error);
       } finally {
@@ -294,236 +185,184 @@ const Subjects = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <DashboardBackground />
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
       </div>
     );
   }
 
-  const isBangla = profile?.version === "bangla";
-  const isHigherClass = (profile?.class || 0) >= 9;
-
-  // Group subjects by category for class 9-10
-  const compulsorySubjects = subjects.filter(s => s.category === 'compulsory');
-  const divisionSubjects = subjects.filter(s => s.category === 'division');
-  const optionalSubjects = subjects.filter(s => s.category === 'optional');
-
-  // Calculate overall stats
-  const totalAssessments = Object.values(subjectStats).reduce((sum, s) => sum + s.assessments_completed, 0);
-  const totalPracticeSessions = Object.values(subjectStats).reduce((sum, s) => sum + s.practice_sessions, 0);
-  const totalPlanTasks = Object.values(subjectStats).reduce((sum, s) => sum + s.plan_tasks_completed, 0);
-  const totalXP = Object.values(subjectStats).reduce((sum, s) => sum + s.total_xp, 0);
-
-  const renderSubjectCard = (subject: Subject, index: number) => {
-    const Icon = iconMap[subject.icon] || BookOpen;
-    const gradientClass = colorMap[subject.color] || colorMap.primary;
-    const stats = subjectStats[subject.id] || {
-      assessments_completed: 0,
-      practice_sessions: 0,
-      plan_tasks_completed: 0,
-      total_xp: 0,
-      mastery_score: 0,
-    };
-    
-    // Calculate progress based on activity
-    const activityScore = Math.min(
-      (stats.assessments_completed * 10) + 
-      (stats.practice_sessions * 5) + 
-      (stats.plan_tasks_completed * 15),
-      100
-    );
-
-    const categoryInfo = categoryLabels[subject.category] || categoryLabels.compulsory;
-
-    return (
-      <motion.div
-        key={subject.id}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
-      >
-        <div className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg transition-all duration-300 h-full">
-          <div className="flex items-start justify-between mb-4">
-            <div
-              className={cn(
-                "w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br",
-                gradientClass
-              )}
-            >
-              <Icon className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              {stats.mastery_score > 0 && (
-                <div className="bg-success/10 text-success text-xs font-medium px-2 py-1 rounded-full">
-                  {stats.mastery_score}% Mastery
-                </div>
-              )}
-              {isHigherClass && (
-                <Badge variant="outline" className={cn("text-xs", categoryInfo.color)}>
-                  {isBangla ? categoryInfo.labelBn : categoryInfo.label}
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          <h3 className="font-heading font-semibold text-lg mb-1">
-            {isBangla && subject.name_bn ? subject.name_bn : subject.name}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            NCTB {isBangla ? "পাঠ্যক্রম" : "Curriculum"}
-          </p>
-
-          {/* Activity Stats */}
-          <div className="grid grid-cols-3 gap-2 mb-4 text-center">
-            <div className="bg-muted/50 rounded-lg p-2">
-              <p className="text-lg font-bold text-success">{stats.assessments_completed}</p>
-              <p className="text-xs text-muted-foreground">{isBangla ? "পরীক্ষা" : "Quiz"}</p>
-            </div>
-            <div className="bg-muted/50 rounded-lg p-2">
-              <p className="text-lg font-bold text-primary">{stats.practice_sessions}</p>
-              <p className="text-xs text-muted-foreground">{isBangla ? "অনুশীলন" : "Practice"}</p>
-            </div>
-            <div className="bg-muted/50 rounded-lg p-2">
-              <p className="text-lg font-bold text-warning">{stats.plan_tasks_completed}</p>
-              <p className="text-xs text-muted-foreground">{isBangla ? "পরিকল্পনা" : "Plans"}</p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{isBangla ? "অগ্রগতি" : "Progress"}</span>
-              <span className="font-medium">{activityScore}%</span>
-            </div>
-            <Progress value={activityScore} className="h-2" />
-          </div>
-
-          {stats.total_xp > 0 && (
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
-              <TrendingUp className="w-4 h-4 text-success" />
-              <span className="text-sm font-medium text-success">
-                {stats.total_xp.toLocaleString()} XP {isBangla ? "অর্জিত" : "earned"}
-              </span>
-            </div>
-          )}
-        </div>
-      </motion.div>
-    );
-  };
-
-  const renderSubjectSection = (title: string, titleBn: string, sectionSubjects: Subject[], startIndex: number) => {
-    if (sectionSubjects.length === 0) return null;
-
-    return (
-      <div className="mb-8">
-        <h2 className="font-heading font-semibold text-xl mb-4 flex items-center gap-2">
-          {isBangla ? titleBn : title}
-          <Badge variant="secondary" className="text-xs">
-            {sectionSubjects.length}
-          </Badge>
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sectionSubjects.map((subject, index) => renderSubjectCard(subject, startIndex + index))}
-        </div>
-      </div>
-    );
-  };
+  const isBangla = profileVersion === "bangla";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative">
+      <DashboardBackground />
+
       {/* Header */}
-      <header className="sticky top-0 bg-card/80 backdrop-blur-md border-b border-border z-30 px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/dashboard">
+      <header className="sticky top-0 z-30 px-4 py-3">
+        <GlassCard className="px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Link to="/dashboard" className="text-white/70 hover:text-white transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-          </Button>
-          <div>
-            <h1 className="font-heading font-semibold text-lg">
-              {isBangla ? "বিষয়সমূহ" : "My Subjects"}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {isBangla ? `শ্রেণি ${profile?.class}` : `Class ${profile?.class}`}
-              {profile?.division && (
-                <> • {isBangla ? divisionLabels[profile.division]?.labelBn : divisionLabels[profile.division]?.label}</>
-              )}
-              {` • ${subjects.length} ${isBangla ? "বিষয়" : "subjects"}`}
-            </p>
+            <div>
+              <h1 className="text-white font-semibold text-base sm:text-lg">
+                {isBangla ? "বিষয়সমূহ" : "My Subjects"}
+              </h1>
+              <p className="text-white/50 text-[10px] sm:text-xs">
+                {isBangla ? "ট্যাপ করে বিস্তারিত দেখুন" : "Tap to see details"}
+              </p>
+            </div>
           </div>
-        </div>
+        </GlassCard>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6">
-        {/* Stats Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8"
-        >
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle2 className="w-4 h-4 text-success" />
-              <p className="text-sm text-muted-foreground">{isBangla ? "পরীক্ষা" : "Assessments"}</p>
+      <main className="relative z-10 max-w-2xl mx-auto px-4 py-4 pb-24">
+        {/* Subject Section Header */}
+        <GlassCard className="p-4 sm:p-5 mb-5">
+          <div className="flex items-center gap-3">
+            <img
+              src={subjectBooks3dNew}
+              alt="Subjects"
+              className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 object-contain"
+            />
+            <div
+              className="flex-1 rounded-xl p-3"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)",
+              }}
+            >
+              <h3 className="text-white font-semibold text-sm sm:text-base">
+                {isBangla ? "তোমার বিষয়ভিত্তিক অগ্রগতি" : "Your subject-wise progress"}
+              </h3>
+              <p className="text-white/50 text-[10px] sm:text-xs">
+                {isBangla
+                  ? "ট্যাপ করে সঠিক, ভুল ও স্কিপ দেখো"
+                  : "Tap to see correct, wrong & skipped"}
+              </p>
             </div>
-            <p className="text-2xl font-heading font-bold">{totalAssessments}</p>
           </div>
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="w-4 h-4 text-primary" />
-              <p className="text-sm text-muted-foreground">{isBangla ? "অনুশীলন" : "Practice"}</p>
-            </div>
-            <p className="text-2xl font-heading font-bold text-primary">
-              {totalPracticeSessions}
-            </p>
-          </div>
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="w-4 h-4 text-warning" />
-              <p className="text-sm text-muted-foreground">{isBangla ? "কাজ" : "Plan Tasks"}</p>
-            </div>
-            <p className="text-2xl font-heading font-bold text-warning">
-              {totalPlanTasks}
-            </p>
-          </div>
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Award className="w-4 h-4 text-accent" />
-              <p className="text-sm text-muted-foreground">{isBangla ? "মোট XP" : "Total XP"}</p>
-            </div>
-            <p className="text-2xl font-heading font-bold text-accent">
-              {totalXP.toLocaleString()}
-            </p>
-          </div>
-        </motion.div>
+        </GlassCard>
 
-        {/* Subject Grid - grouped for class 9-10, simple for others */}
-        {isHigherClass ? (
-          <>
-            {renderSubjectSection("Compulsory Subjects", "আবশ্যিক বিষয়সমূহ", compulsorySubjects, 0)}
-            {renderSubjectSection(
-              `${divisionLabels[profile?.division || 'science']?.label} Subjects`,
-              `${divisionLabels[profile?.division || 'science']?.labelBn} বিষয়সমূহ`,
-              divisionSubjects,
-              compulsorySubjects.length
-            )}
-            {renderSubjectSection("Optional Subjects (4th Subject)", "ঐচ্ছিক বিষয় (৪র্থ বিষয়)", optionalSubjects, compulsorySubjects.length + divisionSubjects.length)}
-          </>
+        {/* Subject Grid */}
+        {subjects.length === 0 ? (
+          <div className="text-center py-8 text-white/40 text-sm">
+            {isBangla ? "কোনো বিষয় পাওয়া যায়নি" : "No subjects found for your class."}
+          </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {subjects.map((subject, index) => renderSubjectCard(subject, index))}
-          </div>
-        )}
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            {subjects.map((subject, index) => {
+              const isExpanded = expandedId === subject.id;
+              const hasStats = subject.correct > 0 || subject.wrong > 0 || subject.skipped > 0;
 
-        {subjects.length === 0 && (
-          <div className="text-center py-12">
-            <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="font-heading font-semibold text-lg mb-2">
-              {isBangla ? "কোনো বিষয় পাওয়া যায়নি" : "No subjects found"}
-            </h3>
-            <p className="text-muted-foreground">
-              {isBangla 
-                ? "আপনার শ্রেণির বিষয়গুলো এখানে দেখাবে।" 
-                : "Subjects for your class will appear here."}
-            </p>
+              return (
+                <motion.div
+                  key={subject.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={cn(
+                    "rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm cursor-pointer transition-all duration-300",
+                    isExpanded && "col-span-2"
+                  )}
+                  onClick={() => setExpandedId(isExpanded ? null : subject.id)}
+                >
+                  {/* Main row — matches Dashboard exactly */}
+                  <div className="px-2 py-1.5 sm:px-3 sm:py-3 flex flex-row items-center gap-2 sm:gap-2.5">
+                    <img
+                      src={subjectIcon3d}
+                      alt=""
+                      className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 object-contain"
+                    />
+                    <div className="flex-1 min-w-0 flex flex-col gap-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-white text-[11px] sm:text-sm font-medium truncate">
+                          {isBangla && subject.name_bn ? subject.name_bn : subject.name}
+                        </span>
+                        <motion.div
+                          animate={{ rotate: isExpanded ? 180 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                        </motion.div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                          <motion.div
+                            className="h-full rounded-full"
+                            style={{
+                              background: "linear-gradient(90deg, #E040A0, #A040E0)",
+                            }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${subject.progress}%` }}
+                            transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-white/40 font-medium">
+                          {subject.progress}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expanded Stats */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-3 pb-3 pt-1 border-t border-white/10">
+                          {hasStats ? (
+                            <div className="grid grid-cols-3 gap-2 mt-2">
+                              {/* Correct */}
+                              <div className="rounded-lg bg-emerald-500/15 border border-emerald-500/20 p-2 text-center">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+                                <p className="text-lg font-bold text-emerald-400">
+                                  {subject.correct}
+                                </p>
+                                <p className="text-[9px] text-white/50">
+                                  {isBangla ? "সঠিক" : "Correct"}
+                                </p>
+                              </div>
+                              {/* Wrong */}
+                              <div className="rounded-lg bg-red-500/15 border border-red-500/20 p-2 text-center">
+                                <XCircle className="w-4 h-4 text-red-400 mx-auto mb-1" />
+                                <p className="text-lg font-bold text-red-400">
+                                  {subject.wrong}
+                                </p>
+                                <p className="text-[9px] text-white/50">
+                                  {isBangla ? "ভুল" : "Wrong"}
+                                </p>
+                              </div>
+                              {/* Skipped */}
+                              <div className="rounded-lg bg-amber-500/15 border border-amber-500/20 p-2 text-center">
+                                <MinusCircle className="w-4 h-4 text-amber-400 mx-auto mb-1" />
+                                <p className="text-lg font-bold text-amber-400">
+                                  {subject.skipped}
+                                </p>
+                                <p className="text-[9px] text-white/50">
+                                  {isBangla ? "স্কিপ" : "Skipped"}
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-white/30 text-xs text-center py-2">
+                              {isBangla
+                                ? "এখনো কোনো পরীক্ষা দেওয়া হয়নি"
+                                : "No assessments taken yet"}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </main>
