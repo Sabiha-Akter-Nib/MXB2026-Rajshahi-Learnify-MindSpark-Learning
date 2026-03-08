@@ -453,7 +453,7 @@ serve(async (req) => {
 
     console.log("Authenticated user:", user.id);
 
-    const { messages, studentInfo, persona, imageBase64 } = await req.json();
+    const { messages, studentInfo, persona, imageBase64, subjectName } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
 
