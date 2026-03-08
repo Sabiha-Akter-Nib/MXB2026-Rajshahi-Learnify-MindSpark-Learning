@@ -454,6 +454,10 @@ const Profile = () => {
                     <GraduationCap className="w-3.5 h-3.5 shrink-0" />
                     {profile.school_name}
                   </p>
+                  <p className="text-white/40 text-[10px] sm:text-xs mt-0.5 flex items-center gap-1">
+                    <Calendar className="w-3 h-3 shrink-0" />
+                    Joined {joinedDate}
+                  </p>
                 </div>
               </div>
 
