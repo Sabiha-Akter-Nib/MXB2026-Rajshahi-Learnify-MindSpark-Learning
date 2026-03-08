@@ -39,11 +39,29 @@ serve(async (req) => {
 
     console.log("Authenticated user:", user.id);
 
-    const { topic, studentClass, version, count = 5 } = await req.json();
+    const { topic, studentClass, version, count = 5, subjectName } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("AI service not configured");
+    }
+
+    // Fetch curriculum content if available
+    let curriculumContent = "";
+    const curriculumFiles: Record<string, string> = {
+      "Bangla 1st Paper|7": "bangla-1st-paper-class-7.txt",
+    };
+    for (const key of Object.keys(curriculumFiles)) {
+      const [subj, cls] = key.split("|");
+      if (parseInt(cls) === studentClass && (subjectName || topic || "").toLowerCase().includes(subj.toLowerCase())) {
+        try {
+          const resp = await fetch(`https://mindsparklearning.lovable.app/data/${curriculumFiles[key]}`);
+          if (resp.ok) {
+            const content = await resp.text();
+            curriculumContent = content.length > 60000 ? content.substring(0, 60000) : content;
+          }
+        } catch (e) { console.error("Curriculum fetch error:", e); }
+      }
     }
 
     const language = version === "english" ? "English" : "Bengali/Bangla";
