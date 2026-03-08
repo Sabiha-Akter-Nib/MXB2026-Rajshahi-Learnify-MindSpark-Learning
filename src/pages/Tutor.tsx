@@ -154,25 +154,9 @@ What would you like to study today?`;
           version: data.version,
         };
         setStudentInfo(info);
-        setMessages([createInitialGreeting(data)]);
+        setMessages([]);
       } else {
-        setMessages([
-          {
-            id: "1",
-            role: "assistant",
-            content: `Assalamu Alaikum!
-
-I am OddhaboshAI Tutor. I am here to help you learn any subject from your NCTB curriculum.
-
-You can ask me to:
-• Explain any topic in detail
-• Practice with adaptive questions
-• Get homework help
-
-What would you like to learn today?`,
-            timestamp: new Date(),
-          },
-        ]);
+        setMessages([]);
       }
     };
 
@@ -276,15 +260,7 @@ What would you like to learn today?`,
 
   const handleNewConversation = () => {
     setCurrentConversationId(null);
-    if (studentInfo) {
-      setMessages([
-        createInitialGreeting({
-          full_name: studentInfo.name,
-          class: studentInfo.class,
-          version: studentInfo.version,
-        }),
-      ]);
-    }
+    setMessages([]);
   };
 
   const handleDeleteCurrentChat = async () => {
@@ -620,8 +596,8 @@ What would you like to learn today?`,
         className="flex-1 overflow-y-auto relative z-10 scroll-smooth"
       >
         <div className="max-w-4xl mx-auto px-4 py-6">
-          {/* Welcome state when only the initial greeting exists */}
-          {messages.length <= 1 && !isTyping && (
+          {/* Welcome state when no messages */}
+          {messages.length === 0 && !isTyping && (
             <WelcomeState
               studentName={studentInfo?.name}
               isBangla={isBangla}
@@ -632,7 +608,7 @@ What would you like to learn today?`,
           )}
 
           {/* Messages */}
-          {messages.length > 1 && (
+          {messages.length > 0 && (
             <AnimatePresence>
               {messages.map((message, index) => (
                 <MessageBubble
