@@ -18,6 +18,7 @@ import {
   Globe,
   Laptop } from
 "lucide-react";
+import VerifiedBadge, { isVerifiedEmail } from "@/components/VerifiedBadge";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
