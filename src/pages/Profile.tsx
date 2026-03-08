@@ -631,10 +631,10 @@ const Profile = () => {
             };
 
             const allBadges = [
-              { label: "Streak", icon: Flame, highest: getHighest(streakMilestones, currentStreak), grad: "linear-gradient(135deg, #FF6B35, #FF4500)", shadow: "0 0 16px rgba(255,69,0,0.35)" },
-              { label: "XP", icon: Zap, highest: getHighest(xpMilestones, totalXP), grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", shadow: "0 0 16px rgba(155,135,245,0.35)" },
-              { label: "Exams", icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), grad: "linear-gradient(135deg, #FD91D9, #E040A0)", shadow: "0 0 16px rgba(253,145,217,0.35)" },
-              { label: "Correct", icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), grad: "linear-gradient(135deg, #58CC02, #3DA101)", shadow: "0 0 16px rgba(88,204,2,0.35)" },
+              { label: "Streak", desc: `${currentStreak} day streak`, icon: Flame, highest: getHighest(streakMilestones, currentStreak), grad: "linear-gradient(135deg, #FF6B35, #FF4500)", shadow: "0 0 16px rgba(255,69,0,0.35)" },
+              { label: "XP", desc: `Earned ${totalXP} XP`, icon: Zap, highest: getHighest(xpMilestones, totalXP), grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", shadow: "0 0 16px rgba(155,135,245,0.35)" },
+              { label: "Exams", desc: `Completed ${totalExams} exams`, icon: ClipboardCheck, highest: getHighest(examMilestones, totalExams), grad: "linear-gradient(135deg, #FD91D9, #E040A0)", shadow: "0 0 16px rgba(253,145,217,0.35)" },
+              { label: "Correct", desc: `${totalCorrect} correct answers`, icon: CircleCheckBig, highest: getHighest(correctMilestones, totalCorrect), grad: "linear-gradient(135deg, #58CC02, #3DA101)", shadow: "0 0 16px rgba(88,204,2,0.35)" },
             ];
 
             const achieved = allBadges.filter((b) => b.highest !== null);
