@@ -439,6 +439,65 @@ const Practice = () => {
                   ))}
                 </div>
 
+                {/* Additional Topics */}
+                {additionalTopics.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-muted-foreground text-xs text-center font-heading">{isBangla ? "অতিরিক্ত টপিক" : "Additional Topics"}</p>
+                    {additionalTopics.map((at, idx) => (
+                      <div key={idx} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{
+                        background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))",
+                        backdropFilter: "blur(16px)", border: "1.5px solid rgba(255,255,255,0.5)",
+                      }}>
+                        <div className="flex-1 text-xs font-heading text-foreground">
+                          {at.subjectName && <span className="font-bold" style={{ color: "hsl(270, 60%, 45%)" }}>{at.subjectName} • </span>}
+                          {at.topic}
+                        </div>
+                        <button onClick={() => removeAdditionalTopic(idx)} className="text-muted-foreground hover:text-destructive transition-colors">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Another Topic */}
+                <AnimatePresence>
+                  {showAddTopic && profile && user && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-2 overflow-hidden">
+                      <button onClick={() => setShowAddSubjectSelector(!showAddSubjectSelector)}
+                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                        style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))", backdropFilter: "blur(16px)", border: "1.5px solid rgba(255,255,255,0.5)", color: addSubjectName ? "hsl(270, 60%, 45%)" : "hsl(0, 0%, 55%)" }}>
+                        <span>{addSubjectName || (isBangla ? "বিষয় (ঐচ্ছিক)" : "Subject (optional)")}</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                      {showAddSubjectSelector && (
+                        <div className="rounded-xl p-2 border border-border/30" style={{ background: "linear-gradient(-45deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75))", backdropFilter: "blur(20px)" }}>
+                          <SubjectSelector userId={user.id} studentClass={profile.class} selectedSubject={addSubjectId}
+                            onSubjectChange={(id, name) => { setAddSubjectId(id || ""); setAddSubjectName(name || ""); setShowAddSubjectSelector(false); }} isBangla={isBangla} />
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <input type="text" value={addTopicText} onChange={(e) => setAddTopicText(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter" && addTopicText.trim()) handleAddTopic(); }}
+                          placeholder={isBangla ? "টপিক লেখো..." : "Enter topic..."}
+                          className="flex-1 px-3 py-2.5 rounded-xl bg-transparent text-xs text-foreground placeholder:text-muted-foreground/60 outline-none font-heading"
+                          style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.9), rgba(254,254,254,0.65))", backdropFilter: "blur(16px)", border: "1.5px solid rgba(255,255,255,0.5)" }} />
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddTopic} disabled={!addTopicText.trim()}
+                          className="px-3 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-40"
+                          style={{ background: GRADIENT }}>{isBangla ? "যোগ করো" : "Add"}</motion.button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {!showAddTopic && (
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowAddTopic(true)}
+                    className="w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold font-heading transition-all"
+                    style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.85), rgba(254,254,254,0.6))", backdropFilter: "blur(16px)", border: "1.5px solid rgba(255,255,255,0.4)", color: "hsl(270, 60%, 45%)" }}>
+                    <Plus className="w-4 h-4" />{isBangla ? "আরেকটি বিষয় ও টপিক যোগ করো" : "Add another subject + topic"}
+                  </motion.button>
+                )}
+
                 {/* Generate Button */}
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generateQuestions} disabled={!topic.trim()}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2.5 text-white font-bold text-sm font-heading disabled:opacity-40 transition-all shadow-lg"
@@ -446,7 +505,6 @@ const Practice = () => {
                   <Sparkles className="w-5 h-5" />
                   {isBangla ? `${questionCount}টি প্রশ্ন তৈরি করো` : `Generate ${questionCount} Questions`}
                 </motion.button>
-              </motion.div>
 
               {/* Quick Topics */}
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5, duration: 0.5 }} className="mt-6">
