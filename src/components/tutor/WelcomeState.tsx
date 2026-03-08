@@ -57,7 +57,7 @@ const suggestions = [
 ];
 
 const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProps) => {
-  const firstName = studentName?.split(" ")[0] || "";
+  const displayName = studentName || "";
 
   return (
     <div className="flex flex-col items-center justify-center px-4 h-full">
@@ -108,8 +108,8 @@ const WelcomeState = ({ studentName, isBangla, onQuickAction }: WelcomeStateProp
       >
         <h2 className="text-xl sm:text-2xl font-extrabold font-heading text-foreground mb-1 tracking-tight">
           {isBangla
-            ? `হ্যালো${firstName ? `, ${firstName}` : ""}! 🚀`
-            : `Hello${firstName ? `, ${firstName}` : ""}! Let's Learn 🚀`}
+            ? `হ্যালো${displayName ? `, ${displayName}` : ""}! 🚀`
+            : `Hello${displayName ? `, ${displayName}` : ""}! Let's Learn 🚀`}
         </h2>
         <p className="text-muted-foreground text-xs sm:text-sm max-w-xs leading-relaxed mx-auto">
           {isBangla
