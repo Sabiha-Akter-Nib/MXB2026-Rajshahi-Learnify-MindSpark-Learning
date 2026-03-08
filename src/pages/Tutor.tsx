@@ -550,7 +550,6 @@ What would you like to study today?`;
             </div>
 
             <div className="flex items-center gap-1.5">
-
               {user && (
                 <ChatHistory
                   userId={user.id}
@@ -559,18 +558,6 @@ What would you like to study today?`;
                   onNewConversation={handleNewConversation}
                   isBangla={isBangla}
                 />
-              )}
-
-              {currentConversationId && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  title={isBangla ? "এই চ্যাট মুছুন" : "Delete this chat"}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
               )}
             </div>
           </div>
