@@ -686,7 +686,17 @@ const Profile = () => {
             ];
 
             const achieved = allBadges.filter((b) => b.highest !== null);
-            if (achieved.length === 0) return null;
+            if (achieved.length === 0) return (
+              <GlassCard className="p-4 sm:p-5 relative overflow-hidden">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FD91D9, #9B87F5)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}>
+                    <Award className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="text-white font-bold text-sm sm:text-base uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>Achievements</h3>
+                </div>
+                <p className="text-white/40 text-sm text-center py-6" style={{ fontFamily: "Poppins, sans-serif" }}>No badges to display</p>
+              </GlassCard>
+            );
 
             return (
               <GlassCard className="p-4 sm:p-5 relative overflow-hidden">
@@ -852,7 +862,7 @@ const Profile = () => {
             {!isOwnProfile && weeklyXpSelf.length > 0 && (
               <div className="flex items-center gap-4 mb-3 px-1">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "rgba(255,255,255,0.35)" }} />
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#EFB995" }} />
                   <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">{profile?.full_name || "User"}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -889,23 +899,24 @@ const Profile = () => {
                     <Line
                       type="linear"
                       dataKey="targetXp"
-                      stroke={isOwnProfile ? "#9B87F5" : "rgba(255,255,255,0.35)"}
-                      strokeWidth={2}
+                      stroke={isOwnProfile ? "#9B87F5" : "#EFB995"}
+                      strokeWidth={isOwnProfile ? 2 : 2.5}
+                      strokeDasharray={isOwnProfile ? undefined : "6 3"}
                       dot={(props: any) => {
                         const { cx, cy, payload } = props;
                         if (cx == null || cy == null) return null;
                         const xpVal = payload?.targetXp ?? 0;
-                        const isGray = !isOwnProfile;
+                        const isOther = !isOwnProfile;
                         return (
                           <g key={`target-${props.index}`}>
-                            <text x={cx} y={cy - 14} textAnchor="middle" fill={isGray ? "rgba(255,255,255,0.4)" : "#BBA7FD"} fontSize={9} fontWeight={600}>{xpVal}</text>
+                            <text x={cx} y={cy - (isOther ? 22 : 14)} textAnchor="middle" fill={isOther ? "#EFB995" : "#BBA7FD"} fontSize={9} fontWeight={600}>{xpVal}</text>
                             <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
-                              <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill={isGray ? "rgba(255,255,255,0.35)" : "#BBA7FD"} stroke={isGray ? "rgba(255,255,255,0.25)" : "#9B87F5"} strokeWidth="1" />
+                              <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill={isOther ? "#EFB995" : "#BBA7FD"} stroke={isOther ? "#D4945A" : "#9B87F5"} strokeWidth="1" />
                             </svg>
                           </g>
                         );
                       }}
-                      activeDot={{ r: 6, fill: isOwnProfile ? "#BBA7FD" : "rgba(255,255,255,0.5)", stroke: "#fff", strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: isOwnProfile ? "#BBA7FD" : "#EFB995", stroke: "#fff", strokeWidth: 2 }}
                     />
                     {/* Self line when viewing other profile */}
                     {!isOwnProfile && weeklyXpSelf.length > 0 && (
