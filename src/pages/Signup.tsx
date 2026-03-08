@@ -77,6 +77,7 @@ const stepTugiMap: Record<number, string> = {
   4: tugiSchoolImg,
   5: tugiGradesImg,
   6: tugiGradesImg,
+  7: tugiMascotImg,
 };
 
 const gradeData = [
