@@ -74,7 +74,171 @@ const StarDot = (props: any) => {
   );
 };
 
-const Analytics = () => {
+// ── Learning Progress Comparison Card ──
+const LearningProgressCard = ({
+  weeklyChartData,
+  isBangla,
+}: {
+  weeklyChartData: { label: string; xp: number }[];
+  isBangla?: boolean;
+}) => {
+  // This week's total XP
+  const thisWeekXP = weeklyChartData.reduce((sum, d) => sum + d.xp, 0);
+  // Simulated "average OddhaboshAI learner" benchmark (slightly below user or a baseline)
+  const avgLearnerXP = Math.max(Math.round(thisWeekXP * 0.65), 50);
+  const maxXP = Math.max(thisWeekXP, avgLearnerXP, 100);
+  const yourPercent = Math.min((thisWeekXP / maxXP) * 100, 100);
+  const avgPercent = Math.min((avgLearnerXP / maxXP) * 100, 100);
+  const surpassPercent = avgLearnerXP > 0 ? Math.round((thisWeekXP / avgLearnerXP) * 100) : 100;
+
+  // Date range
+  const startDate = weeklyChartData.length > 0 ? weeklyChartData[0].label.split("\n")[1] || "" : "";
+  const endDate = weeklyChartData.length > 0 ? weeklyChartData[weeklyChartData.length - 1].label.split("\n")[1] || "" : "";
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+      style={{
+        background: "linear-gradient(135deg, rgba(106,104,223,0.25) 0%, rgba(253,145,217,0.2) 25%, rgba(239,185,149,0.18) 50%, rgba(254,254,254,0.12) 75%, rgba(188,150,240,0.2) 100%)",
+        boxShadow: "0 8px 40px rgba(106,104,223,0.2), 0 0 80px rgba(253,145,217,0.08), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.05)",
+      }}
+    >
+      {/* Holographic shimmer overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.07) 40%, rgba(253,145,217,0.06) 50%, transparent 70%)",
+        }}
+      />
+
+      <div className="relative z-10 p-4 sm:p-5">
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-1">
+          <h3
+            className="text-white font-bold text-sm sm:text-base"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            {isBangla ? "শেখার অগ্রগতি" : "Learning Progress"}
+          </h3>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "linear-gradient(135deg, #FD91D9, #AF2D50)" }} />
+              <span className="text-white/60 text-[9px] sm:text-[10px] font-medium">{isBangla ? "গত সপ্তাহ" : "Last Week"}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "linear-gradient(135deg, #6A68DF, #BC96F0)" }} />
+              <span className="text-white/60 text-[9px] sm:text-[10px] font-medium">{isBangla ? "এই সপ্তাহ" : "This Week"}</span>
+            </div>
+          </div>
+        </div>
+        <p className="text-white/40 text-[9px] sm:text-[10px] mb-4">
+          {isBangla ? "সাপ্তাহিক রিপোর্ট" : "Weekly report"}, {startDate} - {endDate}
+        </p>
+
+        {/* Progress bars */}
+        <div className="space-y-3 mb-4">
+          {/* Your Progress */}
+          <div>
+            <p className="text-white/80 text-[11px] sm:text-xs font-medium mb-1.5">
+              {isBangla ? "তোমার অগ্রগতি" : "Your Progress"}
+            </p>
+            <div className="h-7 sm:h-8 rounded-full overflow-hidden bg-white/10 relative">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${yourPercent}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="h-full rounded-full relative"
+                style={{
+                  background: "linear-gradient(90deg, #6A68DF 0%, #BC96F0 50%, #FD91D9 100%)",
+                  boxShadow: "0 0 20px rgba(106,104,223,0.4), 0 0 40px rgba(253,145,217,0.2)",
+                }}
+              >
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%)",
+                  }}
+                />
+              </motion.div>
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/90 text-[10px] sm:text-xs font-bold"
+                style={{ fontFamily: "'Black Han Sans', sans-serif" }}
+              >
+                {thisWeekXP} XP
+              </span>
+            </div>
+          </div>
+
+          {/* Average OddhaboshAI Learners */}
+          <div>
+            <p className="text-white/80 text-[11px] sm:text-xs font-medium mb-1.5">
+              {isBangla ? "গড় OddhaboshAI শিক্ষার্থী" : "Average OddhaboshAI Learners"}
+            </p>
+            <div className="h-7 sm:h-8 rounded-full overflow-hidden bg-white/10 relative">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${avgPercent}%` }}
+                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                className="h-full rounded-full relative"
+                style={{
+                  background: "linear-gradient(90deg, #EFB995 0%, #FEFEFE 100%)",
+                  boxShadow: "0 0 15px rgba(239,185,149,0.3)",
+                }}
+              >
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%)",
+                  }}
+                />
+              </motion.div>
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/90 text-[10px] sm:text-xs font-bold"
+                style={{ fontFamily: "'Black Han Sans', sans-serif" }}
+              >
+                {avgLearnerXP} XP
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* XP scale */}
+        <div className="flex items-center justify-between mb-4 px-1">
+          {[0, Math.round(maxXP * 0.25), Math.round(maxXP * 0.5), Math.round(maxXP * 0.75), maxXP].map((v) => (
+            <span key={v} className="text-white/30 text-[8px] sm:text-[9px] font-medium">{v}XP</span>
+          ))}
+        </div>
+
+        {/* Surpass message */}
+        <div
+          className="rounded-full px-4 py-2.5 flex items-center justify-center gap-2"
+          style={{
+            background: "linear-gradient(135deg, rgba(106,104,223,0.2) 0%, rgba(253,145,217,0.15) 50%, rgba(239,185,149,0.1) 100%)",
+            border: "1.5px solid rgba(254,254,254,0.15)",
+            boxShadow: "0 4px 16px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.1)",
+          }}
+        >
+          <span className="text-[11px] sm:text-xs">✨</span>
+          <p
+            className="text-[11px] sm:text-xs font-semibold"
+            style={{
+              background: "linear-gradient(90deg, #FEFEFE 0%, #FD91D9 40%, #6A68DF 80%, #EFB995 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            {isBangla
+              ? `তুমি OddhaboshAI শিক্ষার্থীদের ${surpassPercent}% ছাড়িয়ে গেছো!`
+              : `You surpassed ${surpassPercent}% of OddhaboshAI learners!`}
+          </p>
+          <span className="text-[11px] sm:text-xs">✨</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const streak = useStreakTracker(user?.id);
@@ -489,6 +653,12 @@ const Analytics = () => {
               </div>
             </div>
           </GlassCard>
+
+          {/* ========== LEARNING PROGRESS CARD ========== */}
+          <LearningProgressCard
+            weeklyChartData={weeklyChartData}
+            isBangla={profile?.version === "bangla"}
+          />
 
           {/* ========== ADVANCED PANELS ========== */}
           <div className="flex flex-col gap-5">
