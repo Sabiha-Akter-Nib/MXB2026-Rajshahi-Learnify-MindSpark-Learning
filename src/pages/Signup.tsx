@@ -139,7 +139,7 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "", password: "", name: "", school: "",
-    class: "", version: "", division: "", username: "",
+    class: "", version: "bangla", division: "", username: "",
   });
 
   const { user, loading } = useAuth();
