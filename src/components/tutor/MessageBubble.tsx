@@ -57,13 +57,13 @@ const UserBubble = ({ content, timestamp, attachments, isLastUserMessage, onEdit
   >
     <div className="max-w-[80%] space-y-1">
       <AttachmentList attachments={attachments} />
-      {/* User bubble — magenta/pink/purple gradient */}
+      {/* User bubble — magenta/pink/purple/peach gradient */}
       <div
         className="rounded-2xl rounded-br-md px-5 py-4 font-heading"
         style={{
-          background: "linear-gradient(135deg, hsla(300, 40%, 96%, 1) 0%, hsla(330, 35%, 96%, 1) 50%, hsla(270, 30%, 96%, 1) 100%)",
-          border: "1px solid hsla(300, 30%, 88%, 0.6)",
-          boxShadow: "0 2px 12px hsla(300, 40%, 60%, 0.08)",
+          background: "linear-gradient(135deg, hsla(300, 35%, 96%, 1) 0%, hsla(330, 30%, 96%, 1) 35%, hsla(270, 25%, 96%, 1) 65%, hsla(30, 45%, 96%, 1) 100%)",
+          border: "1px solid hsla(300, 25%, 88%, 0.5)",
+          boxShadow: "0 2px 14px hsla(300, 35%, 60%, 0.08), 0 1px 3px hsla(30, 40%, 60%, 0.04)",
         }}
       >
         <div className="text-sm leading-relaxed text-foreground">
