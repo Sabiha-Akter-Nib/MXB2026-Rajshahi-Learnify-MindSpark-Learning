@@ -231,10 +231,8 @@ function extractSearchQuery(message: string, studentClass: number): string {
 // MindSpark Learning AI Tutor System Prompt - No names, no hashtags, web-verified answers
 const getSystemPrompt = (studentInfo: { name?: string; class?: number; version?: string } | null, webContext: string, curriculumContent: string = "") => {
   const studentClass = studentInfo?.class || 5;
-  const studentVersion = studentInfo?.version === "english" ? "English Version" : "Bangla Version";
-  const preferredLanguage = studentInfo?.version === "english" 
-    ? "English" 
-    : "Bangla (with English terms for technical concepts)";
+  const studentVersion = "Bangla Version";
+  const preferredLanguage = "Bangla (with English terms for technical concepts)";
 
   const curriculumSection = curriculumContent ? `
 ## OFFICIAL NCTB TEXTBOOK CONTENT (AUTHORITATIVE SOURCE)
