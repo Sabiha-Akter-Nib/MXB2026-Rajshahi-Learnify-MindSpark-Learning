@@ -472,6 +472,8 @@ const Analytics = () => {
     };
 
     fetchData();
+    // Auto-fetch weekly summary
+    fetchWeeklySummary();
   }, [user]);
 
   // Calendar logic
