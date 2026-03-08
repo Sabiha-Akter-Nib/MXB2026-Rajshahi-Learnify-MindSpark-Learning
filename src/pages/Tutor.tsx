@@ -154,25 +154,9 @@ What would you like to study today?`;
           version: data.version,
         };
         setStudentInfo(info);
-        setMessages([createInitialGreeting(data)]);
+        setMessages([]);
       } else {
-        setMessages([
-          {
-            id: "1",
-            role: "assistant",
-            content: `Assalamu Alaikum!
-
-I am OddhaboshAI Tutor. I am here to help you learn any subject from your NCTB curriculum.
-
-You can ask me to:
-• Explain any topic in detail
-• Practice with adaptive questions
-• Get homework help
-
-What would you like to learn today?`,
-            timestamp: new Date(),
-          },
-        ]);
+        setMessages([]);
       }
     };
 
