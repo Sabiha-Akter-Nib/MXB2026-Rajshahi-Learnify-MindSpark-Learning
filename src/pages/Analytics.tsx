@@ -525,8 +525,8 @@ const Analytics = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-[100dvh] font-poppins overflow-x-hidden">
-        <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-5">
+      <div className="min-h-[100dvh] font-poppins overflow-x-hidden w-full max-w-full">
+        <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-5 overflow-hidden">
 
           {/* ========== HEADER (same as Dashboard) ========== */}
           <header className="flex items-center justify-between">
@@ -863,7 +863,7 @@ const Analytics = () => {
                 background: "linear-gradient(180deg, rgba(253,145,217,0.15) 0%, rgba(255,255,255,0.05) 100%)",
               }}
             >
-              <div className="h-48 sm:h-56 overflow-visible">
+              <div className="h-48 sm:h-56 overflow-hidden w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={weeklyChartData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
                     <XAxis
@@ -934,7 +934,7 @@ const Analytics = () => {
               </div>
 
               {/* Bar chart */}
-              <div className="h-24 sm:h-28 mb-2.5">
+              <div className="h-24 sm:h-28 mb-2.5 w-full min-w-0 overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={monthlyBarData} barSize={8}>
                     <XAxis
