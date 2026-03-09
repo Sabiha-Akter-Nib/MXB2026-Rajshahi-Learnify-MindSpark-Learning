@@ -14,6 +14,7 @@ import TutorBackground from "@/components/tutor/TutorBackground";
 import mascotImg from "@/assets/ai-mascot-3d.png";
 import tugiImg from "@/assets/tugi-wave.png";
 import SubjectSelector from "@/components/tutor/SubjectSelector";
+import { syncLeaderboardEntry } from "@/lib/leaderboard";
 
 // ── Types ──
 interface Question {
