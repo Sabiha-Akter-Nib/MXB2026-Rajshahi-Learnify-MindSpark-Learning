@@ -213,6 +213,48 @@ const Leaderboard = () => {
           </div>
         </header>
 
+        {/* Your XP Progress Bar */}
+        {currentUser && currentLeague && (
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{currentLeague.emoji}</span>
+                <span className="text-white font-semibold text-sm">{currentLeague.name}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Zap className="w-3.5 h-3.5" style={{ color: BRAND.peach }} />
+                <span className="text-white font-bold text-sm">{currentUser.totalXp.toLocaleString()} XP</span>
+              </div>
+            </div>
+            {/* Progress bar */}
+            <div className="relative h-3 rounded-full overflow-hidden bg-white/10">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{
+                  width: `${Math.min(100, currentLeague.maxXp === Infinity
+                    ? Math.min(100, ((currentUser.totalXp - currentLeague.minXp) / 1000) * 100)
+                    : ((currentUser.totalXp - currentLeague.minXp) / (currentLeague.maxXp - currentLeague.minXp + 1)) * 100
+                  )}%`,
+                }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+                className="h-full rounded-full"
+                style={{ background: currentLeague.gradient }}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-1.5">
+              <span className="text-white/40 text-[10px] font-medium">{currentLeague.minXp.toLocaleString()} XP</span>
+              {xpToNext > 0 ? (
+                <span className="text-white/40 text-[10px] font-medium">
+                  {currentLeague.maxXp === Infinity ? "∞" : currentLeague.maxXp.toLocaleString()} XP
+                  <span className="ml-1 text-white/25">({xpToNext} to go)</span>
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold" style={{ color: BRAND.peach }}>MAX LEAGUE 👑</span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Reset Countdown Timer */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
           <Clock className="w-4 h-4 flex-shrink-0" style={{ color: BRAND.peach }} />
