@@ -90,6 +90,7 @@ const Practice = () => {
   const [addSubjectName, setAddSubjectName] = useState("");
   const [showAddSubjectSelector, setShowAddSubjectSelector] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [rankChangeData, setRankChangeData] = useState<{ oldRank: number; newRank: number; totalXp: number; xpEarned: number } | null>(null);
 
   const { user } = useAuth();
   const navigate = useNavigate();
