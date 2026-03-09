@@ -540,7 +540,7 @@ const Leaderboard = () => {
                               )}
                             </div>
                             <p className="text-white/35 text-[10px] truncate">
-                              Class {u.studentClass}{u.schoolName ? ` · ${u.schoolName}` : ""}
+                              {u.username ? `@${u.username}` : `Class ${u.studentClass}`}{u.schoolName ? ` · ${u.schoolName}` : ""}
                             </p>
                           </div>
 
