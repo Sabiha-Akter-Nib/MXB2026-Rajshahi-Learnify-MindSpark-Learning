@@ -16,6 +16,7 @@ import TutorBackground from "@/components/tutor/TutorBackground";
 import mascotImg from "@/assets/ai-mascot-3d.png";
 import subjectIcon3d from "@/assets/assessment-subject-icon.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
+import { syncLeaderboardEntry } from "@/lib/leaderboard";
 
 // ── Types ──
 interface Question {
@@ -260,6 +261,9 @@ const Assessment = () => {
       try {
         await supabase.functions.invoke("check-achievements", { body: { userId: user?.id, trigger: "assessment" } });
       } catch (e) { console.error(e); }
+
+      // Sync leaderboard entry
+      try { if (user?.id) await syncLeaderboardEntry(user.id); } catch (e) { console.error(e); }
 
       setResultData({ ...(data as any), timeTaken });
       setShowResult(true);
