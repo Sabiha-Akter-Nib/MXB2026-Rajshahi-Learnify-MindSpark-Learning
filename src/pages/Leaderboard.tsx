@@ -105,12 +105,13 @@ const Leaderboard = () => {
         }
 
         const userIds = entries.map(e => e.user_id);
-        const { data: avatars } = await supabase
-          .from("user_avatars")
-          .select("user_id, avatar_url")
-          .in("user_id", userIds);
+        const [avatarRes, profileRes] = await Promise.all([
+          supabase.from("user_avatars").select("user_id, avatar_url").in("user_id", userIds),
+          supabase.from("profiles").select("user_id, username").in("user_id", userIds),
+        ]);
 
-        const avatarMap = new Map(avatars?.map(a => [a.user_id, a.avatar_url]) || []);
+        const avatarMap = new Map(avatarRes.data?.map(a => [a.user_id, a.avatar_url]) || []);
+        const usernameMap = new Map(profileRes.data?.map(p => [p.user_id, p.username]) || []);
 
         const users: LeaderboardUser[] = entries.map((e, i) => ({
           userId: e.user_id,
