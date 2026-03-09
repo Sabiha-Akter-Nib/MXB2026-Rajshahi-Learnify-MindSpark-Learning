@@ -210,8 +210,14 @@ const Practice = () => {
           is_weak_topic: isWeak, bloom_level: questions[0]?.bloomLevel || "understand", last_practiced_at: new Date().toISOString(),
         });
       }
-      // Sync leaderboard entry
-      try { await syncLeaderboardEntry(user.id); } catch (e) { console.error(e); }
+      // Sync leaderboard entry with rank tracking
+      const oldRank = await getUserRank(user.id);
+      await syncLeaderboardEntry(user.id);
+      const newRank = await getUserRank(user.id);
+      const { data: stats } = await supabase.from("student_stats").select("total_xp").eq("user_id", user.id).maybeSingle();
+      if (oldRank > 0 && newRank > 0) {
+        setRankChangeData({ oldRank, newRank, totalXp: stats?.total_xp || 0, xpEarned: Math.round(totalXP) });
+      }
     } catch (error) {
       console.error("Error tracking practice:", error);
     }
