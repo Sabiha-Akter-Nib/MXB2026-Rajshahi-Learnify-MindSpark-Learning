@@ -146,7 +146,7 @@ const Leaderboard = () => {
     .sort((a, b) => b.totalXp - a.totalXp);
 
   const top3 = leagueUsers.slice(0, 3);
-  const rest = leagueUsers.slice(3);
+  const rest = leagueUsers;
 
   const safeCount = Math.max(1, Math.ceil(leagueUsers.length * 0.4));
 
@@ -471,7 +471,7 @@ const Leaderboard = () => {
                 {rest.length > 0 && (
                   <div className="space-y-1.5">
                     {rest.map((u, i) => {
-                      const rank = i + 4;
+                      const rank = i + 1;
                       const isSafe = rank <= safeCount;
                       const isDemotion = rank > leagueUsers.length * 0.7 && leagueUsers.length >= 3;
 
@@ -492,7 +492,15 @@ const Leaderboard = () => {
                         >
                           {/* Rank */}
                           <div className="w-7 flex-shrink-0 text-center">
-                            <span className="text-white/40 text-xs font-bold">#{rank}</span>
+                            {rank === 1 ? (
+                              <span className="text-base">👑</span>
+                            ) : rank === 2 ? (
+                              <span className="text-base">🥈</span>
+                            ) : rank === 3 ? (
+                              <span className="text-base">🥉</span>
+                            ) : (
+                              <span className="text-white/40 text-xs font-bold">#{rank}</span>
+                            )}
                           </div>
 
                           {/* Zone indicator */}
