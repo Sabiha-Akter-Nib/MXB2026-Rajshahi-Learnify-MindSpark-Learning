@@ -16,7 +16,8 @@ import TutorBackground from "@/components/tutor/TutorBackground";
 import mascotImg from "@/assets/ai-mascot-3d.png";
 import subjectIcon3d from "@/assets/assessment-subject-icon.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
-import { syncLeaderboardEntry } from "@/lib/leaderboard";
+import { syncLeaderboardEntry, getUserRank } from "@/lib/leaderboard";
+import RankChangeModal from "@/components/leaderboard/RankChangeModal";
 
 // ── Types ──
 interface Question {
@@ -116,7 +117,7 @@ const Assessment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [additionalEntries, setAdditionalEntries] = useState<AdditionalSubjectEntry[]>([]);
   const [timeExpired, setTimeExpired] = useState(false);
-
+  const [rankChangeData, setRankChangeData] = useState<{ oldRank: number; newRank: number; totalXp: number; xpEarned: number } | null>(null);
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -262,8 +263,19 @@ const Assessment = () => {
         await supabase.functions.invoke("check-achievements", { body: { userId: user?.id, trigger: "assessment" } });
       } catch (e) { console.error(e); }
 
-      // Sync leaderboard entry
-      try { if (user?.id) await syncLeaderboardEntry(user.id); } catch (e) { console.error(e); }
+      // Sync leaderboard entry with rank tracking
+      try {
+        if (user?.id) {
+          const oldRank = await getUserRank(user.id);
+          await syncLeaderboardEntry(user.id);
+          const newRank = await getUserRank(user.id);
+          const xpEarned = Math.round((data as any)?.xpEarned || 0);
+          const { data: stats } = await supabase.from("student_stats").select("total_xp").eq("user_id", user.id).maybeSingle();
+          if (oldRank > 0 && newRank > 0) {
+            setRankChangeData({ oldRank, newRank, totalXp: stats?.total_xp || 0, xpEarned });
+          }
+        }
+      } catch (e) { console.error(e); }
 
       setResultData({ ...(data as any), timeTaken });
       setShowResult(true);
@@ -879,6 +891,15 @@ const Assessment = () => {
           </div>
         </div>
       </main>
+      {/* Rank Change Modal */}
+      <RankChangeModal
+        open={!!rankChangeData}
+        onClose={() => setRankChangeData(null)}
+        oldRank={rankChangeData?.oldRank || 0}
+        newRank={rankChangeData?.newRank || 0}
+        totalXp={rankChangeData?.totalXp || 0}
+        xpEarned={rankChangeData?.xpEarned || 0}
+      />
     </div>
   );
 };

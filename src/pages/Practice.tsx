@@ -14,7 +14,8 @@ import TutorBackground from "@/components/tutor/TutorBackground";
 import mascotImg from "@/assets/ai-mascot-3d.png";
 import tugiImg from "@/assets/tugi-wave.png";
 import SubjectSelector from "@/components/tutor/SubjectSelector";
-import { syncLeaderboardEntry } from "@/lib/leaderboard";
+import { syncLeaderboardEntry, getUserRank } from "@/lib/leaderboard";
+import RankChangeModal from "@/components/leaderboard/RankChangeModal";
 
 // ── Types ──
 interface Question {
@@ -89,6 +90,7 @@ const Practice = () => {
   const [addSubjectName, setAddSubjectName] = useState("");
   const [showAddSubjectSelector, setShowAddSubjectSelector] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [rankChangeData, setRankChangeData] = useState<{ oldRank: number; newRank: number; totalXp: number; xpEarned: number } | null>(null);
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -208,8 +210,14 @@ const Practice = () => {
           is_weak_topic: isWeak, bloom_level: questions[0]?.bloomLevel || "understand", last_practiced_at: new Date().toISOString(),
         });
       }
-      // Sync leaderboard entry
-      try { await syncLeaderboardEntry(user.id); } catch (e) { console.error(e); }
+      // Sync leaderboard entry with rank tracking
+      const oldRank = await getUserRank(user.id);
+      await syncLeaderboardEntry(user.id);
+      const newRank = await getUserRank(user.id);
+      const { data: stats } = await supabase.from("student_stats").select("total_xp").eq("user_id", user.id).maybeSingle();
+      if (oldRank > 0 && newRank > 0) {
+        setRankChangeData({ oldRank, newRank, totalXp: stats?.total_xp || 0, xpEarned: Math.round(totalXP) });
+      }
     } catch (error) {
       console.error("Error tracking practice:", error);
     }
@@ -689,6 +697,15 @@ const Practice = () => {
           )}
         </div>
       </main>
+      {/* Rank Change Modal */}
+      <RankChangeModal
+        open={!!rankChangeData}
+        onClose={() => setRankChangeData(null)}
+        oldRank={rankChangeData?.oldRank || 0}
+        newRank={rankChangeData?.newRank || 0}
+        totalXp={rankChangeData?.totalXp || 0}
+        xpEarned={rankChangeData?.xpEarned || 0}
+      />
     </div>
   );
 };
