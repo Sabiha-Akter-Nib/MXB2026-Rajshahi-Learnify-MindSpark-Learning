@@ -46,7 +46,6 @@ function AppContent() {
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/learning-plan" element={<LearningPlan />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/profile" element={<Profile />} />
