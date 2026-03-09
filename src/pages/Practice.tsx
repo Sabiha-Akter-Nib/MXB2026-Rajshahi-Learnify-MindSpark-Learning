@@ -697,6 +697,15 @@ const Practice = () => {
           )}
         </div>
       </main>
+      {/* Rank Change Modal */}
+      <RankChangeModal
+        open={!!rankChangeData}
+        onClose={() => setRankChangeData(null)}
+        oldRank={rankChangeData?.oldRank || 0}
+        newRank={rankChangeData?.newRank || 0}
+        totalXp={rankChangeData?.totalXp || 0}
+        xpEarned={rankChangeData?.xpEarned || 0}
+      />
     </div>
   );
 };
