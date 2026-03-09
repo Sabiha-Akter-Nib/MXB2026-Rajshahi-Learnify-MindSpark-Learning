@@ -1,230 +1,124 @@
-import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
-  Trophy,
-  Medal,
-  Crown,
-  Flame,
-  Clock,
-  Star,
-  Users,
-  School,
-  Sparkles,
-  Zap,
-  TrendingUp,
-  PartyPopper,
+  ArrowLeft, Trophy, Loader2, Lock, Zap, ChevronDown, ChevronUp, Shield, Clock, Users, Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import confetti from "canvas-confetti";
-import VerifiedBadge, { isVerifiedEmail } from "@/components/VerifiedBadge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { LEAGUES, getLeagueForXp, getXpToNextLeague, syncLeaderboardEntry, League } from "@/lib/leaderboard";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import mascotImg from "@/assets/ai-mascot-3d.png";
 
-interface LeaderboardEntry {
-  rank: number;
+interface LeaderboardUser {
   userId: string;
   displayName: string;
-  schoolName: string;
-  studentClass: number;
   totalXp: number;
   currentStreak: number;
-  totalStudyMinutes: number;
+  studentClass: number;
+  schoolName: string | null;
+  avatarUrl: string | null;
   isCurrentUser: boolean;
+  rank: number;
 }
 
-interface UserProfile {
-  full_name: string;
-  school_name: string;
-  class: number;
-}
-
-type FilterType = "all" | "class" | "school";
-
-// Dummy data for leaderboard - school name will be set dynamically
-const generateDummyLeaderboard = (
-  currentUserXP: number, 
-  currentUserId: string, 
-  userProfile: UserProfile | null
-): LeaderboardEntry[] => {
-  const dummyNames = [
-    "Arif Rahman", "Fatima Akter", "Rahim Uddin", "Nusrat Jahan", "Karim Hossain",
-    "Sadia Islam", "Tanvir Ahmed", "Maliha Khatun", "Sajid Ali", "Riya Sultana",
-    "Zahid Hassan", "Nadia Begum", "Imran Khan", "Ayesha Siddiqua", "Rafiq Mia",
-    "Lamia Haque", "Farhan Chowdhury", "Tasnim Akter", "Jubayer Ahmed", "Sumaiya Islam"
-  ];
-
-  const userSchool = userProfile?.school_name || "My School";
-  const userClass = userProfile?.class || 7;
-
-  // Generate base entries - some with user's school, some with other schools
-  const entries: LeaderboardEntry[] = dummyNames.map((name, index) => {
-    // Make sure dummy XP is always less than current user for filtered views
-    const baseXP = Math.floor(Math.random() * Math.max(currentUserXP - 100, 500)) + 100;
-    // 40% chance to be from same school
-    const isSameSchool = Math.random() < 0.4;
-    // 30% chance to be from same class
-    const isSameClass = Math.random() < 0.3;
-    
-    return {
-      rank: 0,
-      userId: `dummy-${index}`,
-      displayName: name,
-      schoolName: isSameSchool ? userSchool : ["Dhaka Collegiate School", "Rajshahi Model School", "Chittagong Grammar School", "Sylhet Cadet College", "Khulna Public School"][Math.floor(Math.random() * 5)],
-      studentClass: isSameClass ? userClass : Math.floor(Math.random() * 5) + 5,
-      totalXp: baseXP,
-      currentStreak: Math.floor(Math.random() * 30),
-      totalStudyMinutes: Math.floor(Math.random() * 1000) + 100,
-      isCurrentUser: false,
-    };
-  });
-
-  // Add current user with their actual XP
-  entries.push({
-    rank: 0,
-    userId: currentUserId,
-    displayName: userProfile?.full_name || "You",
-    schoolName: userSchool,
-    studentClass: userClass,
-    totalXp: currentUserXP,
-    currentStreak: 0,
-    totalStudyMinutes: 0,
-    isCurrentUser: true,
-  });
-
-  // Sort by XP and assign ranks
-  return entries
-    .sort((a, b) => b.totalXp - a.totalXp)
-    .map((entry, index) => ({
-      ...entry,
-      rank: index + 1,
-    }));
-};
+// Glass card
+const GlassCard = ({ children, className, style, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn("rounded-2xl border border-white/[0.15] backdrop-blur-2xl", className)}
+    style={{
+      background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1)",
+      ...style,
+    }}
+    {...props}
+  >
+    {children}
+  </div>
+);
 
 const Leaderboard = () => {
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [allEntries, setAllEntries] = useState<LeaderboardEntry[]>([]);
+  const [allUsers, setAllUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>("all");
-  const [userRank, setUserRank] = useState<LeaderboardEntry | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const celebrationTriggered = useRef(false);
+  const [hasExams, setHasExams] = useState<boolean | null>(null);
+  const [expandedLeague, setExpandedLeague] = useState<string | null>(null);
+  const [userLeagueId, setUserLeagueId] = useState<string | null>(null);
 
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Celebration confetti effect
-  const triggerCelebration = () => {
-    if (celebrationTriggered.current) return;
-    celebrationTriggered.current = true;
-    setShowCelebration(true);
-
-    const duration = 3000;
-    const end = Date.now() + duration;
-
-    const colors = ['#FFD700', '#FFA500', '#FF6347', '#9370DB', '#00CED1', '#32CD32'];
-
-    (function frame() {
-      confetti({
-        particleCount: 3,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0, y: 0.8 },
-        colors: colors
-      });
-      confetti({
-        particleCount: 3,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1, y: 0.8 },
-        colors: colors
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    }());
-
-    // Big burst in the middle
-    setTimeout(() => {
-      confetti({
-        particleCount: 100,
-        spread: 100,
-        origin: { x: 0.5, y: 0.5 },
-        colors: colors
-      });
-    }, 500);
-
-    setTimeout(() => setShowCelebration(false), duration);
-  };
-
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/login");
-    }
+    if (!authLoading && !user) navigate("/login");
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    const fetchUserDataAndGenerateLeaderboard = async () => {
-      if (!user) return;
+    if (!user) return;
+    const fetchData = async () => {
       setLoading(true);
-
       try {
-        // Fetch current user's stats
-        const { data: userStats } = await supabase
-          .from("student_stats")
-          .select("total_xp, current_streak, total_study_minutes")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        // Check if user has at least 1 assessment
+        const { count } = await supabase
+          .from("assessments")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
 
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("full_name, school_name, class")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const examCount = count || 0;
+        setHasExams(examCount > 0);
 
-        const profile: UserProfile | null = profileData ? {
-          full_name: profileData.full_name,
-          school_name: profileData.school_name,
-          class: profileData.class,
-        } : null;
+        if (examCount === 0) {
+          setLoading(false);
+          return;
+        }
 
-        setUserProfile(profile);
+        // Sync current user's leaderboard entry
+        await syncLeaderboardEntry(user.id);
 
-        const currentUserXP = userStats?.total_xp || 0;
+        // Fetch all public leaderboard entries
+        const { data: entries } = await supabase
+          .from("leaderboard_entries")
+          .select("user_id, display_name, total_xp, current_streak, class, school_name, is_public")
+          .eq("is_public", true)
+          .order("total_xp", { ascending: false });
 
-        // Generate dummy leaderboard with user's actual school
-        let leaderboard = generateDummyLeaderboard(currentUserXP, user.id, profile);
+        if (!entries || entries.length === 0) {
+          setAllUsers([]);
+          setLoading(false);
+          return;
+        }
 
-        // Update current user entry with actual data
-        leaderboard = leaderboard.map(entry => {
-          if (entry.isCurrentUser) {
-            return {
-              ...entry,
-              currentStreak: userStats?.current_streak || 0,
-              totalStudyMinutes: userStats?.total_study_minutes || 0,
-            };
-          }
-          return entry;
-        });
+        // Fetch avatars for all users
+        const userIds = entries.map(e => e.user_id);
+        const { data: avatars } = await supabase
+          .from("user_avatars")
+          .select("user_id, avatar_url")
+          .in("user_id", userIds);
 
-        setAllEntries(leaderboard);
-        setEntries(leaderboard);
+        const avatarMap = new Map(avatars?.map(a => [a.user_id, a.avatar_url]) || []);
 
-        // Find current user's rank
-        const currentUserEntry = leaderboard.find(e => e.isCurrentUser);
-        setUserRank(currentUserEntry || null);
+        const users: LeaderboardUser[] = entries.map((e, i) => ({
+          userId: e.user_id,
+          displayName: e.display_name,
+          totalXp: e.total_xp,
+          currentStreak: e.current_streak,
+          studentClass: e.class,
+          schoolName: e.school_name,
+          avatarUrl: avatarMap.get(e.user_id) || null,
+          isCurrentUser: e.user_id === user.id,
+          rank: i + 1,
+        }));
+
+        setAllUsers(users);
+
+        // Find current user's league
+        const currentUser = users.find(u => u.isCurrentUser);
+        if (currentUser) {
+          const league = getLeagueForXp(currentUser.totalXp);
+          setUserLeagueId(league.id);
+          setExpandedLeague(league.id);
+        }
       } catch (error) {
         console.error("Failed to fetch leaderboard:", error);
       } finally {
@@ -232,510 +126,342 @@ const Leaderboard = () => {
       }
     };
 
-    fetchUserDataAndGenerateLeaderboard();
+    fetchData();
   }, [user]);
 
-  // Apply filters when filter changes
-  useEffect(() => {
-    if (allEntries.length === 0) return;
+  // Group users by league
+  const leagueGroups = LEAGUES.map(league => {
+    const users = allUsers.filter(u => {
+      const l = getLeagueForXp(u.totalXp);
+      return l.id === league.id;
+    });
+    // Re-rank within league
+    users.sort((a, b) => b.totalXp - a.totalXp);
+    return { league, users };
+  });
 
-    let filtered = [...allEntries];
-    celebrationTriggered.current = false; // Reset celebration for new filter
+  const currentUser = allUsers.find(u => u.isCurrentUser);
+  const currentLeague = currentUser ? getLeagueForXp(currentUser.totalXp) : null;
+  const xpToNext = currentUser ? getXpToNextLeague(currentUser.totalXp) : 0;
 
-    if (filter === "class" && userProfile?.class) {
-      filtered = allEntries.filter(e => e.studentClass === userProfile.class);
-      
-      // Ensure current user is first in class filter
-      const userEntry = filtered.find(e => e.isCurrentUser);
-      if (userEntry) {
-        // Boost user XP to be first
-        const maxOtherXP = Math.max(...filtered.filter(e => !e.isCurrentUser).map(e => e.totalXp), 0);
-        userEntry.totalXp = Math.max(userEntry.totalXp, maxOtherXP + 100);
-      }
-    }
-    
-    if (filter === "school" && userProfile?.school_name) {
-      filtered = allEntries.filter(e => e.schoolName === userProfile.school_name);
-      
-      // Ensure current user is first in school filter
-      const userEntry = filtered.find(e => e.isCurrentUser);
-      if (userEntry) {
-        // Boost user XP to be first
-        const maxOtherXP = Math.max(...filtered.filter(e => !e.isCurrentUser).map(e => e.totalXp), 0);
-        userEntry.totalXp = Math.max(userEntry.totalXp, maxOtherXP + 100);
-      }
-    }
-
-    // Re-rank after filtering
-    filtered = filtered
-      .sort((a, b) => b.totalXp - a.totalXp)
-      .map((entry, index) => ({
-        ...entry,
-        rank: index + 1,
-      }));
-
-    setEntries(filtered);
-
-    // Update user rank for filtered view
-    const currentUserEntry = filtered.find(e => e.isCurrentUser);
-    setUserRank(currentUserEntry || null);
-
-    // Trigger celebration if user is in top 3
-    if (currentUserEntry && currentUserEntry.rank <= 3) {
-      setTimeout(() => triggerCelebration(), 500);
-    }
-  }, [filter, allEntries, userProfile]);
-
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Crown className="w-6 h-6 text-accent drop-shadow-lg" />;
-      case 2:
-        return <Medal className="w-5 h-5 text-slate-300" />;
-      case 3:
-        return <Medal className="w-5 h-5 text-primary-light" />;
-      default:
-        return <span className="font-bold text-muted-foreground">#{rank}</span>;
-    }
-  };
-
-  const getRankBadgeClass = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return "bg-gradient-to-br from-accent via-accent-light to-primary text-accent-foreground shadow-xl shadow-accent/40 ring-2 ring-accent/50";
-      case 2:
-        return "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 text-slate-800 shadow-xl shadow-slate-400/40 ring-2 ring-slate-200/50";
-      case 3:
-        return "bg-gradient-to-br from-primary-light via-primary to-primary-dark text-primary-foreground shadow-xl shadow-primary/40 ring-2 ring-primary-light/50";
-      default:
-        return "bg-gradient-to-br from-muted to-muted/80 text-muted-foreground";
-    }
-  };
-
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-accent/5">
-        <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
+      <DashboardLayout>
+        <div className="min-h-[80vh] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-white/60" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Gate: require at least 1 exam
+  if (hasExams === false) {
+    return (
+      <DashboardLayout>
+        <div className="min-h-[80vh] flex flex-col items-center justify-center px-6 text-center">
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mb-6">
+            <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: "linear-gradient(135deg, hsla(270, 60%, 55%, 0.2), hsla(330, 70%, 55%, 0.2))" }}>
+              <Lock className="w-10 h-10 text-white/40" />
+            </div>
+            <motion.img src={mascotImg} alt="mascot" className="w-28 h-28 mx-auto mb-4 drop-shadow-2xl"
+              animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity }} />
+          </motion.div>
+          <h2 className="text-white font-bold text-xl mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>
+            Leaderboard Locked 🔒
+          </h2>
+          <p className="text-white/50 text-sm max-w-xs mb-6" style={{ fontFamily: "Poppins, sans-serif" }}>
+            Complete at least 1 Model Test or Assessment to unlock the National Leaderboard and start competing!
+          </p>
+          <Button
+            onClick={() => navigate("/assessment")}
+            className="rounded-full px-8 py-3 font-bold text-white shadow-lg"
+            style={{ background: "linear-gradient(135deg, hsl(300, 65%, 52%), hsl(270, 60%, 55%))" }}
+          >
+            <Trophy className="w-4 h-4 mr-2" />
+            Take Your First Exam
+          </Button>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 relative overflow-hidden">
-      {/* Celebration Overlay */}
-      {showCelebration && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center"
-        >
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="bg-gradient-to-br from-accent via-primary to-primary-dark rounded-3xl p-8 shadow-2xl shadow-primary/50"
-          >
-            <div className="flex items-center gap-4 text-white">
-              <PartyPopper className="w-12 h-12" />
-              <div>
-                <p className="text-2xl font-black">Congratulations!</p>
-                <p className="text-lg opacity-90">You're in the Top 3!</p>
-              </div>
-              <PartyPopper className="w-12 h-12 scale-x-[-1]" />
+    <DashboardLayout>
+      <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-5" style={{ fontFamily: "Poppins, sans-serif" }}>
+
+        {/* Header */}
+        <header className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="text-white/60 hover:text-white hover:bg-white/10 rounded-xl" asChild>
+            <Link to="/dashboard"><ArrowLeft className="w-5 h-5" /></Link>
+          </Button>
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{ background: "linear-gradient(135deg, hsl(300, 65%, 52%), hsl(270, 60%, 55%))" }}>
+              <Trophy className="w-6 h-6 text-white" />
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 to-accent/5 rounded-full blur-3xl" />
-      </div>
-
-      {/* Header */}
-      <header className="sticky top-0 bg-card/60 backdrop-blur-xl border-b border-border/50 z-30 px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild className="hover:bg-primary/10 hover:text-primary transition-all duration-300">
-              <Link to="/dashboard">
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-            </Button>
-            <div className="flex items-center gap-4">
-              <motion.div 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="relative"
-              >
-                <div className="w-14 h-14 bg-gradient-to-br from-accent via-primary to-primary-dark rounded-2xl flex items-center justify-center shadow-xl shadow-primary/30 ring-2 ring-accent/30">
-                  <Trophy className="w-7 h-7 text-white drop-shadow-lg" />
-                </div>
-                <Sparkles className="w-4 h-4 text-accent absolute -top-1 -right-1 animate-pulse" />
-              </motion.div>
-              <div>
-                <h1 className="font-heading font-bold text-2xl bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">Leaderboard</h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Users className="w-3 h-3" />
-                  {entries.length} students competing
-                </p>
-              </div>
+            <div>
+              <h1 className="text-white font-bold text-lg">National Leaderboard</h1>
+              <p className="text-white/40 text-xs flex items-center gap-1">
+                <Users className="w-3 h-3" /> {allUsers.length} students competing
+              </p>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-8 relative z-10">
-        {/* User's Current Rank Card */}
-        {userRank && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          >
-            <Card className={cn(
-              "overflow-hidden relative group hover:shadow-2xl transition-all duration-500",
-              userRank.rank <= 3 
-                ? "bg-gradient-to-r from-yellow-500/20 via-amber-500/10 to-orange-500/20 border-yellow-500/40 hover:shadow-yellow-500/20" 
-                : "bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 border-primary/30 hover:shadow-primary/20"
-            )}>
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
-              {userRank.rank <= 3 && (
-                <div className="absolute top-2 right-2">
-                  <motion.div
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <PartyPopper className="w-6 h-6 text-accent" />
-                  </motion.div>
+        {/* Current User League Card */}
+        {currentUser && currentLeague && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+            <GlassCard className="p-4 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-20" style={{ background: currentLeague.gradient }} />
+              <div className="relative flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+                  style={{ background: currentLeague.gradient, boxShadow: `0 4px 20px ${currentLeague.glowColor}` }}>
+                  {currentLeague.emoji}
                 </div>
-              )}
-              <CardContent className="p-6 sm:p-8 relative">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-5">
-                    <motion.div 
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                      className={cn(
-                        "w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold relative",
-                        getRankBadgeClass(userRank.rank)
-                      )}
-                    >
-                      {userRank.rank <= 3 ? getRankIcon(userRank.rank) : (
-                        <span className="text-3xl font-black">{userRank.rank}</span>
-                      )}
-                      {userRank.rank <= 3 && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-white/50 text-xs">Your League</p>
+                  <h2 className="text-white font-bold text-lg">{currentLeague.name}</h2>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-white/70 text-xs flex items-center gap-1">
+                      <Zap className="w-3 h-3" style={{ color: currentLeague.textColor }} />
+                      {currentUser.totalXp.toLocaleString()} XP
+                    </span>
+                    <span className="text-white/70 text-xs">
+                      Rank #{allUsers.findIndex(u => u.isCurrentUser) + 1}
+                    </span>
+                  </div>
+                  {xpToNext > 0 && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between text-[10px] text-white/40 mb-1">
+                        <span>Next league</span>
+                        <span>{xpToNext} XP needed</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                         <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                          className="absolute inset-0 rounded-2xl border-2 border-dashed border-white/20"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(100, ((currentUser.totalXp - currentLeague.minXp) / (currentLeague.maxXp === Infinity ? 1000 : currentLeague.maxXp - currentLeague.minXp + 1)) * 100)}%` }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                          className="h-full rounded-full"
+                          style={{ background: currentLeague.gradient }}
                         />
-                      )}
-                    </motion.div>
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
-                        <Star className="w-3 h-3 text-yellow-500" />
-                        Your Current Rank
-                      </p>
-                      <p className="font-heading font-black text-3xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                        #{userRank.rank} <span className="text-lg font-normal text-muted-foreground">of {entries.length}</span>
-                      </p>
-                      <p className="text-xl font-bold text-primary flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-accent" />
-                        {userRank.totalXp.toLocaleString()} XP
-                      </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </GlassCard>
+          </motion.div>
+        )}
+
+        {/* Weekly Info */}
+        <GlassCard className="px-4 py-3 flex items-center gap-3">
+          <Clock className="w-4 h-4 text-white/40 flex-shrink-0" />
+          <p className="text-white/50 text-[11px] leading-tight">
+            Leaderboard resets weekly. <span className="text-white/70 font-semibold">Top 40%</span> safe zone, <span className="text-white/70 font-semibold">bottom 30%</span> risk demotion.
+          </p>
+        </GlassCard>
+
+        {/* League Sections */}
+        {leagueGroups.map(({ league, users }, gi) => (
+          <motion.div
+            key={league.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: gi * 0.05 }}
+          >
+            <LeagueSection
+              league={league}
+              users={users}
+              isExpanded={expandedLeague === league.id}
+              isUserLeague={userLeagueId === league.id}
+              onToggle={() => setExpandedLeague(expandedLeague === league.id ? null : league.id)}
+              currentUserId={user?.id || ""}
+            />
+          </motion.div>
+        ))}
+      </div>
+    </DashboardLayout>
+  );
+};
+
+// ── League Section Component ──
+interface LeagueSectionProps {
+  league: League;
+  users: LeaderboardUser[];
+  isExpanded: boolean;
+  isUserLeague: boolean;
+  onToggle: () => void;
+  currentUserId: string;
+}
+
+const LeagueSection = ({ league, users, isExpanded, isUserLeague, onToggle, currentUserId }: LeagueSectionProps) => {
+  const navigate = useNavigate();
+  const safeCount = Math.max(1, Math.ceil(users.length * 0.4));
+  const demotionStart = Math.floor(users.length * 0.7);
+
+  return (
+    <GlassCard
+      className={cn("overflow-hidden transition-all", isUserLeague && "ring-1")}
+      style={isUserLeague ? { borderColor: league.borderColor, boxShadow: `0 0 20px ${league.glowColor}, 0 8px 32px rgba(0,0,0,0.35)` } : {}}
+    >
+      {/* League Header */}
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-4 text-left group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+            style={{ background: league.gradient, boxShadow: `0 2px 12px ${league.glowColor}` }}>
+            {league.emoji}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-white font-bold text-sm">{league.name}</h3>
+              {isUserLeague && (
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white"
+                  style={{ background: league.gradient }}>
+                  YOU
+                </span>
+              )}
+            </div>
+            <p className="text-white/40 text-[11px]">
+              {league.maxXp === Infinity ? `${league.minXp.toLocaleString()}+ XP` : `${league.minXp.toLocaleString()} – ${league.maxXp.toLocaleString()} XP`}
+              {" · "}{users.length} {users.length === 1 ? "student" : "students"}
+            </p>
+          </div>
+        </div>
+        <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white/60 transition-colors" />
+        </motion.div>
+      </button>
+
+      {/* Expanded Content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            {users.length === 0 ? (
+              <div className="px-4 pb-4 text-center">
+                <p className="text-white/30 text-xs py-6">No students in this league yet</p>
+              </div>
+            ) : (
+              <div className="px-3 pb-3 space-y-1">
+                {/* Safe zone / demotion labels */}
+                {users.length >= 3 && (
+                  <div className="flex items-center gap-2 px-2 pb-2">
+                    <div className="flex items-center gap-1">
+                      <Shield className="w-3 h-3 text-emerald-400/70" />
+                      <span className="text-emerald-400/70 text-[9px] font-medium">Safe zone: Top {safeCount}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6 text-sm">
-                    <motion.div 
-                      whileHover={{ scale: 1.05 }}
-                      className="text-center p-3 rounded-xl bg-orange-500/10 border border-orange-500/20"
-                    >
-                      <div className="flex items-center gap-1 justify-center text-orange-500">
-                        <Flame className="w-5 h-5" />
-                        <span className="font-bold text-xl">{userRank.currentStreak}</span>
-                      </div>
-                      <p className="text-muted-foreground text-xs mt-1">Day Streak</p>
-                    </motion.div>
-                    <motion.div 
-                      whileHover={{ scale: 1.05 }}
-                      className="text-center p-3 rounded-xl bg-blue-500/10 border border-blue-500/20"
-                    >
-                      <div className="flex items-center gap-1 justify-center text-blue-500">
-                        <Clock className="w-5 h-5" />
-                        <span className="font-bold text-xl">{Math.floor(userRank.totalStudyMinutes / 60)}h</span>
-                      </div>
-                      <p className="text-muted-foreground text-xs mt-1">Studied</p>
-                    </motion.div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+                )}
 
-        {/* Filter */}
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex gap-3"
-        >
-          <Select value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
-            <SelectTrigger className="w-56 bg-card/80 backdrop-blur-sm border-border/50 hover:bg-card hover:border-primary/30 transition-all duration-300">
-              <SelectValue placeholder="Filter by" />
-            </SelectTrigger>
-            <SelectContent className="bg-card/95 backdrop-blur-xl border-border/50">
-              <SelectItem value="all" className="hover:bg-primary/10 cursor-pointer">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" />
-                  All Students
-                </div>
-              </SelectItem>
-              <SelectItem value="class" className="hover:bg-primary/10 cursor-pointer">
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  My Class
-                </div>
-              </SelectItem>
-              <SelectItem value="school" className="hover:bg-primary/10 cursor-pointer">
-                <div className="flex items-center gap-2">
-                  <School className="w-4 h-4 text-accent" />
-                  My School
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          
-          {filter !== "all" && userProfile && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/20 rounded-lg text-sm"
-            >
-              {filter === "class" && <span>Class {userProfile.class}</span>}
-              {filter === "school" && <span className="truncate max-w-[200px]">{userProfile.school_name}</span>}
-            </motion.div>
-          )}
-        </motion.div>
+                {users.map((u, i) => {
+                  const isSafe = i < safeCount;
+                  const isDemotion = i >= demotionStart && users.length >= 3;
 
-        {/* Top 3 Podium */}
-        {!loading && entries.length >= 3 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-3 gap-4 py-8 items-end"
-          >
-            {/* Second Place */}
-            <motion.div 
-              className="flex flex-col items-center"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              whileHover={{ y: -5 }}
-            >
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: -5 }}
-                className="w-18 h-18 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 rounded-full flex items-center justify-center mb-3 shadow-2xl shadow-slate-400/50 ring-4 ring-slate-200/50 relative"
-              >
-                <Medal className="w-9 h-9 text-white drop-shadow-lg" />
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-slate-300 rounded-full flex items-center justify-center text-xs font-bold text-slate-700 shadow-lg">2</div>
-              </motion.div>
-              <p className={cn(
-                "font-semibold text-sm text-center truncate w-full px-2 flex items-center justify-center gap-1",
-                entries[1]?.isCurrentUser && "text-primary"
-              )}>
-                {entries[1]?.displayName}
-                {entries[1]?.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={14} />}
-                {entries[1]?.isCurrentUser && " (You)"}
-              </p>
-              <p className="text-sm font-bold bg-gradient-to-r from-slate-500 to-slate-600 bg-clip-text text-transparent">
-                {entries[1]?.totalXp.toLocaleString()} XP
-              </p>
-              <div className="w-full h-24 bg-gradient-to-t from-slate-400 via-slate-300 to-slate-200 rounded-t-3xl mt-3 flex items-end justify-center pb-3 shadow-inner relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
-                <span className="text-white font-black text-3xl drop-shadow-lg relative z-10">2</span>
-              </div>
-            </motion.div>
-
-            {/* First Place */}
-            <motion.div 
-              className="flex flex-col items-center"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              whileHover={{ y: -8 }}
-            >
-              <motion.div 
-                whileHover={{ scale: 1.15, rotate: 5 }}
-                animate={{ 
-                  boxShadow: ["0 0 20px rgba(251, 191, 36, 0.4)", "0 0 40px rgba(251, 191, 36, 0.6)", "0 0 20px rgba(251, 191, 36, 0.4)"]
-                }}
-                transition={{ 
-                  boxShadow: { duration: 2, repeat: Infinity },
-                  scale: { type: "spring", stiffness: 300 }
-                }}
-                className="w-24 h-24 bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-500 rounded-full flex items-center justify-center mb-3 ring-4 ring-yellow-300/50 relative"
-              >
-                <Crown className="w-12 h-12 text-white drop-shadow-lg" />
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center text-sm font-bold text-yellow-900 shadow-lg ring-2 ring-yellow-300">1</div>
-                <Sparkles className="w-5 h-5 text-yellow-200 absolute top-0 left-0 animate-pulse" />
-                <Sparkles className="w-4 h-4 text-yellow-200 absolute bottom-2 right-0 animate-pulse delay-500" />
-              </motion.div>
-              <p className={cn(
-                "font-bold text-center truncate w-full px-2 text-lg flex items-center justify-center gap-1",
-                entries[0]?.isCurrentUser && "text-primary"
-              )}>
-                {entries[0]?.displayName}
-                {entries[0]?.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}
-                {entries[0]?.isCurrentUser && " (You)"}
-              </p>
-              <p className="text-base font-black bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 bg-clip-text text-transparent">
-                {entries[0]?.totalXp.toLocaleString()} XP
-              </p>
-              <div className="w-full h-36 bg-gradient-to-t from-amber-500 via-yellow-400 to-yellow-300 rounded-t-3xl mt-3 flex items-end justify-center pb-4 shadow-inner relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent" />
-                <span className="text-white font-black text-4xl drop-shadow-lg relative z-10">1</span>
-              </div>
-            </motion.div>
-
-            {/* Third Place */}
-            <motion.div 
-              className="flex flex-col items-center"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              whileHover={{ y: -5 }}
-            >
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-16 h-16 bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 rounded-full flex items-center justify-center mb-3 shadow-2xl shadow-orange-500/50 ring-4 ring-amber-400/50 relative"
-              >
-                <Medal className="w-8 h-8 text-white drop-shadow-lg" />
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center text-xs font-bold text-amber-900 shadow-lg">3</div>
-              </motion.div>
-              <p className={cn(
-                "font-semibold text-sm text-center truncate w-full px-2 flex items-center justify-center gap-1",
-                entries[2]?.isCurrentUser && "text-primary"
-              )}>
-                {entries[2]?.displayName}
-                {entries[2]?.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={14} />}
-                {entries[2]?.isCurrentUser && " (You)"}
-              </p>
-              <p className="text-sm font-bold bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
-                {entries[2]?.totalXp.toLocaleString()} XP
-              </p>
-              <div className="w-full h-20 bg-gradient-to-t from-orange-600 via-orange-500 to-amber-500 rounded-t-3xl mt-3 flex items-end justify-center pb-3 shadow-inner relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
-                <span className="text-white font-black text-2xl drop-shadow-lg relative z-10">3</span>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* Full Leaderboard List */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="overflow-hidden bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-muted/50 to-muted/30 border-b border-border/50">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-primary" />
-                Full Rankings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {loading ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full" />
-                </div>
-              ) : entries.length === 0 ? (
-                <div className="p-12 text-center text-muted-foreground">
-                  <Trophy className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                  <p className="text-lg">No students found</p>
-                  <p className="text-sm">Start studying to join the leaderboard!</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-border/50">
-                  {entries.slice(3).map((entry, index) => (
-                    <motion.div
-                      key={entry.userId}
-                      initial={{ opacity: 0, x: -20 }}
+                  return (
+                    <motion.button
+                      key={u.userId}
+                      initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      whileHover={{ 
-                        backgroundColor: "hsl(var(--primary) / 0.05)",
-                        x: 4,
-                      }}
+                      transition={{ delay: i * 0.03 }}
+                      onClick={() => navigate(`/profile?id=${u.userId}`)}
                       className={cn(
-                        "flex items-center gap-4 p-5 transition-all duration-300 cursor-default group",
-                        entry.isCurrentUser && "bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-l-4 border-primary"
+                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left",
+                        u.isCurrentUser
+                          ? "bg-white/10 ring-1 ring-white/20"
+                          : "hover:bg-white/5",
+                        isDemotion && "opacity-70"
                       )}
                     >
-                      <motion.div 
-                        whileHover={{ scale: 1.15, rotate: 10 }}
-                        transition={{ type: "spring", stiffness: 400 }}
-                        className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg",
-                          entry.rank <= 10 
-                            ? "bg-gradient-to-br from-primary/80 to-primary text-primary-foreground" 
-                            : "bg-gradient-to-br from-muted to-muted/80 text-muted-foreground"
+                      {/* Rank */}
+                      <div className="w-6 text-center flex-shrink-0">
+                        {i === 0 ? (
+                          <span className="text-base">👑</span>
+                        ) : i === 1 ? (
+                          <span className="text-base">🥈</span>
+                        ) : i === 2 ? (
+                          <span className="text-base">🥉</span>
+                        ) : (
+                          <span className="text-white/40 text-xs font-bold">#{i + 1}</span>
                         )}
-                      >
-                        {entry.rank}
-                      </motion.div>
+                      </div>
 
+                      {/* Avatar */}
+                      <Avatar className="w-9 h-9 border-2 flex-shrink-0" style={{ borderColor: u.isCurrentUser ? league.borderColor : "rgba(255,255,255,0.1)" }}>
+                        <AvatarImage src={u.avatarUrl || undefined} alt={u.displayName} />
+                        <AvatarFallback className="text-white text-xs font-bold" style={{ background: league.gradient, fontSize: "10px" }}>
+                          {u.displayName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className={cn(
-                          "font-semibold truncate group-hover:text-primary transition-colors flex items-center gap-1",
-                          entry.isCurrentUser && "text-primary font-bold"
-                        )}>
-                          {entry.displayName}
-                          {entry.isCurrentUser && isVerifiedEmail(user?.email) && <VerifiedBadge size={14} />}
-                          {entry.isCurrentUser && (
-                            <span className="ml-1 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>
-                          )}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-2">
-                          <span className="flex items-center gap-1">
-                            <School className="w-3 h-3" />
-                            {entry.schoolName}
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn("text-sm font-semibold truncate", u.isCurrentUser ? "text-white" : "text-white/80")}>
+                            {u.displayName}
                           </span>
-                          <span>•</span>
-                          <span>Class {entry.studentClass}</span>
+                          {u.isCurrentUser && (
+                            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-white/15 text-white/70">YOU</span>
+                          )}
+                        </div>
+                        <p className="text-white/35 text-[10px] truncate">
+                          Class {u.studentClass}{u.schoolName ? ` · ${u.schoolName}` : ""}
                         </p>
                       </div>
 
-                      <div className="text-right">
-                        <p className="font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-1 justify-end">
-                          <Zap className="w-4 h-4 text-yellow-500" />
-                          {entry.totalXp.toLocaleString()} XP
-                        </p>
-                        <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1 group-hover:text-orange-500 transition-colors">
-                            <Flame className="w-3 h-3 text-orange-500" />
-                            {entry.currentStreak}d
-                          </span>
-                          <span className="flex items-center gap-1 group-hover:text-blue-500 transition-colors">
-                            <Clock className="w-3 h-3 text-blue-500" />
-                            {Math.floor(entry.totalStudyMinutes / 60)}h
-                          </span>
-                        </div>
+                      {/* XP */}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <Zap className="w-3 h-3" style={{ color: league.textColor }} />
+                        <span className="text-white/80 text-xs font-bold">{u.totalXp.toLocaleString()}</span>
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      </main>
-    </div>
+
+                      {/* Zone indicator */}
+                      {users.length >= 3 && (
+                        <div className="flex-shrink-0">
+                          {isSafe ? (
+                            <div className="w-2 h-2 rounded-full bg-emerald-400/60" title="Safe zone" />
+                          ) : isDemotion ? (
+                            <div className="w-2 h-2 rounded-full bg-red-400/60" title="Demotion risk" />
+                          ) : (
+                            <div className="w-2 h-2 rounded-full bg-yellow-400/40" title="Neutral zone" />
+                          )}
+                        </div>
+                      )}
+                    </motion.button>
+                  );
+                })}
+
+                {/* Zone Legend */}
+                {users.length >= 3 && (
+                  <div className="flex items-center justify-center gap-4 pt-2 border-t border-white/5">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400/60" />
+                      <span className="text-white/30 text-[9px]">Safe</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-yellow-400/40" />
+                      <span className="text-white/30 text-[9px]">Neutral</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-red-400/60" />
+                      <span className="text-white/30 text-[9px]">At Risk</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </GlassCard>
   );
 };
 
