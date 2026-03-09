@@ -146,7 +146,7 @@ const Leaderboard = () => {
     .sort((a, b) => b.totalXp - a.totalXp);
 
   const top3 = leagueUsers.slice(0, 3);
-  const rest = leagueUsers.slice(3);
+  const rest = leagueUsers;
 
   const safeCount = Math.max(1, Math.ceil(leagueUsers.length * 0.4));
 
