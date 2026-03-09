@@ -16,6 +16,7 @@ import mascotImg from "@/assets/ai-mascot-3d.png";
 interface LeaderboardUser {
   userId: string;
   displayName: string;
+  username: string | null;
   totalXp: number;
   currentStreak: number;
   studentClass: number;
