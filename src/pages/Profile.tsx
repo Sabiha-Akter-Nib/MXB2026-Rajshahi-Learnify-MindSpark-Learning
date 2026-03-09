@@ -947,7 +947,6 @@ const Profile = () => {
               </div>
             </GlassCard>
           )}
-import { getLeagueForXp } from "@/lib/leaderboard";
 
         </div>
       </div>
