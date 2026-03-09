@@ -10,10 +10,12 @@ import {
   BookOpen,
   PanelLeftClose,
   PanelLeftOpen,
-  User
+  User,
+  LogOut
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import oddhaboshLogo from "@/assets/oddhaboshai-logo.png";
 import smallLogo from "@/assets/logo.png";
 import {
@@ -52,7 +54,14 @@ export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   const renderItem = (item: typeof mainItems[0]) => (
     <SidebarMenuItem key={item.title}>
@@ -148,6 +157,18 @@ export function AppSidebar() {
         <div className="mx-1 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent mb-3" />
         <SidebarMenu className="gap-0.5">
           {bottomItems.map(renderItem)}
+          {/* Logout button */}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Logout">
+              <button
+                onClick={handleLogout}
+                className={`flex items-center gap-3 py-2.5 rounded-xl text-red-400/70 hover:text-red-400 hover:bg-red-500/[0.08] transition-all duration-200 w-full ${collapsed ? 'justify-center px-0' : 'px-3'}`}
+              >
+                <LogOut className="w-[18px] h-[18px] shrink-0" />
+                {!collapsed && <span className="text-sm">Logout</span>}
+              </button>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
