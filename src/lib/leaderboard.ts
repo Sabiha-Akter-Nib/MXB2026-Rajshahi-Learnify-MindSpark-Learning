@@ -105,19 +105,26 @@ export async function getUserRank(userId: string): Promise<number> {
 /** Upsert the current user's leaderboard entry with latest data */
 export async function syncLeaderboardEntry(userId: string): Promise<void> {
   try {
-    const [profileRes, statsRes] = await Promise.all([
+    const [profileRes, sessionsRes, assessmentsRes, statsRes] = await Promise.all([
       supabase.from("profiles").select("full_name, class, school_name").eq("user_id", userId).maybeSingle(),
-      supabase.from("student_stats").select("total_xp, current_streak").eq("user_id", userId).maybeSingle(),
+      supabase.from("study_sessions").select("xp_earned").eq("user_id", userId),
+      supabase.from("assessments").select("xp_earned").eq("user_id", userId),
+      supabase.from("student_stats").select("current_streak").eq("user_id", userId).maybeSingle(),
     ]);
 
     if (!profileRes.data) return;
+
+    // Compute XP from source tables (same as Dashboard)
+    const sessionXP = (sessionsRes.data || []).reduce((s, r) => s + (r.xp_earned || 0), 0);
+    const assessmentXP = (assessmentsRes.data || []).reduce((s, r) => s + (r.xp_earned || 0), 0);
+    const totalXp = sessionXP + assessmentXP;
 
     const entry = {
       user_id: userId,
       display_name: profileRes.data.full_name,
       class: profileRes.data.class,
       school_name: profileRes.data.school_name,
-      total_xp: statsRes.data?.total_xp || 0,
+      total_xp: totalXp,
       current_streak: statsRes.data?.current_streak || 0,
       is_public: true,
       updated_at: new Date().toISOString(),
