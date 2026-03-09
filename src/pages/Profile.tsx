@@ -241,11 +241,13 @@ const Profile = () => {
       setTotalExams(exams?.length || 0);
       setTotalCorrect(exams?.reduce((sum, a) => sum + (a.correct_answers || 0), 0) || 0);
 
-      // Leaderboard rank
+      // Leaderboard rank & XP for league
       const { data: lb } = await supabase.from("leaderboard_entries").select("user_id, total_xp").eq("is_public", true).order("total_xp", { ascending: false });
       if (lb) {
         const idx = lb.findIndex((e) => e.user_id === targetUserId);
         setLeaderboardRank(idx >= 0 ? idx + 1 : null);
+        const entry = lb.find((e) => e.user_id === targetUserId);
+        setLeaderboardXp(entry?.total_xp ?? 0);
       }
 
       // Followers/following counts
