@@ -471,7 +471,7 @@ const Leaderboard = () => {
                 {rest.length > 0 && (
                   <div className="space-y-1.5">
                     {rest.map((u, i) => {
-                      const rank = i + 4;
+                      const rank = i + 1;
                       const isSafe = rank <= safeCount;
                       const isDemotion = rank > leagueUsers.length * 0.7 && leagueUsers.length >= 3;
 
