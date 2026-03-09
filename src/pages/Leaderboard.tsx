@@ -43,6 +43,34 @@ const Leaderboard = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  // Countdown to next Sunday midnight (reset time)
+  const [countdown, setCountdown] = useState({ d: 0, h: 0, m: 0, s: 0 });
+
+  useEffect(() => {
+    const getNextSunday = () => {
+      const now = new Date();
+      const next = new Date(now);
+      next.setDate(now.getDate() + ((7 - now.getDay()) % 7 || 7));
+      next.setHours(0, 0, 0, 0);
+      return next;
+    };
+
+    const update = () => {
+      const diff = Math.max(0, getNextSunday().getTime() - Date.now());
+      const s = Math.floor(diff / 1000);
+      setCountdown({
+        d: Math.floor(s / 86400),
+        h: Math.floor((s % 86400) / 3600),
+        m: Math.floor((s % 3600) / 60),
+        s: s % 60,
+      });
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
   }, [user, authLoading, navigate]);
