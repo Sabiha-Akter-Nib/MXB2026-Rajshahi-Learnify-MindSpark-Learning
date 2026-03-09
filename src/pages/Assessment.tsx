@@ -225,10 +225,6 @@ const Assessment = () => {
   const allAnswered = answeredCount === questions.length;
 
   const submitModelTest = async () => {
-    if (!allAnswered) {
-      toast({ title: isBangla ? "সব প্রশ্নের উত্তর দাও" : "Answer all questions", description: isBangla ? `${questions.length - answeredCount}টি প্রশ্ন বাকি আছে` : `${questions.length - answeredCount} questions remaining`, variant: "destructive" });
-      return;
-    }
     setIsSubmitting(true);
     const finalAnswers = questions.map((_, i) => lockedAnswers[i] ?? -1);
     try {
