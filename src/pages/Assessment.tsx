@@ -194,7 +194,7 @@ const Assessment = () => {
         body: {
           action: "submit",
           subjectId: selectedSubject?.id,
-          topic: topicInput || (selectedSubject ? (isBangla ? selectedSubject.name_bn : selectedSubject.name) : ""),
+          topic: chapterInput || (selectedSubject ? (isBangla ? selectedSubject.name_bn : selectedSubject.name) : ""),
           bloomLevel: "mixed",
           answers: finalAnswers,
           questions,
