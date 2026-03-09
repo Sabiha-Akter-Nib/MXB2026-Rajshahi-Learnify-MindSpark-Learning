@@ -568,7 +568,7 @@ const Assessment = () => {
               backdropFilter: "blur(24px) saturate(1.5)", border: "1.5px solid rgba(255,255,255,0.6)",
             }}>
               <input type="text" value={chapterInput} onChange={(e) => setChapterInput(e.target.value)}
-                placeholder={isBangla ? "অধ্যায়ের নাম বা নম্বর (ঐচ্ছিক)..." : "Chapter name or number (optional)..."}
+                placeholder={isBangla ? "অধ্যায়ের নাম বা নম্বর..." : "Chapter name or number..."}
                 className="w-full px-4 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading" />
             </div>
 
