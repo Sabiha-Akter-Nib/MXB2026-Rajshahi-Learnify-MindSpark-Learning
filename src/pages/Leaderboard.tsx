@@ -492,7 +492,15 @@ const Leaderboard = () => {
                         >
                           {/* Rank */}
                           <div className="w-7 flex-shrink-0 text-center">
-                            <span className="text-white/40 text-xs font-bold">#{rank}</span>
+                            {rank === 1 ? (
+                              <span className="text-base">👑</span>
+                            ) : rank === 2 ? (
+                              <span className="text-base">🥈</span>
+                            ) : rank === 3 ? (
+                              <span className="text-base">🥉</span>
+                            ) : (
+                              <span className="text-white/40 text-xs font-bold">#{rank}</span>
+                            )}
                           </div>
 
                           {/* Zone indicator */}
