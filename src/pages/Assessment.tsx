@@ -50,7 +50,6 @@ const TIME_LIMITS = [
 
 interface AdditionalSubjectEntry {
   subject: Subject | null;
-  topic: string;
   chapter: string;
 }
 
@@ -109,8 +108,6 @@ const Assessment = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
-  const [topicInput, setTopicInput] = useState("");
-  const [topics, setTopics] = useState<string[]>([]);
   const [chapterInput, setChapterInput] = useState("");
   const [questionCount, setQuestionCount] = useState(25);
   const [timeLimit, setTimeLimit] = useState(0); // in minutes, 0 = no limit
@@ -154,11 +151,10 @@ const Assessment = () => {
     setTimeExpired(false);
     setSessionStartTime(new Date());
 
-    // Combine all subjects + topics + chapters
-    const allTopics = [...topics, ...additionalEntries.map(e => e.topic)].filter(Boolean).join(", ");
+    // Combine all subjects + chapters
     const allChapters = [chapterInput, ...additionalEntries.map(e => e.chapter)].filter(Boolean).join(", ");
     const allSubjectNames = [selectedSubject.name, ...additionalEntries.map(e => e.subject?.name).filter(Boolean)].join(", ");
-    const combinedTopic = [allTopics, allChapters ? `Chapters: ${allChapters}` : ""].filter(Boolean).join(" | ") || (isBangla ? selectedSubject.name_bn : selectedSubject.name);
+    const combinedTopic = [allChapters ? `Chapters: ${allChapters}` : ""].filter(Boolean).join(" | ") || (isBangla ? selectedSubject.name_bn : selectedSubject.name);
 
     try {
       const { data, error } = await supabase.functions.invoke("run-assessment", {
@@ -198,7 +194,7 @@ const Assessment = () => {
         body: {
           action: "submit",
           subjectId: selectedSubject?.id,
-          topic: topicInput || (selectedSubject ? (isBangla ? selectedSubject.name_bn : selectedSubject.name) : ""),
+          topic: chapterInput || (selectedSubject ? (isBangla ? selectedSubject.name_bn : selectedSubject.name) : ""),
           bloomLevel: "mixed",
           answers: finalAnswers,
           questions,
@@ -208,7 +204,7 @@ const Assessment = () => {
       const timeTaken = sessionStartTime ? Math.round((Date.now() - sessionStartTime.getTime()) / 1000) : 0;
       try {
         await supabase.functions.invoke("track-session", {
-          body: { userId: user?.id, subjectId: selectedSubject?.id, topic: topicInput || selectedSubject?.name, duration: Math.max(1, Math.round(timeTaken / 60)), xpEarned: Math.round((data as any)?.xpEarned || 0), bloomLevel: "mixed" },
+          body: { userId: user?.id, subjectId: selectedSubject?.id, topic: chapterInput || selectedSubject?.name, duration: Math.max(1, Math.round(timeTaken / 60)), xpEarned: Math.round((data as any)?.xpEarned || 0), bloomLevel: "mixed" },
         });
       } catch (e) {}
       setResultData({ ...(data as any), timeTaken });
@@ -240,7 +236,7 @@ const Assessment = () => {
         body: {
           action: "submit",
           subjectId: selectedSubject?.id,
-          topic: topicInput || (selectedSubject ? (isBangla ? selectedSubject.name_bn : selectedSubject.name) : ""),
+          topic: chapterInput || (selectedSubject ? (isBangla ? selectedSubject.name_bn : selectedSubject.name) : ""),
           bloomLevel: "mixed",
           answers: finalAnswers,
           questions,
@@ -256,7 +252,7 @@ const Assessment = () => {
           body: {
             userId: user?.id,
             subjectId: selectedSubject?.id,
-            topic: topicInput || selectedSubject?.name,
+            topic: chapterInput || selectedSubject?.name,
             duration: Math.max(1, Math.round(timeTaken / 60)),
             xpEarned: Math.round((data as any)?.xpEarned || 0),
             bloomLevel: "mixed",
@@ -566,47 +562,13 @@ const Assessment = () => {
 
         <main className="flex-1 overflow-y-auto relative z-10">
           <div className="max-w-md mx-auto px-4 py-8 flex flex-col items-center gap-4">
-            {/* Topic Input with chips */}
-            <div className="w-full space-y-2">
-              {/* Existing topic chips */}
-              {topics.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {topics.map((t, i) => (
-                    <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-heading"
-                      style={{ background: GRADIENT, color: "white" }}>
-                      <span>{t}</span>
-                      <button onClick={() => setTopics(prev => prev.filter((_, idx) => idx !== i))} className="hover:bg-white/20 rounded-full p-0.5">
-                        <X className="w-3 h-3" />
-                      </button>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-              <div className="rounded-2xl overflow-hidden flex" style={{
-                background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
-                backdropFilter: "blur(24px) saturate(1.5)", border: "1.5px solid rgba(255,255,255,0.6)",
-              }}>
-                <input type="text" value={topicInput} onChange={(e) => setTopicInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && topicInput.trim()) { setTopics(prev => [...prev, topicInput.trim()]); setTopicInput(""); } }}
-                  placeholder={isBangla ? "টপিক লিখে Enter চাপো..." : "Type topic & press Enter..."}
-                  className="flex-1 px-4 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading" />
-                {topicInput.trim() && (
-                  <button onClick={() => { setTopics(prev => [...prev, topicInput.trim()]); setTopicInput(""); }}
-                    className="px-3 flex items-center" style={{ color: "hsl(270,60%,55%)" }}>
-                    <Plus className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
-            </div>
-
             {/* Chapter Input */}
             <div className="w-full rounded-2xl overflow-hidden" style={{
               background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
               backdropFilter: "blur(24px) saturate(1.5)", border: "1.5px solid rgba(255,255,255,0.6)",
             }}>
               <input type="text" value={chapterInput} onChange={(e) => setChapterInput(e.target.value)}
-                placeholder={isBangla ? "অধ্যায়ের নাম বা নম্বর (ঐচ্ছিক)..." : "Chapter name or number (optional)..."}
+                placeholder={isBangla ? "অধ্যায়ের নাম বা নম্বর..." : "Chapter name or number..."}
                 className="w-full px-4 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading" />
             </div>
 
@@ -633,10 +595,6 @@ const Assessment = () => {
                   <option value="">{isBangla ? "বিষয় নির্বাচন করো" : "Select subject"}</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{isBangla ? s.name_bn || s.name : s.name}</option>)}
                 </select>
-                <input type="text" value={entry.topic}
-                  onChange={(e) => setAdditionalEntries(prev => prev.map((en, i) => i === idx ? { ...en, topic: e.target.value } : en))}
-                  placeholder={isBangla ? "টপিক..." : "Topic..."}
-                  className="w-full px-3 py-2 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading rounded-xl border border-border/20" />
                 <input type="text" value={entry.chapter}
                   onChange={(e) => setAdditionalEntries(prev => prev.map((en, i) => i === idx ? { ...en, chapter: e.target.value } : en))}
                   placeholder={isBangla ? "অধ্যায়..." : "Chapter..."}
@@ -646,10 +604,10 @@ const Assessment = () => {
 
             {/* Add Another Subject Button */}
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              onClick={() => setAdditionalEntries(prev => [...prev, { subject: null, topic: "", chapter: "" }])}
+              onClick={() => setAdditionalEntries(prev => [...prev, { subject: null, chapter: "" }])}
               className="w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold font-heading transition-all"
               style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.85), rgba(254,254,254,0.6))", backdropFilter: "blur(20px)", border: "1.5px dashed hsla(270,60%,55%,0.3)", color: "hsl(270,60%,55%)" }}>
-              <Plus className="w-4 h-4" />{isBangla ? "আরেকটি বিষয় + টপিক যোগ করো" : "Add another subject + topic"}
+              <Plus className="w-4 h-4" />{isBangla ? "আরেকটি বিষয় + অধ্যায় যোগ করো" : "Add another subject + chapter"}
             </motion.button>
 
             {/* Question Count Selector */}
