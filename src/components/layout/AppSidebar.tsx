@@ -157,6 +157,18 @@ export function AppSidebar() {
         <div className="mx-1 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent mb-3" />
         <SidebarMenu className="gap-0.5">
           {bottomItems.map(renderItem)}
+          {/* Logout button */}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Logout">
+              <button
+                onClick={handleLogout}
+                className={`flex items-center gap-3 py-2.5 rounded-xl text-red-400/70 hover:text-red-400 hover:bg-red-500/[0.08] transition-all duration-200 w-full ${collapsed ? 'justify-center px-0' : 'px-3'}`}
+              >
+                <LogOut className="w-[18px] h-[18px] shrink-0" />
+                {!collapsed && <span className="text-sm">Logout</span>}
+              </button>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
