@@ -151,11 +151,10 @@ const Assessment = () => {
     setTimeExpired(false);
     setSessionStartTime(new Date());
 
-    // Combine all subjects + topics + chapters
-    const allTopics = [...topics, ...additionalEntries.map(e => e.topic)].filter(Boolean).join(", ");
+    // Combine all subjects + chapters
     const allChapters = [chapterInput, ...additionalEntries.map(e => e.chapter)].filter(Boolean).join(", ");
     const allSubjectNames = [selectedSubject.name, ...additionalEntries.map(e => e.subject?.name).filter(Boolean)].join(", ");
-    const combinedTopic = [allTopics, allChapters ? `Chapters: ${allChapters}` : ""].filter(Boolean).join(" | ") || (isBangla ? selectedSubject.name_bn : selectedSubject.name);
+    const combinedTopic = [allChapters ? `Chapters: ${allChapters}` : ""].filter(Boolean).join(" | ") || (isBangla ? selectedSubject.name_bn : selectedSubject.name);
 
     try {
       const { data, error } = await supabase.functions.invoke("run-assessment", {
