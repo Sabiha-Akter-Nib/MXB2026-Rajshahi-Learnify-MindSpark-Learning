@@ -16,6 +16,7 @@ import mascotImg from "@/assets/ai-mascot-3d.png";
 interface LeaderboardUser {
   userId: string;
   displayName: string;
+  username: string | null;
   totalXp: number;
   currentStreak: number;
   studentClass: number;
@@ -104,16 +105,18 @@ const Leaderboard = () => {
         }
 
         const userIds = entries.map(e => e.user_id);
-        const { data: avatars } = await supabase
-          .from("user_avatars")
-          .select("user_id, avatar_url")
-          .in("user_id", userIds);
+        const [avatarRes, profileRes] = await Promise.all([
+          supabase.from("user_avatars").select("user_id, avatar_url").in("user_id", userIds),
+          supabase.from("profiles").select("user_id, username").in("user_id", userIds),
+        ]);
 
-        const avatarMap = new Map(avatars?.map(a => [a.user_id, a.avatar_url]) || []);
+        const avatarMap = new Map(avatarRes.data?.map(a => [a.user_id, a.avatar_url]) || []);
+        const usernameMap = new Map(profileRes.data?.map(p => [p.user_id, p.username]) || []);
 
         const users: LeaderboardUser[] = entries.map((e, i) => ({
           userId: e.user_id,
           displayName: e.display_name,
+          username: usernameMap.get(e.user_id) || null,
           totalXp: e.total_xp,
           currentStreak: e.current_streak,
           studentClass: e.class,
@@ -537,7 +540,7 @@ const Leaderboard = () => {
                               )}
                             </div>
                             <p className="text-white/35 text-[10px] truncate">
-                              Class {u.studentClass}{u.schoolName ? ` · ${u.schoolName}` : ""}
+                              {u.username ? `@${u.username}` : `Class ${u.studentClass}`}{u.schoolName ? ` · ${u.schoolName}` : ""}
                             </p>
                           </div>
 
@@ -612,6 +615,9 @@ const PodiumSlot = ({ user, place, league, height, color, labelBg, onClick, crow
       <p className={cn("text-white font-semibold truncate max-w-full text-center", place === 1 ? "text-sm" : "text-xs")}>
         {user.displayName.split(" ")[0]}
       </p>
+      {user.username && (
+        <p className="text-white/35 text-[9px] truncate max-w-full text-center">@{user.username}</p>
+      )}
       <div className="flex items-center gap-1 mt-0.5">
         <Zap className="w-3 h-3" style={{ color: BRAND.peach }} />
         <span className="text-white/70 text-[11px] font-bold">{user.totalXp.toLocaleString()}</span>
