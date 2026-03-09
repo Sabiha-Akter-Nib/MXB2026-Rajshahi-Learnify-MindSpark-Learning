@@ -604,10 +604,10 @@ const Assessment = () => {
 
             {/* Add Another Subject Button */}
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              onClick={() => setAdditionalEntries(prev => [...prev, { subject: null, topic: "", chapter: "" }])}
+              onClick={() => setAdditionalEntries(prev => [...prev, { subject: null, chapter: "" }])}
               className="w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold font-heading transition-all"
               style={{ background: "linear-gradient(-45deg, rgba(254,254,254,0.85), rgba(254,254,254,0.6))", backdropFilter: "blur(20px)", border: "1.5px dashed hsla(270,60%,55%,0.3)", color: "hsl(270,60%,55%)" }}>
-              <Plus className="w-4 h-4" />{isBangla ? "আরেকটি বিষয় + টপিক যোগ করো" : "Add another subject + topic"}
+              <Plus className="w-4 h-4" />{isBangla ? "আরেকটি বিষয় + অধ্যায় যোগ করো" : "Add another subject + chapter"}
             </motion.button>
 
             {/* Question Count Selector */}
