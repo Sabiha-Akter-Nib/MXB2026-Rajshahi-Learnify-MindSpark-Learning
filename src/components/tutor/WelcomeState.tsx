@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { BookOpen, Brain, Upload, Sparkles, Zap, Star } from "lucide-react";
-import mascotImg from "@/assets/oddhaboshai-logo.png";
+import mascotImg from "@/assets/ai-mascot-3d.png";
 
 interface WelcomeStateProps {
   studentName?: string;
