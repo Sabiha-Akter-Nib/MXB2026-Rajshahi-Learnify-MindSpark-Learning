@@ -34,6 +34,7 @@ import { format, subDays } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getLeagueForXp } from "@/lib/leaderboard";
 
 import statStreak3d from "@/assets/stat-streak-glass.png";
 import subjectIcon3d from "@/assets/subject-icon-3d.png";
