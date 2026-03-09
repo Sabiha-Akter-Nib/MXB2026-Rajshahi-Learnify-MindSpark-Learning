@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Trophy, Loader2, Lock, Zap, ChevronDown, ChevronUp, Shield, Clock, Users, Star,
+  ArrowLeft, Trophy, Loader2, Lock, Zap, Shield, Users, Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,27 +25,20 @@ interface LeaderboardUser {
   rank: number;
 }
 
-// Glass card
-const GlassCard = ({ children, className, style, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn("rounded-2xl border border-white/[0.15] backdrop-blur-2xl", className)}
-    style={{
-      background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1)",
-      ...style,
-    }}
-    {...props}
-  >
-    {children}
-  </div>
-);
+const BRAND = {
+  purple: "#6A68DF",
+  pink: "#E91E8C",
+  peach: "#EFB995",
+  white: "#FEFEFE",
+  dark: "#2E2C2D",
+  magenta: "#C2185B",
+};
 
 const Leaderboard = () => {
   const [allUsers, setAllUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasExams, setHasExams] = useState<boolean | null>(null);
-  const [expandedLeague, setExpandedLeague] = useState<string | null>(null);
-  const [userLeagueId, setUserLeagueId] = useState<string | null>(null);
+  const [activeLeague, setActiveLeague] = useState<string>("diamond");
 
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -59,7 +52,6 @@ const Leaderboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Check if user has at least 1 assessment
         const { count } = await supabase
           .from("assessments")
           .select("id", { count: "exact", head: true })
@@ -67,16 +59,10 @@ const Leaderboard = () => {
 
         const examCount = count || 0;
         setHasExams(examCount > 0);
+        if (examCount === 0) { setLoading(false); return; }
 
-        if (examCount === 0) {
-          setLoading(false);
-          return;
-        }
-
-        // Sync current user's leaderboard entry
         await syncLeaderboardEntry(user.id);
 
-        // Fetch all public leaderboard entries
         const { data: entries } = await supabase
           .from("leaderboard_entries")
           .select("user_id, display_name, total_xp, current_streak, class, school_name, is_public")
@@ -89,7 +75,6 @@ const Leaderboard = () => {
           return;
         }
 
-        // Fetch avatars for all users
         const userIds = entries.map(e => e.user_id);
         const { data: avatars } = await supabase
           .from("user_avatars")
@@ -112,12 +97,10 @@ const Leaderboard = () => {
 
         setAllUsers(users);
 
-        // Find current user's league
         const currentUser = users.find(u => u.isCurrentUser);
         if (currentUser) {
           const league = getLeagueForXp(currentUser.totalXp);
-          setUserLeagueId(league.id);
-          setExpandedLeague(league.id);
+          setActiveLeague(league.id);
         }
       } catch (error) {
         console.error("Failed to fetch leaderboard:", error);
@@ -125,20 +108,19 @@ const Leaderboard = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [user]);
 
-  // Group users by league
-  const leagueGroups = LEAGUES.map(league => {
-    const users = allUsers.filter(u => {
-      const l = getLeagueForXp(u.totalXp);
-      return l.id === league.id;
-    });
-    // Re-rank within league
-    users.sort((a, b) => b.totalXp - a.totalXp);
-    return { league, users };
-  });
+  // Get users for current active league
+  const activeLeagueData = LEAGUES.find(l => l.id === activeLeague)!;
+  const leagueUsers = allUsers
+    .filter(u => getLeagueForXp(u.totalXp).id === activeLeague)
+    .sort((a, b) => b.totalXp - a.totalXp);
+
+  const top3 = leagueUsers.slice(0, 3);
+  const rest = leagueUsers.slice(3);
+
+  const safeCount = Math.max(1, Math.ceil(leagueUsers.length * 0.4));
 
   const currentUser = allUsers.find(u => u.isCurrentUser);
   const currentLeague = currentUser ? getLeagueForXp(currentUser.totalXp) : null;
@@ -148,35 +130,34 @@ const Leaderboard = () => {
     return (
       <DashboardLayout>
         <div className="min-h-[80vh] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-white/60" />
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: BRAND.purple }} />
         </div>
       </DashboardLayout>
     );
   }
 
-  // Gate: require at least 1 exam
   if (hasExams === false) {
     return (
       <DashboardLayout>
         <div className="min-h-[80vh] flex flex-col items-center justify-center px-6 text-center">
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mb-6">
             <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ background: "linear-gradient(135deg, hsla(270, 60%, 55%, 0.2), hsla(330, 70%, 55%, 0.2))" }}>
-              <Lock className="w-10 h-10 text-white/40" />
+              style={{ background: `linear-gradient(135deg, ${BRAND.purple}30, ${BRAND.pink}30)` }}>
+              <Lock className="w-10 h-10 style={{ color: BRAND.purple + '80' }}" />
             </div>
             <motion.img src={mascotImg} alt="mascot" className="w-28 h-28 mx-auto mb-4 drop-shadow-2xl"
               animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity }} />
           </motion.div>
-          <h2 className="text-white font-bold text-xl mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>
+          <h2 className="font-bold text-xl mb-2" style={{ fontFamily: "Poppins", color: BRAND.dark }}>
             Leaderboard Locked 🔒
           </h2>
-          <p className="text-white/50 text-sm max-w-xs mb-6" style={{ fontFamily: "Poppins, sans-serif" }}>
-            Complete at least 1 Model Test or Assessment to unlock the National Leaderboard and start competing!
+          <p className="text-sm max-w-xs mb-6" style={{ fontFamily: "Poppins", color: BRAND.dark + "80" }}>
+            Complete at least 1 Assessment to unlock the National Leaderboard!
           </p>
           <Button
             onClick={() => navigate("/assessment")}
             className="rounded-full px-8 py-3 font-bold text-white shadow-lg"
-            style={{ background: "linear-gradient(135deg, hsl(300, 65%, 52%), hsl(270, 60%, 55%))" }}
+            style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.pink})` }}
           >
             <Trophy className="w-4 h-4 mr-2" />
             Take Your First Exam
@@ -188,280 +169,372 @@ const Leaderboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-5" style={{ fontFamily: "Poppins, sans-serif" }}>
+      <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-4" style={{ fontFamily: "Poppins, sans-serif" }}>
 
         {/* Header */}
         <header className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="text-white/60 hover:text-white hover:bg-white/10 rounded-xl" asChild>
-            <Link to="/dashboard"><ArrowLeft className="w-5 h-5" /></Link>
+          <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white/10" asChild>
+            <Link to="/dashboard"><ArrowLeft className="w-5 h-5 text-white/70" /></Link>
           </Button>
-          <div className="flex items-center gap-3 flex-1">
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg"
-              style={{ background: "linear-gradient(135deg, hsl(300, 65%, 52%), hsl(270, 60%, 55%))" }}>
-              <Trophy className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-white font-bold text-lg">National Leaderboard</h1>
-              <p className="text-white/40 text-xs flex items-center gap-1">
-                <Users className="w-3 h-3" /> {allUsers.length} students competing
-              </p>
-            </div>
+          <div className="flex-1">
+            <h1 className="text-white font-bold text-lg flex items-center gap-2">
+              <Trophy className="w-5 h-5" style={{ color: BRAND.peach }} />
+              Leaderboards
+            </h1>
+            <p className="text-white/40 text-xs flex items-center gap-1">
+              <Users className="w-3 h-3" /> {allUsers.length} students nationwide
+            </p>
           </div>
         </header>
 
-        {/* Current User League Card */}
-        {currentUser && currentLeague && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-            <GlassCard className="p-4 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-20" style={{ background: currentLeague.gradient }} />
-              <div className="relative flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
-                  style={{ background: currentLeague.gradient, boxShadow: `0 4px 20px ${currentLeague.glowColor}` }}>
-                  {currentLeague.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white/50 text-xs">Your League</p>
-                  <h2 className="text-white font-bold text-lg">{currentLeague.name}</h2>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-white/70 text-xs flex items-center gap-1">
-                      <Zap className="w-3 h-3" style={{ color: currentLeague.textColor }} />
-                      {currentUser.totalXp.toLocaleString()} XP
-                    </span>
-                    <span className="text-white/70 text-xs">
-                      Rank #{allUsers.findIndex(u => u.isCurrentUser) + 1}
-                    </span>
-                  </div>
-                  {xpToNext > 0 && (
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between text-[10px] text-white/40 mb-1">
-                        <span>Next league</span>
-                        <span>{xpToNext} XP needed</span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.min(100, ((currentUser.totalXp - currentLeague.minXp) / (currentLeague.maxXp === Infinity ? 1000 : currentLeague.maxXp - currentLeague.minXp + 1)) * 100)}%` }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                          className="h-full rounded-full"
-                          style={{ background: currentLeague.gradient }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
+        {/* League Tabs - Horizontal scrollable buttons */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          {LEAGUES.map(league => {
+            const isActive = activeLeague === league.id;
+            const count = allUsers.filter(u => getLeagueForXp(u.totalXp).id === league.id).length;
+            return (
+              <button
+                key={league.id}
+                onClick={() => setActiveLeague(league.id)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0 border",
+                  isActive
+                    ? "text-white shadow-lg scale-[1.02]"
+                    : "text-white/50 border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
+                )}
+                style={isActive ? {
+                  background: activeLeagueData.id === league.id ? league.gradient : undefined,
+                  borderColor: league.borderColor,
+                  boxShadow: `0 4px 20px ${league.glowColor}`,
+                } : {}}
+              >
+                <span className="text-lg">{league.emoji}</span>
+                <span>{league.name.replace(" League", "")}</span>
+                <span className={cn(
+                  "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
+                  isActive ? "bg-white/20 text-white" : "bg-white/5 text-white/30"
+                )}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active League Info Bar */}
+        <div className="rounded-2xl px-4 py-3 border border-white/10" style={{ background: activeLeagueData.bgColor }}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{activeLeagueData.emoji}</span>
+              <div>
+                <h2 className="text-white font-bold text-sm">{activeLeagueData.name}</h2>
+                <p className="text-white/40 text-[10px]">
+                  {activeLeagueData.maxXp === Infinity
+                    ? `${activeLeagueData.minXp.toLocaleString()}+ XP`
+                    : `${activeLeagueData.minXp.toLocaleString()} – ${activeLeagueData.maxXp.toLocaleString()} XP`
+                  }
+                </p>
               </div>
-            </GlassCard>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04]">
+              <Shield className="w-3.5 h-3.5" style={{ color: "#4ade80" }} />
+              <span className="text-[10px] font-medium text-white/60">Top {activeLeagueData.safeZonePercent}% safe</span>
+            </div>
+          </div>
+
+          {/* Safe zone progress bar */}
+          <div className="relative h-2 rounded-full overflow-hidden bg-white/10">
+            {/* Safe zone (green) */}
+            <div
+              className="absolute left-0 top-0 h-full rounded-l-full"
+              style={{
+                width: `${activeLeagueData.safeZonePercent}%`,
+                background: "linear-gradient(90deg, #22c55e, #4ade80)",
+              }}
+            />
+            {/* Neutral zone (yellow) */}
+            <div
+              className="absolute top-0 h-full"
+              style={{
+                left: `${activeLeagueData.safeZonePercent}%`,
+                width: `${100 - activeLeagueData.safeZonePercent - activeLeagueData.demotionRiskPercent}%`,
+                background: "linear-gradient(90deg, #eab308, #facc15)",
+              }}
+            />
+            {/* Demotion zone (red) */}
+            <div
+              className="absolute top-0 h-full rounded-r-full"
+              style={{
+                left: `${100 - activeLeagueData.demotionRiskPercent}%`,
+                width: `${activeLeagueData.demotionRiskPercent}%`,
+                background: "linear-gradient(90deg, #ef4444, #f87171)",
+              }}
+            />
+            {/* Shield icon at safe zone boundary */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10"
+              style={{ left: `${activeLeagueData.safeZonePercent}%` }}
+            >
+              <div className="w-4 h-4 rounded-full bg-[#1a1a2e] flex items-center justify-center border border-white/20">
+                <Shield className="w-2.5 h-2.5" style={{ color: "#4ade80" }} />
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-between mt-1.5">
+            <span className="text-[9px] text-emerald-400/70 font-medium">Safe</span>
+            <span className="text-[9px] text-yellow-400/70 font-medium">Neutral</span>
+            <span className="text-[9px] text-red-400/70 font-medium">At Risk</span>
+          </div>
+        </div>
+
+        {/* Current user XP to next league (only if user is in this league) */}
+        {currentUser && currentLeague && currentLeague.id === activeLeague && xpToNext > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl px-4 py-3 border flex items-center gap-3"
+            style={{ borderColor: currentLeague.borderColor, background: currentLeague.bgColor }}
+          >
+            <Zap className="w-4 h-4 flex-shrink-0" style={{ color: currentLeague.textColor }} />
+            <div className="flex-1">
+              <p className="text-white/60 text-[10px] mb-1">
+                <span className="text-white font-semibold">{xpToNext} XP</span> to next league
+              </p>
+              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${Math.min(100, ((currentUser.totalXp - currentLeague.minXp) / (currentLeague.maxXp === Infinity ? 3000 : currentLeague.maxXp - currentLeague.minXp + 1)) * 100)}%`,
+                  }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="h-full rounded-full"
+                  style={{ background: currentLeague.gradient }}
+                />
+              </div>
+            </div>
           </motion.div>
         )}
 
-        {/* Weekly Info */}
-        <GlassCard className="px-4 py-3 flex items-center gap-3">
-          <Clock className="w-4 h-4 text-white/40 flex-shrink-0" />
-          <p className="text-white/50 text-[11px] leading-tight">
-            Leaderboard resets weekly. <span className="text-white/70 font-semibold">Top 40%</span> safe zone, <span className="text-white/70 font-semibold">bottom 30%</span> risk demotion.
-          </p>
-        </GlassCard>
-
-        {/* League Sections */}
-        {leagueGroups.map(({ league, users }, gi) => (
+        {/* Podium for Top 3 */}
+        <AnimatePresence mode="wait">
           <motion.div
-            key={league.id}
-            initial={{ opacity: 0, y: 20 }}
+            key={activeLeague}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: gi * 0.05 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
           >
-            <LeagueSection
-              league={league}
-              users={users}
-              isExpanded={expandedLeague === league.id}
-              isUserLeague={userLeagueId === league.id}
-              onToggle={() => setExpandedLeague(expandedLeague === league.id ? null : league.id)}
-              currentUserId={user?.id || ""}
-            />
+            {leagueUsers.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] py-16 text-center">
+                <div className="text-4xl mb-3">{activeLeagueData.emoji}</div>
+                <p className="text-white/40 text-sm font-medium">No students in this league yet</p>
+                <p className="text-white/25 text-xs mt-1">Be the first to reach {activeLeagueData.name}!</p>
+              </div>
+            ) : (
+              <>
+                {/* Podium */}
+                {top3.length > 0 && (
+                  <div className="flex items-end justify-center gap-3 mb-4 px-4">
+                    {/* 2nd Place */}
+                    {top3.length >= 2 ? (
+                      <PodiumSlot
+                        user={top3[1]}
+                        place={2}
+                        league={activeLeagueData}
+                        height="h-24"
+                        color="#C0C0C0"
+                        labelBg="linear-gradient(135deg, #94a3b8, #64748b)"
+                        onClick={() => navigate(`/profile?id=${top3[1].userId}`)}
+                      />
+                    ) : <div className="w-[30%]" />}
+
+                    {/* 1st Place */}
+                    <PodiumSlot
+                      user={top3[0]}
+                      place={1}
+                      league={activeLeagueData}
+                      height="h-32"
+                      color={BRAND.peach}
+                      labelBg={`linear-gradient(135deg, ${BRAND.peach}, #e8a87c)`}
+                      onClick={() => navigate(`/profile?id=${top3[0].userId}`)}
+                      crown
+                    />
+
+                    {/* 3rd Place */}
+                    {top3.length >= 3 ? (
+                      <PodiumSlot
+                        user={top3[2]}
+                        place={3}
+                        league={activeLeagueData}
+                        height="h-20"
+                        color="#CD7F32"
+                        labelBg="linear-gradient(135deg, #b45309, #92400e)"
+                        onClick={() => navigate(`/profile?id=${top3[2].userId}`)}
+                      />
+                    ) : <div className="w-[30%]" />}
+                  </div>
+                )}
+
+                {/* Rest of List */}
+                {rest.length > 0 && (
+                  <div className="space-y-1.5">
+                    {rest.map((u, i) => {
+                      const rank = i + 4;
+                      const isSafe = rank <= safeCount;
+                      const isDemotion = rank > leagueUsers.length * 0.7 && leagueUsers.length >= 3;
+
+                      return (
+                        <motion.button
+                          key={u.userId}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          onClick={() => navigate(`/profile?id=${u.userId}`)}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all text-left border",
+                            u.isCurrentUser
+                              ? "border-white/20 bg-white/[0.08]"
+                              : "border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.06]",
+                            isDemotion && "opacity-60"
+                          )}
+                        >
+                          {/* Rank */}
+                          <div className="w-7 flex-shrink-0 text-center">
+                            <span className="text-white/40 text-xs font-bold">#{rank}</span>
+                          </div>
+
+                          {/* Zone indicator */}
+                          {leagueUsers.length >= 3 && (
+                            <div className="flex-shrink-0">
+                              {isSafe ? (
+                                <div className="w-2 h-2 rounded-full" style={{ background: "#4ade80" }} />
+                              ) : isDemotion ? (
+                                <div className="w-2 h-2 rounded-full" style={{ background: "#f87171" }} />
+                              ) : (
+                                <div className="w-2 h-2 rounded-full" style={{ background: "#facc15" }} />
+                              )}
+                            </div>
+                          )}
+
+                          {/* Avatar */}
+                          <Avatar className="w-10 h-10 border-2 flex-shrink-0" style={{
+                            borderColor: u.isCurrentUser ? BRAND.purple + "80" : "rgba(255,255,255,0.1)"
+                          }}>
+                            <AvatarImage src={u.avatarUrl || undefined} alt={u.displayName} />
+                            <AvatarFallback className="text-white text-xs font-bold" style={{ background: activeLeagueData.gradient }}>
+                              {u.displayName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className={cn("text-sm font-semibold truncate", u.isCurrentUser ? "text-white" : "text-white/80")}>
+                                {u.displayName}
+                              </span>
+                              {u.isCurrentUser && (
+                                <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: BRAND.purple }}>YOU</span>
+                              )}
+                            </div>
+                            <p className="text-white/35 text-[10px] truncate">
+                              Class {u.studentClass}{u.schoolName ? ` · ${u.schoolName}` : ""}
+                            </p>
+                          </div>
+
+                          {/* XP */}
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <Zap className="w-3 h-3" style={{ color: BRAND.peach }} />
+                            <span className="text-white/80 text-xs font-bold">{u.totalXp.toLocaleString()}</span>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
           </motion.div>
-        ))}
+        </AnimatePresence>
       </div>
     </DashboardLayout>
   );
 };
 
-// ── League Section Component ──
-interface LeagueSectionProps {
+// ── Podium Slot ──
+interface PodiumSlotProps {
+  user: LeaderboardUser;
+  place: number;
   league: League;
-  users: LeaderboardUser[];
-  isExpanded: boolean;
-  isUserLeague: boolean;
-  onToggle: () => void;
-  currentUserId: string;
+  height: string;
+  color: string;
+  labelBg: string;
+  onClick: () => void;
+  crown?: boolean;
 }
 
-const LeagueSection = ({ league, users, isExpanded, isUserLeague, onToggle, currentUserId }: LeagueSectionProps) => {
-  const navigate = useNavigate();
-  const safeCount = Math.max(1, Math.ceil(users.length * 0.4));
-  const demotionStart = Math.floor(users.length * 0.7);
-
+const PodiumSlot = ({ user, place, league, height, color, labelBg, onClick, crown }: PodiumSlotProps) => {
+  const placeLabels = ["", "1st", "2nd", "3rd"];
   return (
-    <GlassCard
-      className={cn("overflow-hidden transition-all", isUserLeague && "ring-1")}
-      style={isUserLeague ? { borderColor: league.borderColor, boxShadow: `0 0 20px ${league.glowColor}, 0 8px 32px rgba(0,0,0,0.35)` } : {}}
+    <motion.button
+      onClick={onClick}
+      className="flex flex-col items-center w-[30%] group"
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.98 }}
     >
-      {/* League Header */}
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 text-left group"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-            style={{ background: league.gradient, boxShadow: `0 2px 12px ${league.glowColor}` }}>
-            {league.emoji}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-white font-bold text-sm">{league.name}</h3>
-              {isUserLeague && (
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white"
-                  style={{ background: league.gradient }}>
-                  YOU
-                </span>
-              )}
-            </div>
-            <p className="text-white/40 text-[11px]">
-              {league.maxXp === Infinity ? `${league.minXp.toLocaleString()}+ XP` : `${league.minXp.toLocaleString()} – ${league.maxXp.toLocaleString()} XP`}
-              {" · "}{users.length} {users.length === 1 ? "student" : "students"}
-            </p>
-          </div>
-        </div>
-        <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white/60 transition-colors" />
+      {/* Crown for 1st */}
+      {crown && (
+        <motion.div
+          initial={{ y: -10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mb-1"
+        >
+          <Crown className="w-6 h-6" style={{ color: BRAND.peach, filter: `drop-shadow(0 2px 6px ${BRAND.peach}60)` }} />
         </motion.div>
-      </button>
+      )}
 
-      {/* Expanded Content */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            {users.length === 0 ? (
-              <div className="px-4 pb-4 text-center">
-                <p className="text-white/30 text-xs py-6">No students in this league yet</p>
-              </div>
-            ) : (
-              <div className="px-3 pb-3 space-y-1">
-                {/* Safe zone / demotion labels */}
-                {users.length >= 3 && (
-                  <div className="flex items-center gap-2 px-2 pb-2">
-                    <div className="flex items-center gap-1">
-                      <Shield className="w-3 h-3 text-emerald-400/70" />
-                      <span className="text-emerald-400/70 text-[9px] font-medium">Safe zone: Top {safeCount}</span>
-                    </div>
-                  </div>
-                )}
+      {/* Avatar */}
+      <div className="relative mb-2">
+        <div
+          className="rounded-full p-[3px]"
+          style={{ background: `linear-gradient(135deg, ${color}, ${color}90)` }}
+        >
+          <Avatar className={cn("border-2 border-[#1a1a2e]", place === 1 ? "w-16 h-16" : "w-13 h-13")}>
+            <AvatarImage src={user.avatarUrl || undefined} alt={user.displayName} />
+            <AvatarFallback className="text-white text-sm font-bold" style={{ background: league.gradient }}>
+              {user.displayName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      </div>
 
-                {users.map((u, i) => {
-                  const isSafe = i < safeCount;
-                  const isDemotion = i >= demotionStart && users.length >= 3;
+      {/* Name */}
+      <p className={cn("text-white font-semibold truncate max-w-full text-center", place === 1 ? "text-sm" : "text-xs")}>
+        {user.displayName.split(" ")[0]}
+      </p>
+      <div className="flex items-center gap-1 mt-0.5">
+        <Zap className="w-3 h-3" style={{ color: BRAND.peach }} />
+        <span className="text-white/70 text-[11px] font-bold">{user.totalXp.toLocaleString()}</span>
+      </div>
 
-                  return (
-                    <motion.button
-                      key={u.userId}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      onClick={() => navigate(`/profile?id=${u.userId}`)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left",
-                        u.isCurrentUser
-                          ? "bg-white/10 ring-1 ring-white/20"
-                          : "hover:bg-white/5",
-                        isDemotion && "opacity-70"
-                      )}
-                    >
-                      {/* Rank */}
-                      <div className="w-6 text-center flex-shrink-0">
-                        {i === 0 ? (
-                          <span className="text-base">👑</span>
-                        ) : i === 1 ? (
-                          <span className="text-base">🥈</span>
-                        ) : i === 2 ? (
-                          <span className="text-base">🥉</span>
-                        ) : (
-                          <span className="text-white/40 text-xs font-bold">#{i + 1}</span>
-                        )}
-                      </div>
-
-                      {/* Avatar */}
-                      <Avatar className="w-9 h-9 border-2 flex-shrink-0" style={{ borderColor: u.isCurrentUser ? league.borderColor : "rgba(255,255,255,0.1)" }}>
-                        <AvatarImage src={u.avatarUrl || undefined} alt={u.displayName} />
-                        <AvatarFallback className="text-white text-xs font-bold" style={{ background: league.gradient, fontSize: "10px" }}>
-                          {u.displayName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className={cn("text-sm font-semibold truncate", u.isCurrentUser ? "text-white" : "text-white/80")}>
-                            {u.displayName}
-                          </span>
-                          {u.isCurrentUser && (
-                            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-white/15 text-white/70">YOU</span>
-                          )}
-                        </div>
-                        <p className="text-white/35 text-[10px] truncate">
-                          Class {u.studentClass}{u.schoolName ? ` · ${u.schoolName}` : ""}
-                        </p>
-                      </div>
-
-                      {/* XP */}
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <Zap className="w-3 h-3" style={{ color: league.textColor }} />
-                        <span className="text-white/80 text-xs font-bold">{u.totalXp.toLocaleString()}</span>
-                      </div>
-
-                      {/* Zone indicator */}
-                      {users.length >= 3 && (
-                        <div className="flex-shrink-0">
-                          {isSafe ? (
-                            <div className="w-2 h-2 rounded-full bg-emerald-400/60" title="Safe zone" />
-                          ) : isDemotion ? (
-                            <div className="w-2 h-2 rounded-full bg-red-400/60" title="Demotion risk" />
-                          ) : (
-                            <div className="w-2 h-2 rounded-full bg-yellow-400/40" title="Neutral zone" />
-                          )}
-                        </div>
-                      )}
-                    </motion.button>
-                  );
-                })}
-
-                {/* Zone Legend */}
-                {users.length >= 3 && (
-                  <div className="flex items-center justify-center gap-4 pt-2 border-t border-white/5">
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-emerald-400/60" />
-                      <span className="text-white/30 text-[9px]">Safe</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-yellow-400/40" />
-                      <span className="text-white/30 text-[9px]">Neutral</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-red-400/60" />
-                      <span className="text-white/30 text-[9px]">At Risk</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </GlassCard>
+      {/* Podium bar */}
+      <div
+        className={cn("w-full rounded-t-xl mt-2 flex items-end justify-center pb-2 border-t-2", height)}
+        style={{
+          background: `linear-gradient(180deg, ${color}30, ${color}10)`,
+          borderColor: color,
+          borderLeft: `1px solid ${color}30`,
+          borderRight: `1px solid ${color}30`,
+        }}
+      >
+        <span
+          className="px-3 py-1 rounded-full text-[11px] font-bold text-white"
+          style={{ background: labelBg }}
+        >
+          {placeLabels[place]}
+        </span>
+      </div>
+    </motion.button>
   );
 };
 
