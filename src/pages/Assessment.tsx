@@ -562,40 +562,6 @@ const Assessment = () => {
 
         <main className="flex-1 overflow-y-auto relative z-10">
           <div className="max-w-md mx-auto px-4 py-8 flex flex-col items-center gap-4">
-            {/* Topic Input with chips */}
-            <div className="w-full space-y-2">
-              {/* Existing topic chips */}
-              {topics.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {topics.map((t, i) => (
-                    <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-heading"
-                      style={{ background: GRADIENT, color: "white" }}>
-                      <span>{t}</span>
-                      <button onClick={() => setTopics(prev => prev.filter((_, idx) => idx !== i))} className="hover:bg-white/20 rounded-full p-0.5">
-                        <X className="w-3 h-3" />
-                      </button>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-              <div className="rounded-2xl overflow-hidden flex" style={{
-                background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
-                backdropFilter: "blur(24px) saturate(1.5)", border: "1.5px solid rgba(255,255,255,0.6)",
-              }}>
-                <input type="text" value={topicInput} onChange={(e) => setTopicInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && topicInput.trim()) { setTopics(prev => [...prev, topicInput.trim()]); setTopicInput(""); } }}
-                  placeholder={isBangla ? "টপিক লিখে Enter চাপো..." : "Type topic & press Enter..."}
-                  className="flex-1 px-4 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading" />
-                {topicInput.trim() && (
-                  <button onClick={() => { setTopics(prev => [...prev, topicInput.trim()]); setTopicInput(""); }}
-                    className="px-3 flex items-center" style={{ color: "hsl(270,60%,55%)" }}>
-                    <Plus className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
-            </div>
-
             {/* Chapter Input */}
             <div className="w-full rounded-2xl overflow-hidden" style={{
               background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))",
