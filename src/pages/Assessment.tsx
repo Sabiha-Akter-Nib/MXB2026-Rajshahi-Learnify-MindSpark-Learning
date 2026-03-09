@@ -16,7 +16,8 @@ import TutorBackground from "@/components/tutor/TutorBackground";
 import mascotImg from "@/assets/ai-mascot-3d.png";
 import subjectIcon3d from "@/assets/assessment-subject-icon.png";
 import statXp3d from "@/assets/stat-xp-3d.png";
-import { syncLeaderboardEntry } from "@/lib/leaderboard";
+import { syncLeaderboardEntry, getUserRank } from "@/lib/leaderboard";
+import RankChangeModal from "@/components/leaderboard/RankChangeModal";
 
 // ── Types ──
 interface Question {
