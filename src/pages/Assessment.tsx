@@ -284,7 +284,8 @@ const Assessment = () => {
   // ═══ RESULTS SCREEN ═══
   if (showResult && resultData) {
     const { correctCount, totalQuestions, xpEarned, results, score, timeTaken } = resultData;
-    const wrong = totalQuestions - correctCount;
+    const skippedCount = (results || []).filter((r: any) => r.userAnswer === -1 || r.userAnswer === null || r.userAnswer === undefined).length;
+    const wrong = totalQuestions - correctCount - skippedCount;
     const m = Math.floor((timeTaken || 0) / 60);
     const s = (timeTaken || 0) % 60;
     const timeStr = `${m}:${s.toString().padStart(2, "0")}`;
