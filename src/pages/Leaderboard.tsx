@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Trophy, Loader2, Lock, Zap, Shield, Users, Crown,
+  ArrowLeft, Trophy, Loader2, Lock, Zap, Shield, Users, Crown, Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
