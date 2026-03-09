@@ -595,10 +595,6 @@ const Assessment = () => {
                   <option value="">{isBangla ? "বিষয় নির্বাচন করো" : "Select subject"}</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{isBangla ? s.name_bn || s.name : s.name}</option>)}
                 </select>
-                <input type="text" value={entry.topic}
-                  onChange={(e) => setAdditionalEntries(prev => prev.map((en, i) => i === idx ? { ...en, topic: e.target.value } : en))}
-                  placeholder={isBangla ? "টপিক..." : "Topic..."}
-                  className="w-full px-3 py-2 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-heading rounded-xl border border-border/20" />
                 <input type="text" value={entry.chapter}
                   onChange={(e) => setAdditionalEntries(prev => prev.map((en, i) => i === idx ? { ...en, chapter: e.target.value } : en))}
                   placeholder={isBangla ? "অধ্যায়..." : "Chapter..."}
