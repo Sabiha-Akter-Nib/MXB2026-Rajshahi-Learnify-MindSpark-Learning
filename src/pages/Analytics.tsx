@@ -525,8 +525,8 @@ const Analytics = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-[100dvh] font-poppins overflow-x-hidden">
-        <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-5">
+      <div className="min-h-[100dvh] font-poppins overflow-x-hidden w-full max-w-full">
+        <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-5 overflow-hidden">
 
           {/* ========== HEADER (same as Dashboard) ========== */}
           <header className="flex items-center justify-between">
