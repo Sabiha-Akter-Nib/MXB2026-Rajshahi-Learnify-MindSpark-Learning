@@ -360,7 +360,7 @@ const Assessment = () => {
 
             {/* Stats Cards */}
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.9 }}
-              className="grid grid-cols-2 gap-3 w-full max-w-sm z-10">
+              className="grid grid-cols-3 gap-2.5 w-full max-w-sm z-10">
               {[
                 { value: correctCount, label: isBangla ? "সঠিক" : "Correct", color: "hsl(145, 63%, 52%)", icon: <CheckCircle2 className="w-5 h-5" />, bg: "rgba(34,197,94,0.08)" },
                 { value: wrong, label: isBangla ? "ভুল" : "Wrong", color: "hsl(0, 70%, 60%)", icon: <XCircle className="w-5 h-5" />, bg: "rgba(239,68,68,0.08)" },
