@@ -116,6 +116,7 @@ const Leaderboard = () => {
         const users: LeaderboardUser[] = entries.map((e, i) => ({
           userId: e.user_id,
           displayName: e.display_name,
+          username: usernameMap.get(e.user_id) || null,
           totalXp: e.total_xp,
           currentStreak: e.current_streak,
           studentClass: e.class,
