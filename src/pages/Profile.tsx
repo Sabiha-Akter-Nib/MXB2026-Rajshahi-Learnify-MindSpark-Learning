@@ -549,14 +549,14 @@ const Profile = () => {
                   <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Class</span>
                 </div>
                 <div className="w-px h-8 bg-white/10" />
-                <button onClick={loadFollowing} className="flex flex-col items-center hover:scale-105 transition-transform active:scale-95">
-                  <span className="text-white font-extrabold text-lg">{followingCount}</span>
-                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Following</span>
-                </button>
-                <div className="w-px h-8 bg-white/10" />
                 <button onClick={loadFollowers} className="flex flex-col items-center hover:scale-105 transition-transform active:scale-95">
                   <span className="text-white font-extrabold text-lg">{followerCount}</span>
                   <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Followers</span>
+                </button>
+                <div className="w-px h-8 bg-white/10" />
+                <button onClick={loadFollowing} className="flex flex-col items-center hover:scale-105 transition-transform active:scale-95">
+                  <span className="text-white font-extrabold text-lg">{followingCount}</span>
+                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Following</span>
                 </button>
               </div>
 
