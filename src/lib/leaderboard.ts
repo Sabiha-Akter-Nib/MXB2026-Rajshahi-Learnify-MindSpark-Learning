@@ -85,6 +85,23 @@ export function getXpToNextLeague(xp: number): number {
   return next.minXp - xp;
 }
 
+/** Get user's current rank (1-indexed) among all public entries */
+export async function getUserRank(userId: string): Promise<number> {
+  try {
+    const { data } = await supabase
+      .from("leaderboard_entries")
+      .select("user_id, total_xp")
+      .eq("is_public", true)
+      .order("total_xp", { ascending: false });
+
+    if (!data) return 0;
+    const idx = data.findIndex(e => e.user_id === userId);
+    return idx === -1 ? 0 : idx + 1;
+  } catch {
+    return 0;
+  }
+}
+
 /** Upsert the current user's leaderboard entry with latest data */
 export async function syncLeaderboardEntry(userId: string): Promise<void> {
   try {
