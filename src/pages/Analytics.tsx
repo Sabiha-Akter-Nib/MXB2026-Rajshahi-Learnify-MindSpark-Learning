@@ -863,7 +863,7 @@ const Analytics = () => {
                 background: "linear-gradient(180deg, rgba(253,145,217,0.15) 0%, rgba(255,255,255,0.05) 100%)",
               }}
             >
-              <div className="h-48 sm:h-56 overflow-visible">
+              <div className="h-48 sm:h-56 overflow-hidden w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={weeklyChartData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
                     <XAxis
