@@ -263,8 +263,19 @@ const Assessment = () => {
         await supabase.functions.invoke("check-achievements", { body: { userId: user?.id, trigger: "assessment" } });
       } catch (e) { console.error(e); }
 
-      // Sync leaderboard entry
-      try { if (user?.id) await syncLeaderboardEntry(user.id); } catch (e) { console.error(e); }
+      // Sync leaderboard entry with rank tracking
+      try {
+        if (user?.id) {
+          const oldRank = await getUserRank(user.id);
+          await syncLeaderboardEntry(user.id);
+          const newRank = await getUserRank(user.id);
+          const xpEarned = Math.round((data as any)?.xpEarned || 0);
+          const { data: stats } = await supabase.from("student_stats").select("total_xp").eq("user_id", user.id).maybeSingle();
+          if (oldRank > 0 && newRank > 0) {
+            setRankChangeData({ oldRank, newRank, totalXp: stats?.total_xp || 0, xpEarned });
+          }
+        }
+      } catch (e) { console.error(e); }
 
       setResultData({ ...(data as any), timeTaken });
       setShowResult(true);
