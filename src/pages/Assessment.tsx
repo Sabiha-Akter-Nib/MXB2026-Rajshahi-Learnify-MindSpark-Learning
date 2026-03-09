@@ -252,7 +252,7 @@ const Assessment = () => {
           body: {
             userId: user?.id,
             subjectId: selectedSubject?.id,
-            topic: topicInput || selectedSubject?.name,
+            topic: chapterInput || selectedSubject?.name,
             duration: Math.max(1, Math.round(timeTaken / 60)),
             xpEarned: Math.round((data as any)?.xpEarned || 0),
             bloomLevel: "mixed",
