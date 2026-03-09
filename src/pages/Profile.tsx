@@ -171,6 +171,7 @@ const Profile = () => {
   const [totalExams, setTotalExams] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [leaderboardRank, setLeaderboardRank] = useState<number | null>(null);
+  const [leaderboardXp, setLeaderboardXp] = useState(0);
 
   // Follow
   const [followerCount, setFollowerCount] = useState(0);
