@@ -564,6 +564,26 @@ const Profile = () => {
                 </button>
               </div>
 
+              {/* League Badge */}
+              {(() => {
+                const league = getLeagueForXp(leaderboardXp);
+                return (
+                  <div
+                    className="mt-3 flex items-center gap-2.5 px-4 py-2 rounded-full border"
+                    style={{
+                      background: league.bgColor,
+                      borderColor: league.borderColor,
+                      boxShadow: `0 2px 12px ${league.glowColor}`,
+                    }}
+                  >
+                    <span className="text-lg">{league.emoji}</span>
+                    <span className="text-white font-bold text-xs" style={{ fontFamily: "Poppins" }}>{league.name}</span>
+                    <span className="text-white/40 text-[10px]">·</span>
+                    <span className="text-white/50 text-[10px] font-medium">{leaderboardXp.toLocaleString()} XP</span>
+                  </div>
+                );
+              })()}
+
               {/* Action Buttons */}
               <div className="mt-4 flex gap-2 w-full">
                 {isOwnProfile ? (
