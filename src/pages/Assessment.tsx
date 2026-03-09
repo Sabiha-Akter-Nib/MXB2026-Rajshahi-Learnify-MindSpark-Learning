@@ -50,7 +50,6 @@ const TIME_LIMITS = [
 
 interface AdditionalSubjectEntry {
   subject: Subject | null;
-  topic: string;
   chapter: string;
 }
 
