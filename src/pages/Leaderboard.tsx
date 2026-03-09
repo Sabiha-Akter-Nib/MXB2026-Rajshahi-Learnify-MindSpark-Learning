@@ -615,6 +615,9 @@ const PodiumSlot = ({ user, place, league, height, color, labelBg, onClick, crow
       <p className={cn("text-white font-semibold truncate max-w-full text-center", place === 1 ? "text-sm" : "text-xs")}>
         {user.displayName.split(" ")[0]}
       </p>
+      {user.username && (
+        <p className="text-white/35 text-[9px] truncate max-w-full text-center">@{user.username}</p>
+      )}
       <div className="flex items-center gap-1 mt-0.5">
         <Zap className="w-3 h-3" style={{ color: BRAND.peach }} />
         <span className="text-white/70 text-[11px] font-bold">{user.totalXp.toLocaleString()}</span>
