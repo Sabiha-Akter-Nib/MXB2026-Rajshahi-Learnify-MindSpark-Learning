@@ -215,6 +215,30 @@ const Leaderboard = () => {
           </div>
         </header>
 
+        {/* Reset Countdown Timer */}
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
+          <Clock className="w-4 h-4 flex-shrink-0" style={{ color: BRAND.peach }} />
+          <p className="text-white/50 text-xs flex-1">Resets in</p>
+          <div className="flex items-center gap-1.5">
+            {[
+              { val: countdown.d, label: "d" },
+              { val: countdown.h, label: "h" },
+              { val: countdown.m, label: "m" },
+              { val: countdown.s, label: "s" },
+            ].map(({ val, label }) => (
+              <div key={label} className="flex items-center gap-0.5">
+                <span
+                  className="text-white font-bold text-sm tabular-nums min-w-[22px] text-center rounded-lg px-1 py-0.5"
+                  style={{ background: "rgba(255,255,255,0.08)" }}
+                >
+                  {String(val).padStart(2, "0")}
+                </span>
+                <span className="text-white/30 text-[10px] font-medium">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* League Tabs - Horizontal scrollable buttons */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
           {LEAGUES.map(league => {
