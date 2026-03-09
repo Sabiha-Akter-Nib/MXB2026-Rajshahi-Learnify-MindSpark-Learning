@@ -209,9 +209,7 @@ const Leaderboard = () => {
               <Trophy className="w-5 h-5" style={{ color: BRAND.peach }} />
               Leaderboards
             </h1>
-            <p className="text-white/40 text-xs flex items-center gap-1">
-              <Users className="w-3 h-3" /> {allUsers.length} students nationwide
-            </p>
+            <p className="text-white/40 text-xs">National Rankings</p>
           </div>
         </header>
 
