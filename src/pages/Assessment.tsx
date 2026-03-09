@@ -155,7 +155,7 @@ const Assessment = () => {
     setSessionStartTime(new Date());
 
     // Combine all subjects + topics + chapters
-    const allTopics = [topicInput, ...additionalEntries.map(e => e.topic)].filter(Boolean).join(", ");
+    const allTopics = [...topics, ...additionalEntries.map(e => e.topic)].filter(Boolean).join(", ");
     const allChapters = [chapterInput, ...additionalEntries.map(e => e.chapter)].filter(Boolean).join(", ");
     const allSubjectNames = [selectedSubject.name, ...additionalEntries.map(e => e.subject?.name).filter(Boolean)].join(", ");
     const combinedTopic = [allTopics, allChapters ? `Chapters: ${allChapters}` : ""].filter(Boolean).join(" | ") || (isBangla ? selectedSubject.name_bn : selectedSubject.name);
