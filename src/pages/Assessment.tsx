@@ -364,6 +364,7 @@ const Assessment = () => {
               {[
                 { value: correctCount, label: isBangla ? "সঠিক" : "Correct", color: "hsl(145, 63%, 52%)", icon: <CheckCircle2 className="w-5 h-5" />, bg: "rgba(34,197,94,0.08)" },
                 { value: wrong, label: isBangla ? "ভুল" : "Wrong", color: "hsl(0, 70%, 60%)", icon: <XCircle className="w-5 h-5" />, bg: "rgba(239,68,68,0.08)" },
+                { value: skippedCount, label: isBangla ? "স্কিপ" : "Skipped", color: "hsl(45, 80%, 50%)", icon: <AlertTriangle className="w-5 h-5" />, bg: "rgba(234,179,8,0.08)" },
                 { value: xpEarned?.toFixed?.(2) ?? xpEarned, label: "XP", color: "hsl(270, 60%, 55%)", icon: <Zap className="w-5 h-5" />, bg: "rgba(139,92,246,0.08)" },
                 { value: timeStr, label: isBangla ? "সময়" : "Time", color: "hsl(30, 78%, 55%)", icon: <Clock className="w-5 h-5" />, bg: "rgba(249,115,22,0.08)" },
               ].map((item, i) => (
