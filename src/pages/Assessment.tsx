@@ -405,21 +405,73 @@ const Assessment = () => {
               </p>
             </motion.div>
 
-            {/* Question Review */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} className="w-full max-w-md space-y-2 z-10">
+            {/* Detailed Question Review with Options */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} className="w-full max-w-md space-y-4 z-10">
               <p className="text-xs font-heading font-bold text-muted-foreground mb-2">{isBangla ? "প্রশ্ন পর্যালোচনা" : "Question Review"}</p>
-              {(results || []).map((result: any, i: number) => (
-                <div key={i} className="rounded-xl p-3 flex items-start gap-3" style={{
-                  background: "linear-gradient(-45deg, rgba(254,254,254,0.92), rgba(254,254,254,0.7))", backdropFilter: "blur(20px)",
-                  border: result.isCorrect ? "1.5px solid hsla(145, 63%, 52%, 0.3)" : "1.5px solid hsla(0, 70%, 60%, 0.2)",
-                }}>
-                  {result.isCorrect ? <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "hsl(145,63%,52%)" }} /> : <XCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "hsl(0,70%,60%)" }} />}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-foreground">{i + 1}. {result.question}</p>
-                    {!result.isCorrect && <p className="text-[11px] text-muted-foreground mt-1">💡 {result.explanation}</p>}
-                  </div>
-                </div>
-              ))}
+              {(results || []).map((result: any, i: number) => {
+                const q = questions[i];
+                const wasSkipped = result.userAnswer === -1 || result.userAnswer === null || result.userAnswer === undefined;
+                return (
+                  <motion.div key={i} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.6 + i * 0.05 }}
+                    className="rounded-2xl p-4 space-y-3" style={{
+                      background: "linear-gradient(-45deg, rgba(254,254,254,0.95), rgba(254,254,254,0.8))", backdropFilter: "blur(24px)",
+                      border: wasSkipped ? "1.5px solid hsla(45, 80%, 50%, 0.3)" : result.isCorrect ? "1.5px solid hsla(145, 63%, 52%, 0.3)" : "1.5px solid hsla(0, 70%, 60%, 0.3)",
+                      boxShadow: "0 4px 16px hsla(270,60%,55%,0.06)",
+                    }}>
+                    {/* Question header */}
+                    <div className="flex items-start gap-3">
+                      <span className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs text-white shrink-0"
+                        style={{ background: wasSkipped ? "hsl(45, 80%, 50%)" : result.isCorrect ? "hsl(145, 63%, 52%)" : "hsl(0, 70%, 60%)" }}>
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground whitespace-pre-line">{result.question}</p>
+                        {wasSkipped && (
+                          <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsla(45, 80%, 50%, 0.15)", color: "hsl(45, 80%, 40%)" }}>
+                            {isBangla ? "⏭️ স্কিপ করা হয়েছে" : "⏭️ Skipped"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Options with correct/wrong marking */}
+                    <div className="space-y-1.5 ml-10">
+                      {(q?.options || []).map((option: string, oIdx: number) => {
+                        const isCorrectOption = oIdx === result.correctAnswer;
+                        const isUserAnswer = oIdx === result.userAnswer;
+                        const showGreen = isCorrectOption;
+                        const showRed = isUserAnswer && !result.isCorrect && !wasSkipped;
+
+                        return (
+                          <div key={oIdx} className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all" style={{
+                            background: showGreen ? "hsla(145, 63%, 52%, 0.1)" : showRed ? "hsla(0, 70%, 60%, 0.1)" : "hsla(0, 0%, 0%, 0.02)",
+                            border: showGreen ? "1.5px solid hsla(145, 63%, 52%, 0.4)" : showRed ? "1.5px solid hsla(0, 70%, 60%, 0.4)" : "1px solid transparent",
+                          }}>
+                            <span className="w-6 h-6 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 text-white"
+                              style={{ background: showGreen ? "hsl(145, 63%, 52%)" : showRed ? "hsl(0, 70%, 60%)" : "hsla(270,60%,55%,0.2)" }}>
+                              {String.fromCharCode(2453 + oIdx)}
+                            </span>
+                            <span className="flex-1 font-medium" style={{ color: showGreen ? "hsl(145, 50%, 35%)" : showRed ? "hsl(0, 60%, 45%)" : "inherit" }}>{option}</span>
+                            {showGreen && <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: "hsl(145,63%,52%)" }} />}
+                            {showRed && <XCircle className="w-4 h-4 shrink-0" style={{ color: "hsl(0,70%,60%)" }} />}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* AI Explanation */}
+                    {result.explanation && (
+                      <div className="ml-10 rounded-xl p-3 flex items-start gap-2" style={{
+                        background: "linear-gradient(135deg, hsla(270, 60%, 97%, 0.8), hsla(300, 50%, 97%, 0.6))",
+                        border: "1px solid hsla(270, 60%, 55%, 0.15)",
+                      }}>
+                        <Lightbulb className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "hsl(30, 78%, 55%)" }} />
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{result.explanation}</p>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
             </motion.div>
 
             {/* Action Buttons */}
