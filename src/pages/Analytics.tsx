@@ -934,7 +934,7 @@ const Analytics = () => {
               </div>
 
               {/* Bar chart */}
-              <div className="h-24 sm:h-28 mb-2.5">
+              <div className="h-24 sm:h-28 mb-2.5 w-full min-w-0 overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={monthlyBarData} barSize={8}>
                     <XAxis
