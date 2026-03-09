@@ -108,8 +108,6 @@ const Assessment = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
-  const [topicInput, setTopicInput] = useState("");
-  const [topics, setTopics] = useState<string[]>([]);
   const [chapterInput, setChapterInput] = useState("");
   const [questionCount, setQuestionCount] = useState(25);
   const [timeLimit, setTimeLimit] = useState(0); // in minutes, 0 = no limit
