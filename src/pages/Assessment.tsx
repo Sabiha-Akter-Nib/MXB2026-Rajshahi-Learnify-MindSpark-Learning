@@ -860,13 +860,13 @@ const Assessment = () => {
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               onClick={submitModelTest} disabled={isSubmitting}
               className="w-full py-4 rounded-2xl flex items-center justify-center gap-2.5 text-white font-bold text-sm font-heading disabled:opacity-60 shadow-xl"
-              style={{ background: allAnswered ? GRADIENT : "hsla(270,60%,55%,0.5)", boxShadow: allAnswered ? "0 8px 32px hsla(270, 60%, 55%, 0.4)" : "none" }}>
+              style={{ background: GRADIENT, boxShadow: "0 8px 32px hsla(270, 60%, 55%, 0.4)" }}>
               {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                 <>
                   <Award className="w-5 h-5" />
-                  {allAnswered
+                  {answeredCount === questions.length
                     ? (isBangla ? "জমা দাও" : "Submit Model Test")
-                    : (isBangla ? `${questions.length - answeredCount}টি প্রশ্ন বাকি` : `${questions.length - answeredCount} questions remaining`)}
+                    : (isBangla ? `জমা দাও (${questions.length - answeredCount}টি স্কিপ)` : `Submit (${questions.length - answeredCount} skipped)`)}
                 </>
               )}
             </motion.button>
