@@ -204,7 +204,7 @@ const Assessment = () => {
       const timeTaken = sessionStartTime ? Math.round((Date.now() - sessionStartTime.getTime()) / 1000) : 0;
       try {
         await supabase.functions.invoke("track-session", {
-          body: { userId: user?.id, subjectId: selectedSubject?.id, topic: topicInput || selectedSubject?.name, duration: Math.max(1, Math.round(timeTaken / 60)), xpEarned: Math.round((data as any)?.xpEarned || 0), bloomLevel: "mixed" },
+          body: { userId: user?.id, subjectId: selectedSubject?.id, topic: chapterInput || selectedSubject?.name, duration: Math.max(1, Math.round(timeTaken / 60)), xpEarned: Math.round((data as any)?.xpEarned || 0), bloomLevel: "mixed" },
         });
       } catch (e) {}
       setResultData({ ...(data as any), timeTaken });
