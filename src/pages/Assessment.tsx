@@ -262,6 +262,9 @@ const Assessment = () => {
         await supabase.functions.invoke("check-achievements", { body: { userId: user?.id, trigger: "assessment" } });
       } catch (e) { console.error(e); }
 
+      // Sync leaderboard entry
+      try { if (user?.id) await syncLeaderboardEntry(user.id); } catch (e) { console.error(e); }
+
       setResultData({ ...(data as any), timeTaken });
       setShowResult(true);
     } catch (err) {

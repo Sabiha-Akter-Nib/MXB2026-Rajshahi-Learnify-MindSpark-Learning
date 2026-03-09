@@ -208,6 +208,8 @@ const Practice = () => {
           is_weak_topic: isWeak, bloom_level: questions[0]?.bloomLevel || "understand", last_practiced_at: new Date().toISOString(),
         });
       }
+      // Sync leaderboard entry
+      try { await syncLeaderboardEntry(user.id); } catch (e) { console.error(e); }
     } catch (error) {
       console.error("Error tracking practice:", error);
     }
