@@ -117,7 +117,7 @@ const Assessment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [additionalEntries, setAdditionalEntries] = useState<AdditionalSubjectEntry[]>([]);
   const [timeExpired, setTimeExpired] = useState(false);
-
+  const [rankChangeData, setRankChangeData] = useState<{ oldRank: number; newRank: number; totalXp: number; xpEarned: number } | null>(null);
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
