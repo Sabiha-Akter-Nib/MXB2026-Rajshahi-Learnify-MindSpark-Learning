@@ -72,7 +72,7 @@ export function AppSidebar() {
   return (
     <Sidebar 
       collapsible="icon"
-      className="border-r-0 z-50 [&_[data-sidebar=sidebar]]:border-r-0 [&_[data-sidebar=sidebar]]:backdrop-blur-2xl [&_[data-sidebar=sidebar]]:bg-transparent"
+      className="border-r-0 z-50 [&_[data-sidebar=sidebar]]:border-r-0 [&_[data-sidebar=sidebar]]:backdrop-blur-2xl [&_[data-sidebar=sidebar]]:bg-transparent [&[data-mobile=true]]:bg-[#1a0f22] [&_[data-mobile=true]]:bg-[#1a0f22]"
       style={{
         "--sidebar-background": "transparent",
         "--sidebar-foreground": "rgba(255, 255, 255, 0.85)",

@@ -94,20 +94,20 @@ Include the statements in the question text. The options array contains the 4 co
 Subject: ${sName || "General Knowledge"}
 Topic: ${topic || "Full syllabus model test"}
 
-INSTRUCTIONS:
-- Generate questions in Bengali language
-- Mix all Bloom's Taxonomy levels across the questions
-- Each question must have exactly 4 options
-- Only ONE correct answer per question
-- Include clear educational explanations
-- Cover the topic comprehensively with variety
+ABSOLUTE RULES — FOLLOW STRICTLY:
+1. EVERY question MUST come DIRECTLY from the NCTB textbook content provided above.
+2. If textbook content is provided, DO NOT generate ANY question whose answer cannot be found in that textbook content.
+3. If the user specified specific topics or chapters, generate questions ONLY from those topics/chapters. Do NOT include questions from other chapters.
+4. Generate questions in Bengali language.
+5. Mix Bloom's Taxonomy levels across the questions.
+6. Each question must have exactly 4 options with only ONE correct answer.
+7. Include clear educational explanations referencing the textbook.
+8. DO NOT make up facts, dates, names, or information not present in the textbook.
+9. DO NOT include essay/written questions — MCQ only.
+10. Each question gets 1 XP for correct answer.
 ${comboMCQInstruction}
 
-CRITICAL RULES:
-1. All questions MUST be proper MCQ with exactly 4 options
-2. DO NOT include essay/written questions
-3. Explanations should be educational
-4. Each question gets 1 XP for correct answer
+If NO textbook content was provided above, generate questions based on standard NCTB curriculum for Class ${profile?.class || 7} ${sName}, but stay strictly within well-known textbook facts. Never speculate.
 
 Return JSON:
 {
