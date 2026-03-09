@@ -92,31 +92,38 @@ Include the statements in the question text. The options array contains the 4 co
       const prompt = `${curriculumInfo}Generate exactly ${questionCount} MCQ model test questions for a Class ${profile?.class || 7} student (bangla medium).
 
 Subject: ${sName || "General Knowledge"}
-Topic: ${topic || "Full syllabus model test"}
+${topic ? `Chapter/Topic: ${topic}` : "Full syllabus model test"}
 
 ABSOLUTE RULES — FOLLOW STRICTLY:
-1. EVERY question MUST come DIRECTLY from the NCTB textbook content provided above.
-2. If textbook content is provided, DO NOT generate ANY question whose answer cannot be found in that textbook content.
-3. If the user specified specific topics or chapters, generate questions ONLY from those topics/chapters. Do NOT include questions from other chapters.
-4. Generate questions in Bengali language.
-5. Mix Bloom's Taxonomy levels across the questions.
-6. Each question must have exactly 4 options with only ONE correct answer.
-7. Include clear educational explanations referencing the textbook.
-8. DO NOT make up facts, dates, names, or information not present in the textbook.
-9. DO NOT include essay/written questions — MCQ only.
-10. Each question gets 1 XP for correct answer.
+1. You are an NCTB curriculum educator for Bangladesh. You ONLY generate academic questions about this subject.
+2. EVERY question MUST be about the subject "${sName}" and MUST be appropriate for Class ${profile?.class || 7} Bangladesh NCTB curriculum.
+3. If textbook content is provided above, ALL questions MUST come DIRECTLY from that content. Do NOT invent facts.
+4. If the user specified chapters, generate questions ONLY from those chapters.
+5. Generate questions in Bengali language (বাংলা).
+6. Mix Bloom's Taxonomy levels across the questions.
+7. Each question must have exactly 4 options with only ONE correct answer.
+8. Include clear educational explanations referencing the textbook.
+
+STRICTLY FORBIDDEN — NEVER DO THIS:
+- NEVER generate questions about programming, coding, software, websites, apps, AI tools, or technology companies.
+- NEVER generate questions about Lovable, React, JavaScript, Python, or any programming language.
+- NEVER generate questions outside the NCTB curriculum for this subject and class.
+- NEVER make up facts, dates, names, or information not in the textbook.
+- NEVER include essay/written questions — MCQ only.
+
+Each correct answer gives 1 XP.
 ${comboMCQInstruction}
 
-If NO textbook content was provided above, generate questions based on standard NCTB curriculum for Class ${profile?.class || 7} ${sName}, but stay strictly within well-known textbook facts. Never speculate.
+If NO textbook content was provided above, generate questions based on standard NCTB curriculum for Class ${profile?.class || 7} ${sName}. Stay strictly within well-known textbook facts. Never speculate or go outside the subject.
 
 Return JSON:
 {
   "questions": [
     {
-      "question": "Question text",
-      "options": ["A", "B", "C", "D"],
+      "question": "Question text in Bengali",
+      "options": ["ক. option", "খ. option", "গ. option", "ঘ. option"],
       "correctIndex": 0,
-      "explanation": "Why this is correct",
+      "explanation": "Why this is correct (reference textbook)",
       "xpValue": 1
     }
   ]
@@ -133,7 +140,7 @@ Return JSON:
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: `You are an expert NCTB curriculum educator creating model test MCQ questions for Bangladeshi students. Generate ONLY proper MCQs with 4 options. Return only valid JSON.` },
+            { role: "system", content: `You are an expert NCTB (National Curriculum and Textbook Board, Bangladesh) curriculum educator. You create MCQ questions ONLY about academic subjects from the Bangladeshi school curriculum. You NEVER generate questions about technology, programming, software, or anything outside the NCTB syllabus. Return only valid JSON.` },
             { role: "user", content: prompt }
           ],
         }),
