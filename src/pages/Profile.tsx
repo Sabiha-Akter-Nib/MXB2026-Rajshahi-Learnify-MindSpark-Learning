@@ -34,6 +34,7 @@ import { format, subDays } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getLeagueForXp } from "@/lib/leaderboard";
 
 import statStreak3d from "@/assets/stat-streak-glass.png";
 import subjectIcon3d from "@/assets/subject-icon-3d.png";
@@ -170,6 +171,7 @@ const Profile = () => {
   const [totalExams, setTotalExams] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [leaderboardRank, setLeaderboardRank] = useState<number | null>(null);
+  const [leaderboardXp, setLeaderboardXp] = useState(0);
 
   // Follow
   const [followerCount, setFollowerCount] = useState(0);
@@ -240,11 +242,13 @@ const Profile = () => {
       setTotalExams(exams?.length || 0);
       setTotalCorrect(exams?.reduce((sum, a) => sum + (a.correct_answers || 0), 0) || 0);
 
-      // Leaderboard rank
+      // Leaderboard rank & XP for league
       const { data: lb } = await supabase.from("leaderboard_entries").select("user_id, total_xp").eq("is_public", true).order("total_xp", { ascending: false });
       if (lb) {
         const idx = lb.findIndex((e) => e.user_id === targetUserId);
         setLeaderboardRank(idx >= 0 ? idx + 1 : null);
+        const entry = lb.find((e) => e.user_id === targetUserId);
+        setLeaderboardXp(entry?.total_xp ?? 0);
       }
 
       // Followers/following counts
@@ -559,6 +563,26 @@ const Profile = () => {
                   <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Following</span>
                 </button>
               </div>
+
+              {/* League Badge */}
+              {(() => {
+                const league = getLeagueForXp(leaderboardXp);
+                return (
+                  <div
+                    className="mt-3 flex items-center gap-2.5 px-4 py-2 rounded-full border"
+                    style={{
+                      background: league.bgColor,
+                      borderColor: league.borderColor,
+                      boxShadow: `0 2px 12px ${league.glowColor}`,
+                    }}
+                  >
+                    <span className="text-lg">{league.emoji}</span>
+                    <span className="text-white font-bold text-xs" style={{ fontFamily: "Poppins" }}>{league.name}</span>
+                    <span className="text-white/40 text-[10px]">·</span>
+                    <span className="text-white/50 text-[10px] font-medium">{leaderboardXp.toLocaleString()} XP</span>
+                  </div>
+                );
+              })()}
 
               {/* Action Buttons */}
               <div className="mt-4 flex gap-2 w-full">
@@ -946,7 +970,6 @@ const Profile = () => {
               </div>
             </GlassCard>
           )}
-
 
         </div>
       </div>
