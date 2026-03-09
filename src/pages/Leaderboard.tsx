@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Trophy, Loader2, Lock, Zap, Shield, Users, Crown,
+  ArrowLeft, Trophy, Loader2, Lock, Zap, Shield, Users, Crown, Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +42,34 @@ const Leaderboard = () => {
 
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Countdown to next Sunday midnight (reset time)
+  const [countdown, setCountdown] = useState({ d: 0, h: 0, m: 0, s: 0 });
+
+  useEffect(() => {
+    const getNextSunday = () => {
+      const now = new Date();
+      const next = new Date(now);
+      next.setDate(now.getDate() + ((7 - now.getDay()) % 7 || 7));
+      next.setHours(0, 0, 0, 0);
+      return next;
+    };
+
+    const update = () => {
+      const diff = Math.max(0, getNextSunday().getTime() - Date.now());
+      const s = Math.floor(diff / 1000);
+      setCountdown({
+        d: Math.floor(s / 86400),
+        h: Math.floor((s % 86400) / 3600),
+        m: Math.floor((s % 3600) / 60),
+        s: s % 60,
+      });
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -186,6 +214,30 @@ const Leaderboard = () => {
             </p>
           </div>
         </header>
+
+        {/* Reset Countdown Timer */}
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
+          <Clock className="w-4 h-4 flex-shrink-0" style={{ color: BRAND.peach }} />
+          <p className="text-white/50 text-xs flex-1">Resets in</p>
+          <div className="flex items-center gap-1.5">
+            {[
+              { val: countdown.d, label: "d" },
+              { val: countdown.h, label: "h" },
+              { val: countdown.m, label: "m" },
+              { val: countdown.s, label: "s" },
+            ].map(({ val, label }) => (
+              <div key={label} className="flex items-center gap-0.5">
+                <span
+                  className="text-white font-bold text-sm tabular-nums min-w-[22px] text-center rounded-lg px-1 py-0.5"
+                  style={{ background: "rgba(255,255,255,0.08)" }}
+                >
+                  {String(val).padStart(2, "0")}
+                </span>
+                <span className="text-white/30 text-[10px] font-medium">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* League Tabs - Horizontal scrollable buttons */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
