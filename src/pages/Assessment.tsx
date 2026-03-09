@@ -714,6 +714,7 @@ const Assessment = () => {
                 <div className="text-xs text-muted-foreground font-heading space-y-1">
                   <p>{isBangla ? "• সব প্রশ্ন একসাথে দেখা যাবে" : "• All questions visible at once"}</p>
                   <p>{isBangla ? "• উত্তর একবার দিলে পরিবর্তন করা যাবে না" : "• Answers lock once selected"}</p>
+                  <p>{isBangla ? "• প্রশ্ন স্কিপ করা যাবে (কোনো মার্কিং হবে না)" : "• You can skip questions (no marking)"}</p>
                   <p>{isBangla ? "• প্রতিটি সঠিক উত্তরে +1 XP" : "• +1 XP per correct answer"}</p>
                   <p>{isBangla ? "• প্রতিটি ভুল উত্তরে -0.25 XP" : "• -0.25 XP per wrong answer"}</p>
                   {timeLimit > 0 && <p className="font-bold" style={{ color: "hsl(30,78%,55%)" }}>⏱️ {isBangla ? `সময়সীমা: ${timeLimit} মিনিট — সময় শেষে স্বয়ংক্রিয় জমা` : `Time limit: ${timeLimit} min — auto-submit on expiry`}</p>}
