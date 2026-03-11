@@ -1085,7 +1085,7 @@ const Profile = () => {
               onClick={handleSaveProfile}
               className="w-full py-2.5 rounded-full font-bold text-sm text-white"
               style={{
-                background: "linear-gradient(135deg, #6A68DF 0%, #9B87F5 50%, #FD91D9 100%)",
+                background: "linear-gradient(135deg, #EC4899 0%, #DB2777 50%, #FD91D9 100%)",
                 boxShadow: "0 4px 20px rgba(106,104,223,0.4)",
               }}
             >
