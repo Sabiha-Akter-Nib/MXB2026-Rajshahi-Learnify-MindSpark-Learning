@@ -730,7 +730,7 @@ const Profile = () => {
                     <Line
                       type="linear"
                       dataKey="targetXp"
-                      stroke={isOwnProfile ? "#9B87F5" : "#EFB995"}
+                      stroke={isOwnProfile ? "#EC4899" : "#EFB995"}
                       strokeWidth={isOwnProfile ? 2 : 2.5}
                       strokeDasharray={isOwnProfile ? undefined : "6 3"}
                       dot={(props: any) => {
