@@ -219,19 +219,16 @@ const Dashboard = () => {
         const todayMinutes = todaySessionMinutes + todayAssessmentMinutes;
         const weeklyGoalPercent = Math.min(Math.round(weeklyXP / 500 * 100), 100);
 
-        // Rolling 7-day window for activity circles (always shows last 7 days)
+        // Current BD week (Sat–Fri) for activity circles
         const activeDays = new Set<number>();
-        const sevenDaysAgo = new Date(now);
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-        sevenDaysAgo.setHours(0, 0, 0, 0);
 
-        const { data: rolling7Sessions } = await supabase
+        const { data: thisWeekSessions } = await supabase
           .from("study_sessions")
           .select("created_at, duration_minutes")
           .eq("user_id", user.id)
-          .gte("created_at", sevenDaysAgo.toISOString());
+          .gte("created_at", weekStartDate.toISOString());
 
-        rolling7Sessions?.forEach((s) => {
+        thisWeekSessions?.forEach((s) => {
           if (s.duration_minutes >= 1) {
             const d = new Date(s.created_at);
             const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
@@ -239,13 +236,13 @@ const Dashboard = () => {
           }
         });
 
-        const { data: rolling7Assessments } = await supabase
+        const { data: thisWeekAssessments } = await supabase
           .from("assessments")
           .select("completed_at")
           .eq("user_id", user.id)
-          .gte("completed_at", sevenDaysAgo.toISOString());
+          .gte("completed_at", weekStartDate.toISOString());
 
-        rolling7Assessments?.forEach((a) => {
+        thisWeekAssessments?.forEach((a) => {
           const d = new Date(a.completed_at);
           const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
           activeDays.add(bd);
