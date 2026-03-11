@@ -456,7 +456,7 @@ const Profile = () => {
     }
   };
 
-  const bloomColors = ["#6A68DF", "#9B87F5", "#FD91D9", "#EFB995", "#BC96F0", "#FEFEFE"];
+  const bloomColors = ["#6A68DF", "#EC4899", "#FD91D9", "#EFB995", "#DB2777", "#FEFEFE"];
   const subjectPieColors = ["#58CC02", "#FF4B4B", "#FFBA33"];
 
   if (loading || isLoading) {
