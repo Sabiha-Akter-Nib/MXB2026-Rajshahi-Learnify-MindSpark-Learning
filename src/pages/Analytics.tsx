@@ -65,14 +65,14 @@ const StarDot = (props: any) => {
   const xpValue = payload?.xp ?? 0;
   return (
     <g>
-      <text x={cx} y={cy - 14} textAnchor="middle" fill="#BBA7FD" fontSize={9} fontWeight={600}>
+      <text x={cx} y={cy - 14} textAnchor="middle" fill="#EC4899" fontSize={9} fontWeight={600}>
         {xpValue}
       </text>
       <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
         <path
           d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z"
-          fill="#BBA7FD"
-          stroke="#9B87F5"
+          fill="#EC4899"
+          stroke="#DB2777"
           strokeWidth="1"
         />
       </svg>
