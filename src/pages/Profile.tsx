@@ -697,7 +697,7 @@ const Profile = () => {
                   <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">{profile?.full_name || "User"}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#9B87F5" }} />
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#EC4899" }} />
                   <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">You</span>
                 </div>
               </div>
