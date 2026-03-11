@@ -809,7 +809,7 @@ const Profile = () => {
             if (achieved.length === 0) return (
               <GlassCard className="p-4 sm:p-5 relative overflow-hidden">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FD91D9, #9B87F5)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FD91D9, #EC4899)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}>
                     <Award className="w-4 h-4 text-white" />
                   </div>
                   <h3 className="text-white font-bold text-sm sm:text-base uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>Achievements</h3>
