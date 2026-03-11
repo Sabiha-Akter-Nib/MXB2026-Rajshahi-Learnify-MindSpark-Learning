@@ -754,7 +754,7 @@ const Profile = () => {
                       <Line
                         type="linear"
                         dataKey="selfXp"
-                        stroke="#9B87F5"
+                        stroke="#EC4899"
                         strokeWidth={2}
                         dot={(props: any) => {
                           const { cx, cy, payload } = props;
