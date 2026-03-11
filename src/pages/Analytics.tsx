@@ -65,14 +65,14 @@ const StarDot = (props: any) => {
   const xpValue = payload?.xp ?? 0;
   return (
     <g>
-      <text x={cx} y={cy - 14} textAnchor="middle" fill="#BBA7FD" fontSize={9} fontWeight={600}>
+      <text x={cx} y={cy - 14} textAnchor="middle" fill="#EC4899" fontSize={9} fontWeight={600}>
         {xpValue}
       </text>
       <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
         <path
           d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z"
-          fill="#BBA7FD"
-          stroke="#9B87F5"
+          fill="#EC4899"
+          stroke="#DB2777"
           strokeWidth="1"
         />
       </svg>
@@ -680,8 +680,8 @@ const Analytics = () => {
           {/* ========== PROFILE STAT CARDS (2x2 on mobile, 4 on desktop) ========== */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
-              { img: statStreak3d, value: String(currentStreak), label: "Total Streak", grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", bg: "linear-gradient(150deg, rgba(187,167,253,0.25) 0%, rgba(155,135,245,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(155,135,245,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
-              { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Rank", grad: "linear-gradient(135deg, #6A68DF, #9B87F5)", bg: "linear-gradient(150deg, rgba(106,104,223,0.25) 0%, rgba(88,80,200,0.15) 50%, rgba(155,135,245,0.1) 100%)", shadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
+              { img: statStreak3d, value: String(currentStreak), label: "Total Streak", grad: "linear-gradient(135deg, #EC4899, #DB2777)", bg: "linear-gradient(150deg, rgba(236,72,153,0.25) 0%, rgba(219,39,119,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(236,72,153,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
+              { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Rank", grad: "linear-gradient(135deg, #6A68DF, #EC4899)", bg: "linear-gradient(150deg, rgba(106,104,223,0.25) 0%, rgba(88,80,200,0.15) 50%, rgba(236,72,153,0.1) 100%)", shadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
               { img: statExams3d, value: String(totalExams), label: "Exams", grad: "linear-gradient(135deg, #FD91D9, #EFB995)", bg: "linear-gradient(150deg, rgba(253,145,217,0.2) 0%, rgba(239,185,149,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(253,145,217,0.12), inset 0 1px 0 rgba(255,255,255,0.2)" },
               { img: statXp3d, value: String(totalXP), label: "Total XP", grad: "linear-gradient(135deg, #FD91D9, #AF2D50)", bg: "linear-gradient(150deg, rgba(253,145,217,0.15) 0%, rgba(175,45,80,0.2) 50%, rgba(253,145,217,0.1) 100%)", shadow: "0 8px 32px rgba(175,45,80,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
             ].map((card) => (
@@ -828,7 +828,7 @@ const Analytics = () => {
             }}
           >
             <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center relative">
-              <img src={statXp3d} alt="XP Star" className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_4px_20px_rgba(168,85,247,0.5)]" />
+              <img src={statXp3d} alt="XP Star" className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_4px_20px_rgba(236,72,153,0.5)]" />
               <span
                 className="absolute bottom-2 text-white font-bold text-sm sm:text-base drop-shadow-lg"
                 style={{ fontFamily: "'Black Han Sans', sans-serif" }}
@@ -883,10 +883,10 @@ const Analytics = () => {
                     <Line
                       type="linear"
                       dataKey="xp"
-                      stroke="#9B87F5"
+                      stroke="#EC4899"
                       strokeWidth={2}
                       dot={<StarDot />}
-                      activeDot={{ r: 6, fill: "#BBA7FD", stroke: "#fff", strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: "#FD91D9", stroke: "#fff", strokeWidth: 2 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>

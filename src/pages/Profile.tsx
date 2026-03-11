@@ -456,7 +456,7 @@ const Profile = () => {
     }
   };
 
-  const bloomColors = ["#6A68DF", "#9B87F5", "#FD91D9", "#EFB995", "#BC96F0", "#FEFEFE"];
+  const bloomColors = ["#6A68DF", "#EC4899", "#FD91D9", "#EFB995", "#DB2777", "#FEFEFE"];
   const subjectPieColors = ["#58CC02", "#FF4B4B", "#FFBA33"];
 
   if (loading || isLoading) {
@@ -500,7 +500,7 @@ const Profile = () => {
               style={{
                 background: profile.cover_color
                   ? `linear-gradient(135deg, ${profile.cover_color}, ${profile.cover_color}dd)`
-                  : "linear-gradient(135deg, #6A68DF, #9B87F5)",
+                  : "linear-gradient(135deg, #EC4899, #DB2777)",
               }}
             >
               {/* Decorative 3D stars */}
@@ -630,7 +630,7 @@ const Profile = () => {
                     style={{
                       background: isFollowing
                         ? "linear-gradient(-45deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)"
-                        : "linear-gradient(135deg, #6A68DF 0%, #9B87F5 50%, #FD91D9 100%)",
+                        : "linear-gradient(135deg, #EC4899 0%, #DB2777 50%, #FD91D9 100%)",
                       boxShadow: isFollowing
                         ? "0 4px 16px rgba(0,0,0,0.2)"
                         : "0 4px 20px rgba(106,104,223,0.4), 0 0 40px rgba(253,145,217,0.15)",
@@ -658,8 +658,8 @@ const Profile = () => {
           {/* ── Stat Cards (same as Analytics) ── */}
           <div className="grid grid-cols-4 gap-2">
             {[
-              { img: statStreak3d, value: String(currentStreak), label: "Streak", grad: "linear-gradient(135deg, #BBA7FD, #9B87F5)", bg: "linear-gradient(150deg, rgba(187,167,253,0.25) 0%, rgba(155,135,245,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(155,135,245,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
-              { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Rank", grad: "linear-gradient(135deg, #6A68DF, #9B87F5)", bg: "linear-gradient(150deg, rgba(106,104,223,0.25) 0%, rgba(88,80,200,0.15) 50%, rgba(155,135,245,0.1) 100%)", shadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
+              { img: statStreak3d, value: String(currentStreak), label: "Streak", grad: "linear-gradient(135deg, #EC4899, #DB2777)", bg: "linear-gradient(150deg, rgba(236,72,153,0.25) 0%, rgba(219,39,119,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(236,72,153,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
+              { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Rank", grad: "linear-gradient(135deg, #6A68DF, #EC4899)", bg: "linear-gradient(150deg, rgba(106,104,223,0.25) 0%, rgba(88,80,200,0.15) 50%, rgba(236,72,153,0.1) 100%)", shadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
               { img: statExams3d, value: String(totalExams), label: "Exams", grad: "linear-gradient(135deg, #FD91D9, #EFB995)", bg: "linear-gradient(150deg, rgba(253,145,217,0.2) 0%, rgba(239,185,149,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(253,145,217,0.12), inset 0 1px 0 rgba(255,255,255,0.2)" },
               { img: statXp3d, value: String(totalXP), label: "Total XP", grad: "linear-gradient(135deg, #FD91D9, #AF2D50)", bg: "linear-gradient(150deg, rgba(253,145,217,0.15) 0%, rgba(175,45,80,0.2) 50%, rgba(253,145,217,0.1) 100%)", shadow: "0 8px 32px rgba(175,45,80,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
             ].map((card) => (
@@ -697,7 +697,7 @@ const Profile = () => {
                   <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">{profile?.full_name || "User"}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#9B87F5" }} />
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#EC4899" }} />
                   <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">You</span>
                 </div>
               </div>
@@ -730,7 +730,7 @@ const Profile = () => {
                     <Line
                       type="linear"
                       dataKey="targetXp"
-                      stroke={isOwnProfile ? "#9B87F5" : "#EFB995"}
+                      stroke={isOwnProfile ? "#EC4899" : "#EFB995"}
                       strokeWidth={isOwnProfile ? 2 : 2.5}
                       strokeDasharray={isOwnProfile ? undefined : "6 3"}
                       dot={(props: any) => {
@@ -740,21 +740,21 @@ const Profile = () => {
                         const isOther = !isOwnProfile;
                         return (
                           <g key={`target-${props.index}`}>
-                            <text x={cx} y={cy - (isOther ? 22 : 14)} textAnchor="middle" fill={isOther ? "#EFB995" : "#BBA7FD"} fontSize={9} fontWeight={600}>{xpVal}</text>
+                            <text x={cx} y={cy - (isOther ? 22 : 14)} textAnchor="middle" fill={isOther ? "#EFB995" : "#FD91D9"} fontSize={9} fontWeight={600}>{xpVal}</text>
                             <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
-                              <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill={isOther ? "#EFB995" : "#BBA7FD"} stroke={isOther ? "#D4945A" : "#9B87F5"} strokeWidth="1" />
+                              <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill={isOther ? "#EFB995" : "#FD91D9"} stroke={isOther ? "#D4945A" : "#EC4899"} strokeWidth="1" />
                             </svg>
                           </g>
                         );
                       }}
-                      activeDot={{ r: 6, fill: isOwnProfile ? "#BBA7FD" : "#EFB995", stroke: "#fff", strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: isOwnProfile ? "#FD91D9" : "#EFB995", stroke: "#fff", strokeWidth: 2 }}
                     />
                     {/* Self line when viewing other profile */}
                     {!isOwnProfile && weeklyXpSelf.length > 0 && (
                       <Line
                         type="linear"
                         dataKey="selfXp"
-                        stroke="#9B87F5"
+                        stroke="#EC4899"
                         strokeWidth={2}
                         dot={(props: any) => {
                           const { cx, cy, payload } = props;
@@ -762,14 +762,14 @@ const Profile = () => {
                           const xpVal = payload?.selfXp ?? 0;
                           return (
                             <g key={`self-${props.index}`}>
-                              <text x={cx} y={cy - 14} textAnchor="middle" fill="#BBA7FD" fontSize={9} fontWeight={600}>{xpVal}</text>
+                              <text x={cx} y={cy - 14} textAnchor="middle" fill="#FD91D9" fontSize={9} fontWeight={600}>{xpVal}</text>
                               <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill="#BBA7FD" stroke="#9B87F5" strokeWidth="1" />
+                                <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill="#FD91D9" stroke="#EC4899" strokeWidth="1" />
                               </svg>
                             </g>
                           );
                         }}
-                        activeDot={{ r: 6, fill: "#BBA7FD", stroke: "#fff", strokeWidth: 2 }}
+                        activeDot={{ r: 6, fill: "#FD91D9", stroke: "#fff", strokeWidth: 2 }}
                       />
                     )}
                   </LineChart>
@@ -809,7 +809,7 @@ const Profile = () => {
             if (achieved.length === 0) return (
               <GlassCard className="p-4 sm:p-5 relative overflow-hidden">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FD91D9, #9B87F5)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FD91D9, #EC4899)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}>
                     <Award className="w-4 h-4 text-white" />
                   </div>
                   <h3 className="text-white font-bold text-sm sm:text-base uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>Achievements</h3>
@@ -823,14 +823,14 @@ const Profile = () => {
                 {/* Background shimmer */}
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full opacity-[0.07]" style={{ background: "radial-gradient(circle, #FD91D9, transparent 70%)" }} />
-                  <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, #9B87F5, transparent 70%)" }} />
+                  <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, #EC4899, transparent 70%)" }} />
                 </div>
 
                 {/* Header */}
                 <div className="relative z-10 flex items-center gap-2 mb-5">
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg, #FD91D9, #9B87F5)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}
+                    style={{ background: "linear-gradient(135deg, #FD91D9, #EC4899)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}
                   >
                     <Award className="w-4 h-4 text-white" />
                   </div>
@@ -1033,7 +1033,7 @@ const Profile = () => {
               {/* Preset colors grid */}
               <div className="grid grid-cols-6 gap-2 mb-3">
                 {[
-                  "#6A68DF", "#9B87F5", "#FD91D9", "#E91E63", "#FF4B4B", "#FF5722",
+                  "#EC4899", "#DB2777", "#FD91D9", "#E91E63", "#FF4B4B", "#FF5722",
                   "#FFBA33", "#58CC02", "#1DB954", "#00BCD4", "#2196F3", "#7C4DFF",
                 ].map((c) => (
                   <button
@@ -1085,7 +1085,7 @@ const Profile = () => {
               onClick={handleSaveProfile}
               className="w-full py-2.5 rounded-full font-bold text-sm text-white"
               style={{
-                background: "linear-gradient(135deg, #6A68DF 0%, #9B87F5 50%, #FD91D9 100%)",
+                background: "linear-gradient(135deg, #EC4899 0%, #DB2777 50%, #FD91D9 100%)",
                 boxShadow: "0 4px 20px rgba(106,104,223,0.4)",
               }}
             >
@@ -1201,8 +1201,8 @@ const Profile = () => {
                 disabled={searchLoading}
                 className="px-4 py-2 rounded-xl font-bold text-sm text-white"
                 style={{
-                  background: "linear-gradient(135deg, #6A68DF, #9B87F5)",
-                  boxShadow: "0 4px 16px rgba(106,104,223,0.3)",
+                  background: "linear-gradient(135deg, #EC4899, #DB2777)",
+                  boxShadow: "0 4px 16px rgba(236,72,153,0.3)",
                 }}
               >
                 {searchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}

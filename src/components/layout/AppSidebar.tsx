@@ -69,7 +69,7 @@ export function AppSidebar() {
         <NavLink
           to={item.url}
           className={`flex items-center gap-3 py-2.5 rounded-xl text-white/50 hover:text-white/80 hover:bg-white/[0.04] transition-all duration-200 ${collapsed ? 'justify-center px-0' : 'px-3'}`}
-          activeClassName="!bg-gradient-to-r !from-[hsl(270,60%,50%)]/20 !to-[hsl(330,60%,50%)]/10 !text-white !font-semibold"
+          activeClassName="!bg-gradient-to-r !from-[hsl(330,80%,55%)]/20 !to-[hsl(241,63%,64%)]/10 !text-white !font-semibold"
         >
           <item.icon className="w-[18px] h-[18px] shrink-0" />
           {!collapsed && <span className="text-sm">{item.title}</span>}
@@ -81,11 +81,11 @@ export function AppSidebar() {
   return (
     <Sidebar 
       collapsible="icon"
-      className="border-r-0 z-50 [&_[data-sidebar=sidebar]]:border-r-0 [&_[data-sidebar=sidebar]]:backdrop-blur-2xl [&_[data-sidebar=sidebar]]:bg-transparent [&[data-mobile=true]]:bg-[#1a0f22] [&_[data-mobile=true]]:bg-[#1a0f22]"
+      className="border-r-0 z-50 [&_[data-sidebar=sidebar]]:border-r-0 [&_[data-sidebar=sidebar]]:backdrop-blur-2xl [&_[data-sidebar=sidebar]]:bg-transparent [&[data-mobile=true]]:bg-[#2a0f1e] [&_[data-mobile=true]]:bg-[#2a0f1e]"
       style={{
         "--sidebar-background": "transparent",
         "--sidebar-foreground": "rgba(255, 255, 255, 0.85)",
-        "--sidebar-accent": "rgba(168, 85, 247, 0.12)",
+        "--sidebar-accent": "rgba(236, 72, 153, 0.12)",
         "--sidebar-accent-foreground": "rgba(255, 255, 255, 0.95)",
         "--sidebar-border": "transparent",
       } as React.CSSProperties}
