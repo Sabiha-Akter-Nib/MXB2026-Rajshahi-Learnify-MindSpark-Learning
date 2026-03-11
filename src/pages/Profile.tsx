@@ -500,7 +500,7 @@ const Profile = () => {
               style={{
                 background: profile.cover_color
                   ? `linear-gradient(135deg, ${profile.cover_color}, ${profile.cover_color}dd)`
-                  : "linear-gradient(135deg, #6A68DF, #9B87F5)",
+                  : "linear-gradient(135deg, #EC4899, #DB2777)",
               }}
             >
               {/* Decorative 3D stars */}
