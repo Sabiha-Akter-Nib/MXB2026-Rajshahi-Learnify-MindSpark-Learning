@@ -769,7 +769,7 @@ const Profile = () => {
                             </g>
                           );
                         }}
-                        activeDot={{ r: 6, fill: "#BBA7FD", stroke: "#fff", strokeWidth: 2 }}
+                        activeDot={{ r: 6, fill: "#FD91D9", stroke: "#fff", strokeWidth: 2 }}
                       />
                     )}
                   </LineChart>
