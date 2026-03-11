@@ -221,12 +221,6 @@ const Dashboard = () => {
 
         // Current BD week (Sat–Fri) for activity circles
         const activeDays = new Set<number>();
-        const jsDay = now.getDay(); // 0=Sun
-        // Days since last Saturday: Sat(6)->0, Sun(0)->1, Mon(1)->2 ...
-        const daysSinceSat = jsDay === 6 ? 0 : jsDay + 1;
-        const weekStartDate = new Date(now);
-        weekStartDate.setDate(weekStartDate.getDate() - daysSinceSat);
-        weekStartDate.setHours(0, 0, 0, 0);
 
         const { data: thisWeekSessions } = await supabase
           .from("study_sessions")
