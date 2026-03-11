@@ -883,10 +883,10 @@ const Analytics = () => {
                     <Line
                       type="linear"
                       dataKey="xp"
-                      stroke="#9B87F5"
+                      stroke="#EC4899"
                       strokeWidth={2}
                       dot={<StarDot />}
-                      activeDot={{ r: 6, fill: "#BBA7FD", stroke: "#fff", strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: "#FD91D9", stroke: "#fff", strokeWidth: 2 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
