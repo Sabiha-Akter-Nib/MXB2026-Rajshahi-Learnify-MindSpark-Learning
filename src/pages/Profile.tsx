@@ -630,7 +630,7 @@ const Profile = () => {
                     style={{
                       background: isFollowing
                         ? "linear-gradient(-45deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)"
-                        : "linear-gradient(135deg, #6A68DF 0%, #9B87F5 50%, #FD91D9 100%)",
+                        : "linear-gradient(135deg, #EC4899 0%, #DB2777 50%, #FD91D9 100%)",
                       boxShadow: isFollowing
                         ? "0 4px 16px rgba(0,0,0,0.2)"
                         : "0 4px 20px rgba(106,104,223,0.4), 0 0 40px rgba(253,145,217,0.15)",
