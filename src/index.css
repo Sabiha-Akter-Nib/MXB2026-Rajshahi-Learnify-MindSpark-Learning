@@ -420,10 +420,10 @@
 
 @keyframes border-glow {
   0%, 100% {
-    border-color: hsl(270 55% 55% / 0.3);
+    border-color: hsl(330 75% 65% / 0.3);
   }
   50% {
-    border-color: hsl(270 55% 55% / 0.6);
+    border-color: hsl(330 75% 65% / 0.6);
   }
 }
 

@@ -163,8 +163,8 @@ export default {
           "100%": { transform: "translateZ(200px) scale(2)", opacity: "0" },
         },
         "border-glow": {
-          "0%, 100%": { borderColor: "hsl(270 55% 55% / 0.3)" },
-          "50%": { borderColor: "hsl(270 55% 55% / 0.6)" },
+          "0%, 100%": { borderColor: "hsl(330 75% 65% / 0.3)" },
+          "50%": { borderColor: "hsl(330 75% 65% / 0.6)" },
         },
         "tilt-left": {
           "0%, 100%": { transform: "translateX(-8px) rotate(-1deg)" },

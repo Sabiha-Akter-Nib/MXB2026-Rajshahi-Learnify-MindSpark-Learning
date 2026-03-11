@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-// Floating white particles
+// Floating particles - pink and peach
 const FloatingParticles = () => {
   const particles = Array.from({ length: 30 }, (_, i) => ({
     id: i,
@@ -9,7 +9,7 @@ const FloatingParticles = () => {
     size: 2 + Math.random() * 5,
     duration: 15 + Math.random() * 20,
     delay: Math.random() * 5,
-    isPurple: Math.random() > 0.6, // 40% purple, 60% white
+    isPink: Math.random() > 0.5,
   }));
 
   return (
@@ -23,12 +23,12 @@ const FloatingParticles = () => {
             top: `${p.y}%`,
             width: p.size,
             height: p.size,
-            background: p.isPurple 
-              ? `rgba(147, 112, 219, ${0.5 + Math.random() * 0.4})`
-              : `rgba(255, 255, 255, ${0.4 + Math.random() * 0.4})`,
-            boxShadow: p.isPurple
-              ? `0 0 ${p.size * 3}px ${p.size}px rgba(147, 112, 219, 0.3)`
-              : `0 0 ${p.size * 3}px ${p.size}px rgba(255, 255, 255, 0.3)`,
+            background: p.isPink 
+              ? `rgba(236, 72, 153, ${0.5 + Math.random() * 0.4})`
+              : `rgba(239, 185, 149, ${0.4 + Math.random() * 0.4})`,
+            boxShadow: p.isPink
+              ? `0 0 ${p.size * 3}px ${p.size}px rgba(236, 72, 153, 0.3)`
+              : `0 0 ${p.size * 3}px ${p.size}px rgba(239, 185, 149, 0.3)`,
           }}
           animate={{
             y: [0, -50, 0, 50, 0],
@@ -48,13 +48,13 @@ const FloatingParticles = () => {
   );
 };
 
-// Glowing orbs (white and purple)
+// Glowing orbs (pink and purple-blue)
 const GlowingOrbs = () => {
   const orbs = [
-    { size: 500, x: "-10%", y: "10%", delay: 0, isPurple: false },
-    { size: 400, x: "80%", y: "20%", delay: 1.5, isPurple: true },
-    { size: 350, x: "20%", y: "70%", delay: 3, isPurple: false },
-    { size: 300, x: "70%", y: "80%", delay: 2, isPurple: true },
+    { size: 500, x: "-10%", y: "10%", delay: 0, isPink: true },
+    { size: 400, x: "80%", y: "20%", delay: 1.5, isPink: false },
+    { size: 350, x: "20%", y: "70%", delay: 3, isPink: true },
+    { size: 300, x: "70%", y: "80%", delay: 2, isPink: false },
   ];
 
   return (
@@ -68,9 +68,9 @@ const GlowingOrbs = () => {
             height: orb.size,
             left: orb.x,
             top: orb.y,
-            background: orb.isPurple
-              ? `radial-gradient(circle, rgba(147, 112, 219, 0.15) 0%, rgba(147, 112, 219, 0.05) 50%, transparent 70%)`
-              : `radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 70%)`,
+            background: orb.isPink
+              ? `radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(236, 72, 153, 0.05) 50%, transparent 70%)`
+              : `radial-gradient(circle, rgba(106, 104, 223, 0.12) 0%, rgba(106, 104, 223, 0.04) 50%, transparent 70%)`,
             filter: "blur(40px)",
           }}
           animate={{
@@ -91,7 +91,7 @@ const GlowingOrbs = () => {
   );
 };
 
-// Subtle grid pattern (white)
+// Subtle grid pattern
 const GridPattern = () => {
   return (
     <div
@@ -110,16 +110,16 @@ const GridPattern = () => {
 const DashboardBackground = () => {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
-      {/* Lavender to navy gradient background */}
+      {/* Pink/magenta to purple gradient background */}
       <div 
         className="absolute inset-0"
         style={{
           background: `linear-gradient(135deg, 
-            hsl(270, 40%, 85%) 0%, 
-            hsl(260, 45%, 80%) 25%, 
-            hsl(250, 50%, 75%) 50%, 
-            hsl(240, 55%, 70%) 75%, 
-            hsl(230, 60%, 65%) 100%
+            hsl(330, 50%, 82%) 0%, 
+            hsl(335, 55%, 75%) 25%, 
+            hsl(340, 50%, 70%) 50%, 
+            hsl(320, 45%, 68%) 75%, 
+            hsl(280, 40%, 65%) 100%
           )`,
         }}
       />
@@ -128,8 +128,8 @@ const DashboardBackground = () => {
       <div 
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse at 30% 20%, rgba(147, 112, 219, 0.15) 0%, transparent 50%),
-                       radial-gradient(ellipse at 70% 80%, rgba(100, 149, 237, 0.1) 0%, transparent 50%)`,
+          background: `radial-gradient(ellipse at 30% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                       radial-gradient(ellipse at 70% 80%, rgba(106, 104, 223, 0.1) 0%, transparent 50%)`,
         }}
       />
       
