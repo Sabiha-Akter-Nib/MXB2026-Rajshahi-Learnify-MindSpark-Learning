@@ -830,7 +830,7 @@ const Profile = () => {
                 <div className="relative z-10 flex items-center gap-2 mb-5">
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg, #FD91D9, #9B87F5)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}
+                    style={{ background: "linear-gradient(135deg, #FD91D9, #EC4899)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}
                   >
                     <Award className="w-4 h-4 text-white" />
                   </div>
