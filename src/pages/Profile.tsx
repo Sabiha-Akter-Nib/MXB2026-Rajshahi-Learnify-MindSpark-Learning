@@ -1033,7 +1033,7 @@ const Profile = () => {
               {/* Preset colors grid */}
               <div className="grid grid-cols-6 gap-2 mb-3">
                 {[
-                  "#6A68DF", "#9B87F5", "#FD91D9", "#E91E63", "#FF4B4B", "#FF5722",
+                  "#EC4899", "#DB2777", "#FD91D9", "#E91E63", "#FF4B4B", "#FF5722",
                   "#FFBA33", "#58CC02", "#1DB954", "#00BCD4", "#2196F3", "#7C4DFF",
                 ].map((c) => (
                   <button
