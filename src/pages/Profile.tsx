@@ -1201,8 +1201,8 @@ const Profile = () => {
                 disabled={searchLoading}
                 className="px-4 py-2 rounded-xl font-bold text-sm text-white"
                 style={{
-                  background: "linear-gradient(135deg, #6A68DF, #9B87F5)",
-                  boxShadow: "0 4px 16px rgba(106,104,223,0.3)",
+                  background: "linear-gradient(135deg, #EC4899, #DB2777)",
+                  boxShadow: "0 4px 16px rgba(236,72,153,0.3)",
                 }}
               >
                 {searchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
