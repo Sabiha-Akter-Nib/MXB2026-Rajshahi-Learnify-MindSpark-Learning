@@ -762,9 +762,9 @@ const Profile = () => {
                           const xpVal = payload?.selfXp ?? 0;
                           return (
                             <g key={`self-${props.index}`}>
-                              <text x={cx} y={cy - 14} textAnchor="middle" fill="#BBA7FD" fontSize={9} fontWeight={600}>{xpVal}</text>
+                              <text x={cx} y={cy - 14} textAnchor="middle" fill="#FD91D9" fontSize={9} fontWeight={600}>{xpVal}</text>
                               <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill="#BBA7FD" stroke="#9B87F5" strokeWidth="1" />
+                                <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill="#FD91D9" stroke="#EC4899" strokeWidth="1" />
                               </svg>
                             </g>
                           );
