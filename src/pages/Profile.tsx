@@ -823,7 +823,7 @@ const Profile = () => {
                 {/* Background shimmer */}
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full opacity-[0.07]" style={{ background: "radial-gradient(circle, #FD91D9, transparent 70%)" }} />
-                  <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, #9B87F5, transparent 70%)" }} />
+                  <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, #EC4899, transparent 70%)" }} />
                 </div>
 
                 {/* Header */}
