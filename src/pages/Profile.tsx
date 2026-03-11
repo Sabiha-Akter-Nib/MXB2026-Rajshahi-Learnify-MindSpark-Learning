@@ -747,7 +747,7 @@ const Profile = () => {
                           </g>
                         );
                       }}
-                      activeDot={{ r: 6, fill: isOwnProfile ? "#BBA7FD" : "#EFB995", stroke: "#fff", strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: isOwnProfile ? "#FD91D9" : "#EFB995", stroke: "#fff", strokeWidth: 2 }}
                     />
                     {/* Self line when viewing other profile */}
                     {!isOwnProfile && weeklyXpSelf.length > 0 && (
