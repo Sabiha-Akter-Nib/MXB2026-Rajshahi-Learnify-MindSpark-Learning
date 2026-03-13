@@ -39,16 +39,13 @@ interface Profile {
   created_at: string;
 }
 
-// Liquid glass card
+// Light theme card
 const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn(
-      "rounded-2xl border border-white/[0.15] backdrop-blur-2xl",
-      className
-    )}
+    className={cn("rounded-2xl border border-[#2E2C2D]/[0.06]", className)}
     style={{
-      background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 0 0 0.5px rgba(255,255,255,0.08)",
+      background: "rgba(255,255,255,0.85)",
+      boxShadow: "0 2px 20px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
     }}
     {...props}
   >
@@ -88,40 +85,35 @@ const LearningProgressCard = ({
   weeklyChartData: { label: string; xp: number }[];
   isBangla?: boolean;
 }) => {
-  // This week's total XP
   const thisWeekXP = weeklyChartData.reduce((sum, d) => sum + d.xp, 0);
-  // Simulated "average OddhaboshAI learner" benchmark (slightly below user or a baseline)
   const avgLearnerXP = Math.max(Math.round(thisWeekXP * 0.65), 50);
   const maxXP = Math.max(thisWeekXP, avgLearnerXP, 100);
   const yourPercent = Math.min((thisWeekXP / maxXP) * 100, 100);
   const avgPercent = Math.min((avgLearnerXP / maxXP) * 100, 100);
   const surpassPercent = avgLearnerXP > 0 ? Math.round((thisWeekXP / avgLearnerXP) * 100) : 100;
 
-  // Date range
   const startDate = weeklyChartData.length > 0 ? weeklyChartData[0].label.split("\n")[1] || "" : "";
   const endDate = weeklyChartData.length > 0 ? weeklyChartData[weeklyChartData.length - 1].label.split("\n")[1] || "" : "";
 
   return (
     <div
-      className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+      className="rounded-2xl overflow-hidden border border-[#2E2C2D]/[0.06] relative"
       style={{
-        background: "linear-gradient(135deg, rgba(106,104,223,0.25) 0%, rgba(253,145,217,0.2) 25%, rgba(239,185,149,0.18) 50%, rgba(254,254,254,0.12) 75%, rgba(188,150,240,0.2) 100%)",
-        boxShadow: "0 8px 40px rgba(106,104,223,0.2), 0 0 80px rgba(253,145,217,0.08), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.05)",
+        background: "linear-gradient(135deg, rgba(106,104,223,0.12) 0%, rgba(253,145,217,0.1) 25%, rgba(239,185,149,0.08) 50%, rgba(254,254,254,0.9) 75%, rgba(188,150,240,0.08) 100%)",
+        boxShadow: "0 2px 20px rgba(106,104,223,0.08), 0 0 0 1px rgba(0,0,0,0.02)",
       }}
     >
-      {/* Holographic shimmer overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.07) 40%, rgba(253,145,217,0.06) 50%, transparent 70%)",
+          background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.3) 40%, rgba(253,145,217,0.03) 50%, transparent 70%)",
         }}
       />
 
       <div className="relative z-10 p-4 sm:p-5">
-        {/* Header row */}
         <div className="flex items-center justify-between mb-1">
           <h3
-            className="text-white font-bold text-sm sm:text-base"
+            className="text-[#2E2C2D] font-bold text-sm sm:text-base"
             style={{ fontFamily: "Poppins, sans-serif" }}
           >
             {isBangla ? "শেখার অগ্রগতি" : "Learning Progress"}
@@ -129,26 +121,25 @@ const LearningProgressCard = ({
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "linear-gradient(135deg, #FD91D9, #AF2D50)" }} />
-              <span className="text-white/60 text-[9px] sm:text-[10px] font-medium">{isBangla ? "গত সপ্তাহ" : "Last Week"}</span>
+              <span className="text-[#2E2C2D]/50 text-[9px] sm:text-[10px] font-medium">{isBangla ? "গত সপ্তাহ" : "Last Week"}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: "linear-gradient(135deg, #6A68DF, #BC96F0)" }} />
-              <span className="text-white/60 text-[9px] sm:text-[10px] font-medium">{isBangla ? "এই সপ্তাহ" : "This Week"}</span>
+              <span className="text-[#2E2C2D]/50 text-[9px] sm:text-[10px] font-medium">{isBangla ? "এই সপ্তাহ" : "This Week"}</span>
             </div>
           </div>
         </div>
-        <p className="text-white/40 text-[9px] sm:text-[10px] mb-4">
+        <p className="text-[#2E2C2D]/35 text-[9px] sm:text-[10px] mb-4">
           {isBangla ? "সাপ্তাহিক রিপোর্ট" : "Weekly report"}, {startDate} - {endDate}
         </p>
 
         {/* Progress bars */}
         <div className="space-y-3 mb-4">
-          {/* Your Progress */}
           <div>
-            <p className="text-white/80 text-[11px] sm:text-xs font-medium mb-1.5">
+            <p className="text-[#2E2C2D]/70 text-[11px] sm:text-xs font-medium mb-1.5">
               {isBangla ? "তোমার অগ্রগতি" : "Your Progress"}
             </p>
-            <div className="h-7 sm:h-8 rounded-full overflow-hidden bg-white/10 relative">
+            <div className="h-7 sm:h-8 rounded-full overflow-hidden bg-[#2E2C2D]/[0.06] relative">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${yourPercent}%` }}
@@ -156,18 +147,13 @@ const LearningProgressCard = ({
                 className="h-full rounded-full relative"
                 style={{
                   background: "linear-gradient(90deg, #6A68DF 0%, #BC96F0 50%, #FD91D9 100%)",
-                  boxShadow: "0 0 20px rgba(106,104,223,0.4), 0 0 40px rgba(253,145,217,0.2)",
+                  boxShadow: "0 0 20px rgba(106,104,223,0.3)",
                 }}
               >
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%)",
-                  }}
-                />
+                <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%)" }} />
               </motion.div>
               <span
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/90 text-[10px] sm:text-xs font-bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2E2C2D]/70 text-[10px] sm:text-xs font-bold"
                 style={{ fontFamily: "'Black Han Sans', sans-serif" }}
               >
                 {thisWeekXP} XP
@@ -175,12 +161,11 @@ const LearningProgressCard = ({
             </div>
           </div>
 
-          {/* Average OddhaboshAI Learners */}
           <div>
-            <p className="text-white/80 text-[11px] sm:text-xs font-medium mb-1.5">
+            <p className="text-[#2E2C2D]/70 text-[11px] sm:text-xs font-medium mb-1.5">
               {isBangla ? "গড় OddhaboshAI শিক্ষার্থী" : "Average OddhaboshAI Learners"}
             </p>
-            <div className="h-7 sm:h-8 rounded-full overflow-hidden bg-white/10 relative">
+            <div className="h-7 sm:h-8 rounded-full overflow-hidden bg-[#2E2C2D]/[0.06] relative">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${avgPercent}%` }}
@@ -191,15 +176,10 @@ const LearningProgressCard = ({
                   boxShadow: "0 0 15px rgba(239,185,149,0.3)",
                 }}
               >
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: "linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%)",
-                  }}
-                />
+                <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%)" }} />
               </motion.div>
               <span
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/90 text-[10px] sm:text-xs font-bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2E2C2D]/70 text-[10px] sm:text-xs font-bold"
                 style={{ fontFamily: "'Black Han Sans', sans-serif" }}
               >
                 {avgLearnerXP} XP
@@ -208,27 +188,24 @@ const LearningProgressCard = ({
           </div>
         </div>
 
-        {/* XP scale */}
         <div className="flex items-center justify-between mb-4 px-1">
           {[0, Math.round(maxXP * 0.25), Math.round(maxXP * 0.5), Math.round(maxXP * 0.75), maxXP].map((v) => (
-            <span key={v} className="text-white/30 text-[8px] sm:text-[9px] font-medium">{v}XP</span>
+            <span key={v} className="text-[#2E2C2D]/25 text-[8px] sm:text-[9px] font-medium">{v}XP</span>
           ))}
         </div>
 
-        {/* Surpass message */}
         <div
           className="rounded-full px-4 py-2.5 flex items-center justify-center gap-2"
           style={{
-            background: "linear-gradient(135deg, rgba(106,104,223,0.2) 0%, rgba(253,145,217,0.15) 50%, rgba(239,185,149,0.1) 100%)",
-            border: "1.5px solid rgba(254,254,254,0.15)",
-            boxShadow: "0 4px 16px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.1)",
+            background: "linear-gradient(135deg, rgba(106,104,223,0.1) 0%, rgba(253,145,217,0.08) 50%, rgba(239,185,149,0.06) 100%)",
+            border: "1.5px solid rgba(46,44,45,0.08)",
           }}
         >
           <span className="text-[11px] sm:text-xs">✨</span>
           <p
             className="text-[11px] sm:text-xs font-semibold"
             style={{
-              background: "linear-gradient(90deg, #FEFEFE 0%, #FD91D9 40%, #6A68DF 80%, #EFB995 100%)",
+              background: "linear-gradient(90deg, #2E2C2D 0%, #EC4899 40%, #6A68DF 80%, #EFB995 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -503,9 +480,9 @@ const Analytics = () => {
         <div className="min-h-[100dvh] flex items-center justify-center">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
-              <Loader2 className="w-10 h-10 text-white/70" />
+              <Loader2 className="w-10 h-10 text-[#EC4899]/60" />
             </motion.div>
-            <p className="text-white/60 font-poppins font-medium">Loading analytics...</p>
+            <p className="text-[#2E2C2D]/50 font-poppins font-medium">Loading analytics...</p>
           </motion.div>
         </div>
       </DashboardLayout>
@@ -518,7 +495,6 @@ const Analytics = () => {
   const classText = profile?.class ? `Class ${profile.class}` : "";
   const monthLabel = format(currentMonth, "MMMM");
 
-  // Weekly chart date range label
   const chartStartDate = subDays(new Date(), 6);
   const chartEndDate = new Date();
   const chartRangeLabel = `Showing points from ${format(chartStartDate, "MMMM dd")} to ${format(chartEndDate, "MMMM dd")}`;
@@ -528,37 +504,31 @@ const Analytics = () => {
       <div className="min-h-[100dvh] font-poppins overflow-x-hidden w-full max-w-full">
         <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-5 overflow-hidden">
 
-          {/* ========== HEADER (same as Dashboard) ========== */}
+          {/* ========== HEADER ========== */}
           <header className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="[&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0">
                 <AvatarUpload userId={user.id} userName={displayName} size="sm" showUploadButton={false} />
               </div>
               <div>
-                <h1 className="text-white font-semibold text-base sm:text-lg leading-tight flex items-center gap-1">Hi, {displayName}!{isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}</h1>
-                <p className="text-white/50 text-xs font-normal">{classText}, বাংলা ভার্সন</p>
+                <h1 className="text-[#2E2C2D] font-semibold text-base sm:text-lg leading-tight flex items-center gap-1">Hi, {displayName}!{isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}</h1>
+                <p className="text-[#2E2C2D]/50 text-xs font-normal">{classText}, বাংলা ভার্সন</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.15] backdrop-blur-2xl"
-                style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
-                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#2E2C2D]/[0.08]"
+                style={{ background: "rgba(255,255,255,0.9)", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
               >
                 <img src={statStreak3d} alt="" className="w-5 h-5 object-contain" />
-                <span className="text-white font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{currentStreak}</span>
+                <span className="text-[#2E2C2D] font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{currentStreak}</span>
               </div>
               <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.15] backdrop-blur-2xl"
-                style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
-                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#2E2C2D]/[0.08]"
+                style={{ background: "rgba(255,255,255,0.9)", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
               >
                 <img src={statXp3d} alt="" className="w-5 h-5 object-contain" />
-                <span className="text-white font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{totalXP}</span>
+                <span className="text-[#2E2C2D] font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{totalXP}</span>
               </div>
             </div>
           </header>
@@ -567,16 +537,16 @@ const Analytics = () => {
           <GlassCard className="px-4 py-3 sm:px-5 sm:py-4 relative overflow-hidden" style={{ height: '130px' }}>
             <div className="flex items-center gap-3 h-full">
               <div
-                className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+                className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-[#6A68DF]/15"
                 style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  background: "linear-gradient(-45deg, rgba(106,104,223,0.08) 0%, rgba(236,72,153,0.05) 100%)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
                 }}>
                 <img src={analytics3d} alt="Analytics" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
               </div>
               <div className="flex-1 min-w-0 max-w-[50%] sm:max-w-[55%]">
-                <h3 className="text-white font-bold text-xs sm:text-lg leading-tight">Hey, you've been doing great recently!</h3>
-                <p className="text-white/60 text-[9px] sm:text-xs leading-snug mt-0.5 line-clamp-2">
+                <h3 className="text-[#2E2C2D] font-bold text-xs sm:text-lg leading-tight">Hey, you've been doing great recently!</h3>
+                <p className="text-[#2E2C2D]/50 text-[9px] sm:text-xs leading-snug mt-0.5 line-clamp-2">
                   Keep up the momentum and track your learning insights here
                 </p>
               </div>
@@ -590,42 +560,39 @@ const Analytics = () => {
 
           {/* ========== AI WEEKLY SUMMARY CARD ========== */}
           <div
-            className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+            className="rounded-2xl overflow-hidden border border-[#2E2C2D]/[0.06] relative"
             style={{
-              background: "linear-gradient(135deg, rgba(106,104,223,0.28) 0%, rgba(253,145,217,0.2) 25%, rgba(239,185,149,0.15) 50%, rgba(254,254,254,0.1) 75%, rgba(188,150,240,0.22) 100%)",
-              boxShadow: "0 8px 40px rgba(106,104,223,0.2), 0 0 80px rgba(253,145,217,0.08), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.05)",
+              background: "linear-gradient(135deg, rgba(106,104,223,0.1) 0%, rgba(253,145,217,0.08) 25%, rgba(239,185,149,0.06) 50%, rgba(254,254,254,0.95) 75%, rgba(188,150,240,0.08) 100%)",
+              boxShadow: "0 2px 20px rgba(106,104,223,0.06), 0 0 0 1px rgba(0,0,0,0.02)",
             }}
           >
-            {/* Holographic shimmer */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.07) 40%, rgba(253,145,217,0.06) 50%, transparent 70%)",
+                background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.4) 40%, rgba(253,145,217,0.03) 50%, transparent 70%)",
               }}
             />
             <div className="relative z-10 p-4 sm:p-5">
-            {/* Header */}
               <div className="flex items-center gap-2.5 mb-3">
                   <div
                     className="w-9 h-9 rounded-xl flex items-center justify-center"
                     style={{
                       background: "linear-gradient(135deg, #6A68DF, #FD91D9)",
-                      boxShadow: "0 4px 16px rgba(106,104,223,0.4)",
+                      boxShadow: "0 4px 16px rgba(106,104,223,0.3)",
                     }}
                   >
                     <Sparkles className="w-4.5 h-4.5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
+                    <h3 className="text-[#2E2C2D] font-bold text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
                       {profile?.version === "bangla" ? "সাপ্তাহিক সারাংশ" : "Weekly Summary"}
                     </h3>
-                    <p className="text-white/40 text-[9px] sm:text-[10px]">
+                    <p className="text-[#2E2C2D]/35 text-[9px] sm:text-[10px]">
                       {profile?.version === "bangla" ? "AI দ্বারা তৈরি" : "AI-generated insight"}
                     </p>
                   </div>
               </div>
 
-              {/* Content */}
               <AnimatePresence mode="wait">
                 {weeklySummary ? (
                   <motion.div
@@ -635,11 +602,11 @@ const Analytics = () => {
                     exit={{ opacity: 0, y: -8 }}
                     className="rounded-xl p-3.5"
                     style={{
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "rgba(46,44,45,0.03)",
+                      border: "1px solid rgba(46,44,45,0.06)",
                     }}
                   >
-                    <p className="text-white/85 text-xs sm:text-sm leading-relaxed font-medium">
+                    <p className="text-[#2E2C2D]/80 text-xs sm:text-sm leading-relaxed font-medium">
                       {weeklySummary}
                     </p>
                   </motion.div>
@@ -655,9 +622,9 @@ const Analytics = () => {
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                     >
-                      <Sparkles className="w-5 h-5 text-white/50" />
+                      <Sparkles className="w-5 h-5 text-[#6A68DF]/50" />
                     </motion.div>
-                    <p className="text-white/50 text-xs font-medium">
+                    <p className="text-[#2E2C2D]/40 text-xs font-medium">
                       {profile?.version === "bangla" ? "সারাংশ তৈরি হচ্ছে..." : "Generating your summary..."}
                     </p>
                   </motion.div>
@@ -668,7 +635,7 @@ const Analytics = () => {
                     animate={{ opacity: 1 }}
                     className="text-center py-4"
                   >
-                    <p className="text-white/40 text-xs">
+                    <p className="text-[#2E2C2D]/35 text-xs">
                       {profile?.version === "bangla" ? "সারাংশ তৈরি করা যায়নি" : "Could not generate summary"}
                     </p>
                   </motion.div>
@@ -677,26 +644,26 @@ const Analytics = () => {
             </div>
           </div>
 
-          {/* ========== PROFILE STAT CARDS (2x2 on mobile, 4 on desktop) ========== */}
+          {/* ========== PROFILE STAT CARDS ========== */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
-              { img: statStreak3d, value: String(currentStreak), label: "Total Streak", grad: "linear-gradient(135deg, #EC4899, #DB2777)", bg: "linear-gradient(150deg, rgba(236,72,153,0.25) 0%, rgba(219,39,119,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(236,72,153,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
-              { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Rank", grad: "linear-gradient(135deg, #6A68DF, #EC4899)", bg: "linear-gradient(150deg, rgba(106,104,223,0.25) 0%, rgba(88,80,200,0.15) 50%, rgba(236,72,153,0.1) 100%)", shadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
-              { img: statExams3d, value: String(totalExams), label: "Exams", grad: "linear-gradient(135deg, #FD91D9, #EFB995)", bg: "linear-gradient(150deg, rgba(253,145,217,0.2) 0%, rgba(239,185,149,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(253,145,217,0.12), inset 0 1px 0 rgba(255,255,255,0.2)" },
-              { img: statXp3d, value: String(totalXP), label: "Total XP", grad: "linear-gradient(135deg, #FD91D9, #AF2D50)", bg: "linear-gradient(150deg, rgba(253,145,217,0.15) 0%, rgba(175,45,80,0.2) 50%, rgba(253,145,217,0.1) 100%)", shadow: "0 8px 32px rgba(175,45,80,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
+              { img: statStreak3d, value: String(currentStreak), label: "Total Streak", grad: "linear-gradient(135deg, #EC4899, #DB2777)", bg: "linear-gradient(150deg, rgba(236,72,153,0.12) 0%, rgba(219,39,119,0.06) 50%, rgba(106,104,223,0.04) 100%)", shadow: "0 2px 16px rgba(236,72,153,0.08), 0 0 0 1px rgba(0,0,0,0.02)" },
+              { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Rank", grad: "linear-gradient(135deg, #6A68DF, #EC4899)", bg: "linear-gradient(150deg, rgba(106,104,223,0.12) 0%, rgba(88,80,200,0.06) 50%, rgba(236,72,153,0.04) 100%)", shadow: "0 2px 16px rgba(106,104,223,0.08), 0 0 0 1px rgba(0,0,0,0.02)" },
+              { img: statExams3d, value: String(totalExams), label: "Exams", grad: "linear-gradient(135deg, #FD91D9, #EFB995)", bg: "linear-gradient(150deg, rgba(253,145,217,0.1) 0%, rgba(239,185,149,0.06) 50%, rgba(106,104,223,0.04) 100%)", shadow: "0 2px 16px rgba(253,145,217,0.06), 0 0 0 1px rgba(0,0,0,0.02)" },
+              { img: statXp3d, value: String(totalXP), label: "Total XP", grad: "linear-gradient(135deg, #FD91D9, #AF2D50)", bg: "linear-gradient(150deg, rgba(253,145,217,0.08) 0%, rgba(175,45,80,0.1) 50%, rgba(253,145,217,0.04) 100%)", shadow: "0 2px 16px rgba(175,45,80,0.08), 0 0 0 1px rgba(0,0,0,0.02)" },
             ].map((card) => (
               <div
                 key={card.label}
-                className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+                className="rounded-2xl overflow-hidden border border-[#2E2C2D]/[0.06] relative"
                 style={{ background: card.bg, boxShadow: card.shadow }}
               >
-                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.04) 50%, transparent 70%)" }} />
+                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.3) 50%, transparent 70%)" }} />
                 <div className="relative z-10 p-3 sm:p-3.5 flex flex-col items-center text-center">
                   <img src={card.img} alt={card.label} className="w-12 h-12 sm:w-16 sm:h-16 object-contain mb-1.5" />
-                  <p className="text-white text-xl sm:text-3xl font-extrabold leading-none tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
+                  <p className="text-[#2E2C2D] text-xl sm:text-3xl font-extrabold leading-none tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
                     <span style={{ background: card.grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{card.value}</span>
                   </p>
-                  <p className="text-white text-[9px] sm:text-xs font-bold mt-1 whitespace-nowrap tracking-wide uppercase">{card.label}</p>
+                  <p className="text-[#2E2C2D]/60 text-[9px] sm:text-xs font-bold mt-1 whitespace-nowrap tracking-wide uppercase">{card.label}</p>
                 </div>
               </div>
             ))}
@@ -704,9 +671,8 @@ const Analytics = () => {
 
           {/* ========== STREAK CALENDAR CARD ========== */}
           <GlassCard className="p-4 sm:p-5">
-            {/* Streak header */}
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex-shrink-0 relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+              <div className="flex-shrink-0 relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#EC4899]/10 flex items-center justify-center">
                 <motion.img
                   src={streakFlame3d}
                   alt="Streak Fire"
@@ -715,19 +681,19 @@ const Analytics = () => {
                   transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
                 />
                 <span
-                  className="absolute bottom-0 text-xl sm:text-2xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                  className="absolute bottom-0 text-xl sm:text-2xl text-[#2E2C2D] drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)]"
                   style={{
                     fontFamily: "'Black Han Sans', sans-serif",
-                    WebkitTextStroke: '1.5px rgba(140,80,220,0.8)',
+                    WebkitTextStroke: '1.5px rgba(236,72,153,0.4)',
                   }}>
                   {currentStreak}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-white text-sm sm:text-lg font-semibold leading-snug">
+                <h3 className="text-[#2E2C2D] text-sm sm:text-lg font-semibold leading-snug">
                   {currentStreak > 0 ? `${currentStreak} days streak, well done!` : "0 days streak, study to achieve!"}
                 </h3>
-                <p className="text-white/50 text-[11px] sm:text-sm font-light">{streakComment}</p>
+                <p className="text-[#2E2C2D]/50 text-[11px] sm:text-sm font-light">{streakComment}</p>
               </div>
             </div>
 
@@ -735,23 +701,23 @@ const Analytics = () => {
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-[#2E2C2D]/[0.05] hover:bg-[#2E2C2D]/[0.1] transition-colors"
               >
-                <ChevronLeft className="w-4 h-4 text-white/70" />
+                <ChevronLeft className="w-4 h-4 text-[#2E2C2D]/60" />
               </button>
-              <h4 className="text-white font-semibold text-sm sm:text-base">{monthLabel}</h4>
+              <h4 className="text-[#2E2C2D] font-semibold text-sm sm:text-base">{monthLabel}</h4>
               <button
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-[#2E2C2D]/[0.05] hover:bg-[#2E2C2D]/[0.1] transition-colors"
               >
-                <ChevronRight className="w-4 h-4 text-white/70" />
+                <ChevronRight className="w-4 h-4 text-[#2E2C2D]/60" />
               </button>
             </div>
 
             {/* Day labels */}
             <div className="grid grid-cols-7 gap-px mb-1">
               {DAYS_EN.map((day) => (
-                <div key={day} className="text-center text-[10px] sm:text-xs text-white/50 font-medium">
+                <div key={day} className="text-center text-[10px] sm:text-xs text-[#2E2C2D]/40 font-medium">
                   {day}
                 </div>
               ))}
@@ -759,12 +725,10 @@ const Analytics = () => {
 
             {/* Calendar grid */}
             <div className="grid grid-cols-7 gap-x-0 gap-y-0">
-              {/* Padding before first day */}
               {calendarDays.paddingBefore.map((_, i) => (
                 <div key={`pad-${i}`} className="h-10 sm:h-11" />
               ))}
 
-              {/* Actual days */}
               {calendarDays.days.map((day) => {
                 const dateKey = format(day, "yyyy-MM-dd");
                 const isActive = activeDates.has(dateKey);
@@ -781,30 +745,28 @@ const Analytics = () => {
                       className={cn(
                         "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-medium transition-all relative",
                         isActive && "text-white",
-                        !isActive && !isFuture && !isBeforeRegistration && "text-white/40",
-                        isFuture && "text-white/20",
-                        isBeforeRegistration && "text-white/15",
-                        isToday && !isActive && "ring-1 ring-white/40",
+                        !isActive && !isFuture && !isBeforeRegistration && "text-[#2E2C2D]/60",
+                        isFuture && "text-[#2E2C2D]/20",
+                        isBeforeRegistration && "text-[#2E2C2D]/15",
+                        isToday && !isActive && "ring-1 ring-[#EC4899]/40",
                       )}
                       style={{
                         backgroundColor: isActive
-                          ? 'rgba(187, 167, 253, 0.7)'
+                          ? 'rgba(236, 72, 153, 0.6)'
                           : isFuture || isBeforeRegistration
-                            ? 'rgba(217, 217, 217, 0.15)'
-                            : 'rgba(217, 217, 217, 0.3)',
+                            ? 'rgba(46, 44, 45, 0.04)'
+                            : 'rgba(46, 44, 45, 0.06)',
                       }}
                     >
-                      {/* Inner circle for depth */}
                       <div
                         className="absolute inset-[5px] rounded-full"
                         style={{
                           backgroundColor: isActive
-                            ? 'rgba(187, 167, 253, 0.3)'
-                            : 'rgba(217, 217, 217, 0.15)',
+                            ? 'rgba(236, 72, 153, 0.2)'
+                            : 'rgba(46, 44, 45, 0.03)',
                         }}
                       />
                       <span className="relative z-10">{day.getDate()}</span>
-                      {/* Flame exactly centered and sized to inner circle */}
                       {isToday && (
                         <img
                           src={streakFlame3d}
@@ -841,10 +803,7 @@ const Analytics = () => {
               <p className="text-white/70 text-xs sm:text-sm mb-1.5">Your points you have gained</p>
               <div
                 className="inline-flex items-center gap-2 px-5 py-2 rounded-full"
-                style={{
-                  background: "rgba(255,255,255,0.2)",
-                  backdropFilter: "blur(10px)",
-                }}
+                style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)" }}
               >
                 <span className="text-white font-bold text-lg sm:text-xl">{totalXP}</span>
                 <img src={statXp3d} alt="" className="w-5 h-5 object-contain" />
@@ -854,13 +813,13 @@ const Analytics = () => {
 
           {/* ========== WEEKLY XP CHART ========== */}
           <GlassCard className="p-4 sm:p-5">
-            <h3 className="text-white font-bold text-sm sm:text-base text-center mb-1">Weekly XP Points History</h3>
-            <p className="text-white/40 text-[10px] sm:text-xs text-center mb-4">{chartRangeLabel}</p>
+            <h3 className="text-[#2E2C2D] font-bold text-sm sm:text-base text-center mb-1">Weekly XP Points History</h3>
+            <p className="text-[#2E2C2D]/35 text-[10px] sm:text-xs text-center mb-4">{chartRangeLabel}</p>
 
             <div
               className="rounded-xl p-3 sm:p-4"
               style={{
-                background: "linear-gradient(180deg, rgba(253,145,217,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+                background: "linear-gradient(180deg, rgba(253,145,217,0.08) 0%, rgba(255,255,255,0.5) 100%)",
               }}
             >
               <div className="h-48 sm:h-56 overflow-hidden w-full min-w-0">
@@ -868,13 +827,13 @@ const Analytics = () => {
                   <LineChart data={weeklyChartData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
                     <XAxis
                       dataKey="label"
-                      tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 9 }}
+                      tick={{ fill: "rgba(46,44,45,0.45)", fontSize: 9 }}
                       axisLine={false}
                       tickLine={false}
                       interval={0}
                     />
                     <YAxis
-                      tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }}
+                      tick={{ fill: "rgba(46,44,45,0.3)", fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
                       width={30}
@@ -902,44 +861,42 @@ const Analytics = () => {
 
           {/* ========== STUDY TIME CARD ========== */}
           <div
-            className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+            className="rounded-2xl overflow-hidden border border-[#2E2C2D]/[0.06] relative"
             style={{
-              background: "linear-gradient(135deg, rgba(106,104,223,0.3) 0%, rgba(253,145,217,0.2) 30%, rgba(239,185,149,0.15) 60%, rgba(254,254,254,0.1) 100%)",
-              boxShadow: "0 8px 40px rgba(106,104,223,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+              background: "linear-gradient(135deg, rgba(106,104,223,0.12) 0%, rgba(253,145,217,0.08) 30%, rgba(239,185,149,0.06) 60%, rgba(254,254,254,0.95) 100%)",
+              boxShadow: "0 2px 20px rgba(106,104,223,0.06), 0 0 0 1px rgba(0,0,0,0.02)",
             }}
           >
-            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.05) 40%, rgba(253,145,217,0.04) 50%, transparent 70%)" }} />
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 20%, rgba(254,254,254,0.3) 40%, rgba(253,145,217,0.02) 50%, transparent 70%)" }} />
             <div className="relative z-10 px-4 py-3 sm:px-5 sm:py-3.5">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-white font-bold text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
+                <h3 className="text-[#2E2C2D] font-bold text-sm sm:text-base" style={{ fontFamily: "Poppins, sans-serif" }}>
                   Learn Time
                 </h3>
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(255,255,255,0.1)", border: "1.5px solid rgba(255,255,255,0.15)" }}
+                  style={{ background: "rgba(46,44,45,0.05)", border: "1.5px solid rgba(46,44,45,0.08)" }}
                 >
-                  <Clock className="w-4 h-4 text-white/70" />
+                  <Clock className="w-4 h-4 text-[#2E2C2D]/60" />
                 </div>
               </div>
 
-              {/* Big number */}
               <div className="mb-2.5">
                 <span
-                  className="text-white text-3xl sm:text-4xl font-bold leading-none"
+                  className="text-[#2E2C2D] text-3xl sm:text-4xl font-bold leading-none"
                   style={{ fontFamily: "'Black Han Sans', sans-serif" }}
                 >
                   {studyHours[studyTimeRange]}
                 </span>
-                <span className="text-white/60 text-sm sm:text-base font-medium ml-1">Hour</span>
+                <span className="text-[#2E2C2D]/50 text-sm sm:text-base font-medium ml-1">Hour</span>
               </div>
 
-              {/* Bar chart */}
               <div className="h-24 sm:h-28 mb-2.5 w-full min-w-0 overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={monthlyBarData} barSize={8}>
                     <XAxis
                       dataKey="label"
-                      tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }}
+                      tick={{ fill: "rgba(46,44,45,0.45)", fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
                     />
@@ -948,13 +905,12 @@ const Analytics = () => {
                     <Bar
                       dataKey="hours"
                       radius={[4, 4, 0, 0]}
-                      fill="rgba(188,150,240,0.6)"
+                      fill="rgba(106,104,223,0.5)"
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
 
-              {/* Time range pills */}
               <div className="flex items-center justify-center gap-2">
                 {(["weekly", "monthly", "quarterly", "yearly"] as const).map((range) => (
                   <button
@@ -962,10 +918,10 @@ const Analytics = () => {
                     onClick={() => setStudyTimeRange(range)}
                     className="px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-wide transition-all duration-200"
                     style={{
-                      background: studyTimeRange === range ? "rgba(240, 235, 250, 0.92)" : "transparent",
-                      color: studyTimeRange === range ? "#4A3A8A" : "rgba(240, 235, 250, 0.7)",
-                      border: studyTimeRange === range ? "2px solid rgba(180, 150, 220, 0.5)" : "2px solid rgba(240, 235, 250, 0.2)",
-                      boxShadow: studyTimeRange === range ? "0 4px 16px rgba(160, 130, 200, 0.4)" : "none",
+                      background: studyTimeRange === range ? "rgba(106,104,223,0.12)" : "transparent",
+                      color: studyTimeRange === range ? "#6A68DF" : "rgba(46,44,45,0.5)",
+                      border: studyTimeRange === range ? "2px solid rgba(106,104,223,0.3)" : "2px solid rgba(46,44,45,0.1)",
+                      boxShadow: studyTimeRange === range ? "0 2px 8px rgba(106,104,223,0.15)" : "none",
                     }}
                   >
                     {range.charAt(0).toUpperCase() + range.slice(1)}
@@ -975,32 +931,32 @@ const Analytics = () => {
             </div>
           </div>
 
-          {/* ========== LESSONS & PROBLEM SOLVING (side by side) ========== */}
+          {/* ========== LESSONS & PROBLEM SOLVING ========== */}
           <div className="grid grid-cols-2 gap-2.5">
             {/* Lessons Completed */}
             <div
-              className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+              className="rounded-2xl overflow-hidden border border-[#2E2C2D]/[0.06] relative"
               style={{
-                background: "linear-gradient(150deg, rgba(106,104,223,0.3) 0%, rgba(188,150,240,0.2) 50%, rgba(253,145,217,0.12) 100%)",
-                boxShadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)",
+                background: "linear-gradient(150deg, rgba(106,104,223,0.12) 0%, rgba(188,150,240,0.08) 50%, rgba(253,145,217,0.05) 100%)",
+                boxShadow: "0 2px 16px rgba(106,104,223,0.06), 0 0 0 1px rgba(0,0,0,0.02)",
               }}
             >
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.04) 50%, transparent 70%)" }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.3) 50%, transparent 70%)" }} />
               <div className="relative z-10 p-4 sm:p-5">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                  style={{ background: "rgba(255,255,255,0.1)", border: "1.5px solid rgba(255,255,255,0.12)" }}
+                  style={{ background: "rgba(106,104,223,0.1)", border: "1.5px solid rgba(106,104,223,0.15)" }}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(209,202,233,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(106,104,223,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 19.5v-15A2.5 2.5 0 016.5 2H20v20H6.5a2.5 2.5 0 010-5H20" />
                   </svg>
                 </div>
-                <p className="text-white/60 text-[10px] sm:text-xs font-medium mb-1">Lessons<br/>Completed</p>
+                <p className="text-[#2E2C2D]/50 text-[10px] sm:text-xs font-medium mb-1">Lessons<br/>Completed</p>
                 <p
-                  className="text-white text-3xl sm:text-4xl font-extrabold leading-none tracking-tight"
+                  className="text-3xl sm:text-4xl font-extrabold leading-none tracking-tight"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
-                  <span style={{ background: "linear-gradient(135deg, #D1CAE9, #BC96F0)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  <span style={{ background: "linear-gradient(135deg, #6A68DF, #BC96F0)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                     {lessonsCompleted}/{totalLessons}
                   </span>
                 </p>
@@ -1010,9 +966,9 @@ const Analytics = () => {
                       key={t}
                       className="flex-1 py-1 rounded-md text-[8px] sm:text-[9px] font-bold transition-all"
                       style={{
-                        background: i === 2 ? "rgba(209,202,233,0.25)" : "rgba(255,255,255,0.06)",
-                        color: i === 2 ? "#D1CAE9" : "rgba(255,255,255,0.4)",
-                        border: i === 2 ? "1px solid rgba(209,202,233,0.3)" : "1px solid rgba(255,255,255,0.08)",
+                        background: i === 2 ? "rgba(106,104,223,0.12)" : "rgba(46,44,45,0.04)",
+                        color: i === 2 ? "#6A68DF" : "rgba(46,44,45,0.4)",
+                        border: i === 2 ? "1px solid rgba(106,104,223,0.2)" : "1px solid rgba(46,44,45,0.06)",
                       }}
                     >
                       {t}
@@ -1024,27 +980,27 @@ const Analytics = () => {
 
             {/* Problem Solving Rate */}
             <div
-              className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+              className="rounded-2xl overflow-hidden border border-[#2E2C2D]/[0.06] relative"
               style={{
-                background: "linear-gradient(150deg, rgba(253,145,217,0.2) 0%, rgba(239,185,149,0.15) 50%, rgba(106,104,223,0.15) 100%)",
-                boxShadow: "0 8px 32px rgba(253,145,217,0.12), inset 0 1px 0 rgba(255,255,255,0.2)",
+                background: "linear-gradient(150deg, rgba(253,145,217,0.1) 0%, rgba(239,185,149,0.08) 50%, rgba(106,104,223,0.05) 100%)",
+                boxShadow: "0 2px 16px rgba(253,145,217,0.06), 0 0 0 1px rgba(0,0,0,0.02)",
               }}
             >
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.04) 50%, transparent 70%)" }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.3) 50%, transparent 70%)" }} />
               <div className="relative z-10 p-4 sm:p-5">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                  style={{ background: "rgba(255,255,255,0.1)", border: "1.5px solid rgba(255,255,255,0.12)" }}
+                  style={{ background: "rgba(253,145,217,0.1)", border: "1.5px solid rgba(253,145,217,0.15)" }}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,145,217,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,145,217,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
                     <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
                     <path d="M12 17h.01" />
                   </svg>
                 </div>
-                <p className="text-white/60 text-[10px] sm:text-xs font-medium mb-1">Problem<br/>Solving Rate</p>
+                <p className="text-[#2E2C2D]/50 text-[10px] sm:text-xs font-medium mb-1">Problem<br/>Solving Rate</p>
                 <p
-                  className="text-white text-3xl sm:text-4xl font-extrabold leading-none tracking-tight"
+                  className="text-3xl sm:text-4xl font-extrabold leading-none tracking-tight"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
                   <span style={{ background: "linear-gradient(135deg, #FD91D9, #EFB995)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -1057,9 +1013,9 @@ const Analytics = () => {
                       key={t}
                       className="flex-1 py-1 rounded-md text-[8px] sm:text-[9px] font-bold transition-all"
                       style={{
-                        background: i === 2 ? "rgba(253,145,217,0.25)" : "rgba(255,255,255,0.06)",
-                        color: i === 2 ? "#FD91D9" : "rgba(255,255,255,0.4)",
-                        border: i === 2 ? "1px solid rgba(253,145,217,0.3)" : "1px solid rgba(255,255,255,0.08)",
+                        background: i === 2 ? "rgba(253,145,217,0.12)" : "rgba(46,44,45,0.04)",
+                        color: i === 2 ? "#EC4899" : "rgba(46,44,45,0.4)",
+                        border: i === 2 ? "1px solid rgba(253,145,217,0.2)" : "1px solid rgba(46,44,45,0.06)",
                       }}
                     >
                       {t}
@@ -1070,12 +1026,6 @@ const Analytics = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-5">
-            <StudyMomentumEngine />
-            <FutureYouSnapshot />
-            <BlindSpotMirror />
-            <KnowledgeAutopsy />
-          </div>
         </div>
       </div>
     </DashboardLayout>

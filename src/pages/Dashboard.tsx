@@ -100,19 +100,18 @@ const iconMap: Record<string, LucideIcon> = {
 
 const DAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Liquid glass card wrapper — Light -45deg 80%, Refraction 100%, Depth 100%, Dispersion 95%, Frost 0%, Splay 0%
+// Light theme card
 const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 <div
   className={cn(
-    "rounded-2xl border border-white/[0.15] backdrop-blur-2xl",
+    "rounded-2xl border border-[#2E2C2D]/[0.06]",
     className
   )}
   style={{
-    background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 0 0 0.5px rgba(255,255,255,0.08)",
+    background: "rgba(255,255,255,0.85)",
+    boxShadow: "0 2px 20px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
   }}
   {...props}>
-  
     {children}
   </div>;
 
@@ -352,30 +351,30 @@ const Dashboard = () => {
               <AvatarUpload userId={user.id} userName={displayName} size="sm" showUploadButton={false} />
             </div>
             <div>
-              <h1 className="text-white font-semibold text-base sm:text-lg leading-tight flex items-center gap-1">Hi, {displayName}!{isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}</h1>
-              <p className="text-white/50 text-xs font-normal">{classText}, বাংলা ভার্সন</p>
+              <h1 className="text-[#2E2C2D] font-semibold text-base sm:text-lg leading-tight flex items-center gap-1">Hi, {displayName}!{isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}</h1>
+              <p className="text-[#2E2C2D]/50 text-xs font-normal">{classText}, বাংলা ভার্সন</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
               <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.15] backdrop-blur-2xl"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#2E2C2D]/[0.08]"
                 style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  background: "rgba(255,255,255,0.9)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
                 }}
               >
                 <img src={statStreakGlass} alt="" className="w-5 h-5 object-contain" />
-                <span className="text-white font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{currentStreak}</span>
+                <span className="text-[#2E2C2D] font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{currentStreak}</span>
               </div>
               <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.15] backdrop-blur-2xl"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#2E2C2D]/[0.08]"
                 style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  background: "rgba(255,255,255,0.9)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
                 }}
               >
                 <img src={statXp3d} alt="" className="w-5 h-5 object-contain" />
-                <span className="text-white font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{stats?.total_xp || 0}</span>
+                <span className="text-[#2E2C2D] font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{stats?.total_xp || 0}</span>
               </div>
             </div>
         </header>
@@ -396,7 +395,7 @@ const Dashboard = () => {
                 
                   <img src={mod.img} alt={mod.label} className="w-14 h-14 sm:w-20 sm:h-20 object-contain" />
                 </motion.div>
-                <span className="text-white/80 text-[11px] sm:text-sm text-center leading-tight font-normal whitespace-nowrap">{mod.label}</span>
+                <span className="text-[#2E2C2D]/70 text-[11px] sm:text-sm text-center leading-tight font-normal whitespace-nowrap">{mod.label}</span>
               </Link>
             )}
           </div>
@@ -405,7 +404,7 @@ const Dashboard = () => {
         {/* ========== STREAK CARD ========== */}
         <GlassCard className="px-3 py-3 sm:px-4 sm:py-3.5 flex items-center gap-3">
           {/* Fire with overlaid number in rounded container */}
-          <div className="flex-shrink-0 relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+          <div className="flex-shrink-0 relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#EC4899]/10 flex items-center justify-center">
             <motion.img
               src={streakFlame3d}
               alt="Streak Fire"
@@ -413,22 +412,22 @@ const Dashboard = () => {
               animate={currentStreak > 0 ? { scale: [1, 1.08, 1], rotate: [0, -3, 3, 0] } : {}}
               transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }} />
             <span
-              className="absolute bottom-0 text-2xl sm:text-3xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+              className="absolute bottom-0 text-2xl sm:text-3xl text-[#2E2C2D] drop-shadow-[0_2px_4px_rgba(0,0,0,0.15)]"
               style={{
                 fontFamily: "'Black Han Sans', sans-serif",
-                WebkitTextStroke: '1.5px rgba(140,80,220,0.8)',
+                WebkitTextStroke: '1.5px rgba(236,72,153,0.4)',
               }}>
               {currentStreak}
             </span>
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="text-white text-sm sm:text-lg leading-snug font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
+            <h3 className="text-[#2E2C2D] text-sm sm:text-lg leading-snug font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
               {currentStreak > 0 ?
               `${currentStreak} days streak, well done!` :
               "0 days streak, study to achieve!"}
             </h3>
-            <p className="text-white/50 mb-2 font-light text-[11px] sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">{streakComment}</p>
+            <p className="text-[#2E2C2D]/50 mb-2 font-light text-[11px] sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">{streakComment}</p>
             <div className="flex items-center gap-2 sm:gap-2.5">
               {DAYS_EN.map((day, i) => {
                 const bdIndex = dayMapping[i];
@@ -445,16 +444,16 @@ const Dashboard = () => {
                       className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center relative"
                       style={{
                         backgroundColor: isActive
-                          ? 'rgba(187, 167, 253, 0.7)'
-                          : 'rgba(217, 217, 217, 0.7)',
+                          ? 'rgba(236, 72, 153, 0.25)'
+                          : 'rgba(46, 44, 45, 0.08)',
                       }}>
                       {/* Inner circle */}
                       <div
                         className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center"
                         style={{
                           backgroundColor: isActive
-                            ? 'rgba(187, 167, 253, 0.3)'
-                            : 'rgba(217, 217, 217, 0.3)',
+                            ? 'rgba(236, 72, 153, 0.15)'
+                            : 'rgba(46, 44, 45, 0.04)',
                         }}>
                       </div>
                       {/* Flame sitting on circle, bottom-aligned */}
@@ -466,7 +465,7 @@ const Dashboard = () => {
                         />
                       )}
                     </div>
-                    <span className="text-[8px] sm:text-[9px] text-white/40">{day}</span>
+                    <span className="text-[8px] sm:text-[9px] text-[#2E2C2D]/40">{day}</span>
                   </div>);
               })}
             </div>
@@ -504,16 +503,16 @@ const Dashboard = () => {
           {/* Total Study Time */}
           <GlassCard className="p-3 sm:p-4 flex flex-row items-center gap-2.5 sm:gap-3">
             <div
-              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-[#EC4899]/15"
               style={{
-                background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+                background: "linear-gradient(-45deg, rgba(236,72,153,0.08) 0%, rgba(106,104,223,0.05) 100%)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
               }}>
               <img src={statStudy3d} alt="Study time" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
             </div>
             <div className="flex-1 min-w-0 flex flex-col gap-1">
-              <h4 className="text-white font-bold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis" style={{ fontFamily: "'Poppins', sans-serif" }}>Total Study Time</h4>
-              <span className="text-white font-bold text-xl sm:text-3xl leading-none whitespace-nowrap overflow-hidden text-ellipsis">
+              <h4 className="text-[#2E2C2D] font-bold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis" style={{ fontFamily: "'Poppins', sans-serif" }}>Total Study Time</h4>
+              <span className="text-[#2E2C2D] font-bold text-xl sm:text-3xl leading-none whitespace-nowrap overflow-hidden text-ellipsis">
                 {formatStudyTime(weeklyStats.today_study_minutes)}
               </span>
             </div>
@@ -522,17 +521,17 @@ const Dashboard = () => {
           {/* Total XP */}
           <GlassCard className="p-3 sm:p-4 flex flex-row items-center gap-2.5 sm:gap-3">
             <div
-              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-[#6A68DF]/15"
               style={{
-                background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+                background: "linear-gradient(-45deg, rgba(106,104,223,0.08) 0%, rgba(236,72,153,0.05) 100%)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
               }}>
               <img src={statXp3d} alt="XP" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
             </div>
             <div className="flex-1 min-w-0 flex flex-col gap-1">
-              <h4 className="text-white font-bold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP Points</h4>
+              <h4 className="text-[#2E2C2D] font-bold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP Points</h4>
               <div className="flex items-center gap-1">
-                <span className="text-white font-bold text-xl sm:text-3xl leading-none whitespace-nowrap">{stats?.total_xp || 0}</span>
+                <span className="text-[#2E2C2D] font-bold text-xl sm:text-3xl leading-none whitespace-nowrap">{stats?.total_xp || 0}</span>
                 <img src={statXp3d} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain flex-shrink-0" />
               </div>
             </div>
@@ -547,11 +546,11 @@ const Dashboard = () => {
             <div
               className="flex-1 rounded-xl p-3"
               style={{
-                background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)"
+                background: "linear-gradient(135deg, rgba(253,145,217,0.2) 0%, rgba(175,45,80,0.15) 100%)"
               }}>
               
-              <h3 className="text-white font-semibold text-sm sm:text-base">Your subject-wise progress</h3>
-              <p className="text-white/50 text-[10px] sm:text-xs">
+              <h3 className="text-[#2E2C2D] font-semibold text-sm sm:text-base">Your subject-wise progress</h3>
+              <p className="text-[#2E2C2D]/50 text-[10px] sm:text-xs">
                 Track your progress and check exam readiness
               </p>
             </div>
@@ -559,7 +558,7 @@ const Dashboard = () => {
 
           {/* Subject grid */}
           {subjects.length === 0 ?
-          <div className="text-center py-8 text-white/40 text-sm">No subjects found for your class.</div> :
+          <div className="text-center py-8 text-[#2E2C2D]/40 text-sm">No subjects found for your class.</div> :
 
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {subjects.map((subject, index) =>
@@ -568,13 +567,13 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="rounded-xl px-2 py-1.5 sm:px-3 sm:py-3 border border-white/10 bg-white/5 backdrop-blur-sm flex flex-row items-center gap-2 sm:gap-2.5">
+              className="rounded-xl px-2 py-1.5 sm:px-3 sm:py-3 border border-[#2E2C2D]/[0.06] bg-[#2E2C2D]/[0.02] flex flex-row items-center gap-2 sm:gap-2.5">
               
                   <img src={subjectIcon3d} alt="" className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 object-contain" />
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <span className="text-white text-[11px] sm:text-sm font-medium truncate">{subject.name}</span>
+                    <span className="text-[#2E2C2D] text-[11px] sm:text-sm font-medium truncate">{subject.name}</span>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div className="flex-1 h-1.5 rounded-full bg-[#2E2C2D]/[0.06] overflow-hidden">
                         <motion.div
                           className="h-full rounded-full"
                           style={{ background: "linear-gradient(90deg, #E040A0, #A040E0)" }}
@@ -582,7 +581,7 @@ const Dashboard = () => {
                           animate={{ width: `${subject.progress}%` }}
                           transition={{ duration: 1, delay: 0.2 + index * 0.1 }} />
                       </div>
-                      <span className="text-[10px] text-white/40 font-medium">{subject.progress}%</span>
+                      <span className="text-[10px] text-[#2E2C2D]/40 font-medium">{subject.progress}%</span>
                     </div>
                   </div>
                 </motion.div>
@@ -597,22 +596,22 @@ const Dashboard = () => {
             <div className="flex items-center gap-3 h-full">
               {/* 3D Analytics icon in glass container */}
               <div
-                className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/[0.15] backdrop-blur-2xl"
+                className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-[#6A68DF]/15"
                 style={{
-                  background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  background: "linear-gradient(-45deg, rgba(106,104,223,0.08) 0%, rgba(236,72,153,0.05) 100%)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
                 }}>
                 <img src={analytics3d} alt="Analytics" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
               </div>
 
               {/* Text content — constrained width, never overlaps Tugi */}
               <div className="flex-1 min-w-0 max-w-[50%] sm:max-w-[55%]">
-                <h3 className="text-white font-bold text-xs sm:text-lg leading-tight whitespace-nowrap overflow-hidden text-ellipsis">See your analytics now</h3>
-                <p className="text-white/60 text-[9px] sm:text-xs leading-snug mt-0.5 line-clamp-2">
+                <h3 className="text-[#2E2C2D] font-bold text-xs sm:text-lg leading-tight whitespace-nowrap overflow-hidden text-ellipsis">See your analytics now</h3>
+                <p className="text-[#2E2C2D]/50 text-[9px] sm:text-xs leading-snug mt-0.5 line-clamp-2">
                   See the analytics of your improvements, performance, and blind spots
                 </p>
                 <div className="mt-1.5 sm:mt-2">
-                  <span className="inline-block px-3 py-1 sm:px-5 sm:py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white text-[10px] sm:text-sm font-semibold">
+                  <span className="inline-block px-3 py-1 sm:px-5 sm:py-1.5 rounded-full bg-[#EC4899]/10 border border-[#EC4899]/20 text-[#EC4899] text-[10px] sm:text-sm font-semibold">
                     Let's see
                   </span>
                 </div>

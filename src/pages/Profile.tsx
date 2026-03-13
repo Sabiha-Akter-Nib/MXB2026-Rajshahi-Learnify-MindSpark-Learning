@@ -44,13 +44,13 @@ import statRank3d from "@/assets/stat-rank-3d.png";
 import statExams3d from "@/assets/stat-exams-3d.png";
 import coverStar3d from "@/assets/cover-star-3d.png";
 
-// ── Glass Card ──
+// ── Light theme card ──
 const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("rounded-2xl border border-white/[0.15] backdrop-blur-2xl", className)}
+    className={cn("rounded-2xl border border-[#2E2C2D]/[0.06]", className)}
     style={{
-      background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1)",
+      background: "rgba(255,255,255,0.85)",
+      boxShadow: "0 2px 20px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
     }}
     {...props}
   >
@@ -74,7 +74,7 @@ const GlowingPieChart = ({
   return (
     <div className="flex flex-col items-center">
       {title && (
-        <p className="text-white/80 text-xs font-bold mb-2 uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>
+        <p className="text-[#2E2C2D]/70 text-xs font-bold mb-2 uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>
           {title}
         </p>
       )}
@@ -84,7 +84,7 @@ const GlowingPieChart = ({
           style={{
             filter: "blur(12px)",
             background: `conic-gradient(${colors.map((c, i) => `${c} ${(i / colors.length) * 100}%`).join(", ")})`,
-            opacity: 0.3,
+            opacity: 0.2,
           }}
         />
         <ResponsiveContainer width="100%" height="100%">
@@ -108,7 +108,7 @@ const GlowingPieChart = ({
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-white font-extrabold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>
+          <span className="text-[#2E2C2D] font-extrabold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>
             {total}
           </span>
         </div>
@@ -117,7 +117,7 @@ const GlowingPieChart = ({
         {data.map((d, i) => (
           <div key={d.name} className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full" style={{ background: colors[i] }} />
-            <span className="text-white/60 text-[9px] font-medium">{d.name}</span>
+            <span className="text-[#2E2C2D]/50 text-[9px] font-medium">{d.name}</span>
           </div>
         ))}
       </div>
@@ -456,7 +456,7 @@ const Profile = () => {
     }
   };
 
-  const bloomColors = ["#6A68DF", "#EC4899", "#FD91D9", "#EFB995", "#DB2777", "#FEFEFE"];
+  const bloomColors = ["#6A68DF", "#EC4899", "#FD91D9", "#EFB995", "#DB2777", "#2E2C2D"];
   const subjectPieColors = ["#58CC02", "#FF4B4B", "#FFBA33"];
 
   if (loading || isLoading) {
@@ -464,8 +464,8 @@ const Profile = () => {
       <DashboardLayout>
         <div className="min-h-[100dvh] flex items-center justify-center">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-white/70" />
-            <p className="text-white/60 font-medium" style={{ fontFamily: "Poppins, sans-serif" }}>Loading profile...</p>
+            <Loader2 className="w-10 h-10 animate-spin text-[#EC4899]/60" />
+            <p className="text-[#2E2C2D]/50 font-medium" style={{ fontFamily: "Poppins, sans-serif" }}>Loading profile...</p>
           </motion.div>
         </div>
       </DashboardLayout>
@@ -485,10 +485,10 @@ const Profile = () => {
           {/* ── Header ── */}
           <header className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate(-1)} className="text-white/60 hover:text-white transition-colors">
+              <button onClick={() => navigate(-1)} className="text-[#2E2C2D]/50 hover:text-[#2E2C2D] transition-colors">
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <h1 className="text-white font-bold text-lg" style={{ fontFamily: "Poppins, sans-serif" }}>Profile</h1>
+              <h1 className="text-[#2E2C2D] font-bold text-lg" style={{ fontFamily: "Poppins, sans-serif" }}>Profile</h1>
             </div>
           </header>
 
@@ -503,43 +503,39 @@ const Profile = () => {
                   : "linear-gradient(135deg, #EC4899, #DB2777)",
               }}
             >
-              {/* Decorative 3D stars */}
               <div className="absolute inset-0 pointer-events-none overflow-visible">
                 <img src={coverStar3d} alt="" className="absolute -right-4 -top-2 w-24 h-24 sm:w-32 sm:h-32 opacity-30 rotate-12" />
                 <img src={coverStar3d} alt="" className="absolute right-16 sm:right-24 -top-1 w-12 h-12 sm:w-16 sm:h-16 opacity-20 -rotate-6" />
                 <img src={coverStar3d} alt="" className="absolute right-6 sm:right-10 bottom-0 w-10 h-10 sm:w-14 sm:h-14 opacity-15 rotate-[20deg]" />
               </div>
-              {/* Light sweep */}
               <div className="absolute inset-0" style={{ background: "linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.08) 55%, transparent 70%)" }} />
             </div>
 
             {/* Profile Info Row */}
             <div className="px-4 sm:px-6 pb-5">
               <div className="flex items-center gap-3 -mt-8 sm:-mt-10">
-                {/* Avatar */}
                 <div className="shrink-0 [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 rounded-full overflow-hidden">
                   <AvatarUpload userId={profile.user_id} userName={displayName} size="lg" showUploadButton={false} />
                 </div>
 
-                {/* Name + Username */}
                 <div className="flex-1 min-w-0 pt-8 sm:pt-10 overflow-hidden">
-                  <h2 className="text-white font-extrabold text-lg sm:text-xl truncate leading-tight flex items-center gap-1.5">
+                  <h2 className="text-[#2E2C2D] font-extrabold text-lg sm:text-xl truncate leading-tight flex items-center gap-1.5">
                     <span className="truncate">{displayName}</span>
                     {isVerifiedEmail(profile.email) && <VerifiedBadge size={18} />}
                   </h2>
                   {profile.username && (
-                    <p className="text-white/60 text-sm sm:text-base font-semibold truncate leading-snug">@{profile.username}</p>
+                    <p className="text-[#2E2C2D]/50 text-sm sm:text-base font-semibold truncate leading-snug">@{profile.username}</p>
                   )}
                 </div>
               </div>
 
               {/* School + Joined */}
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-white/40 text-xs">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[#2E2C2D]/40 text-xs">
                 <span className="flex items-center gap-1 truncate">
                   <GraduationCap className="w-3.5 h-3.5 shrink-0" />
                   {profile.school_name}
                 </span>
-                <span className="text-white/20">•</span>
+                <span className="text-[#2E2C2D]/20">•</span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3 shrink-0" />
                   Joined {joinedDate}
@@ -549,18 +545,18 @@ const Profile = () => {
               {/* Class / Following / Followers */}
               <div className="flex items-center gap-5 mt-4">
                 <div className="flex flex-col items-center">
-                  <span className="text-white font-extrabold text-lg">{profile.class}</span>
-                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Class</span>
+                  <span className="text-[#2E2C2D] font-extrabold text-lg">{profile.class}</span>
+                  <span className="text-[#2E2C2D]/40 text-[10px] font-semibold uppercase tracking-wider">Class</span>
                 </div>
-                <div className="w-px h-8 bg-white/10" />
+                <div className="w-px h-8 bg-[#2E2C2D]/[0.06]" />
                 <button onClick={loadFollowers} className="flex flex-col items-center hover:scale-105 transition-transform active:scale-95">
-                  <span className="text-white font-extrabold text-lg">{followerCount}</span>
-                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Followers</span>
+                  <span className="text-[#2E2C2D] font-extrabold text-lg">{followerCount}</span>
+                  <span className="text-[#2E2C2D]/40 text-[10px] font-semibold uppercase tracking-wider">Followers</span>
                 </button>
-                <div className="w-px h-8 bg-white/10" />
+                <div className="w-px h-8 bg-[#2E2C2D]/[0.06]" />
                 <button onClick={loadFollowing} className="flex flex-col items-center hover:scale-105 transition-transform active:scale-95">
-                  <span className="text-white font-extrabold text-lg">{followingCount}</span>
-                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Following</span>
+                  <span className="text-[#2E2C2D] font-extrabold text-lg">{followingCount}</span>
+                  <span className="text-[#2E2C2D]/40 text-[10px] font-semibold uppercase tracking-wider">Following</span>
                 </button>
               </div>
 
@@ -592,10 +588,10 @@ const Profile = () => {
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setIsEditing(true)}
-                      className="flex-1 py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border border-white/[0.15] text-white"
+                      className="flex-1 py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border border-[#6A68DF]/20 text-[#6A68DF]"
                       style={{
-                        background: "linear-gradient(135deg, rgba(106,104,223,0.3) 0%, rgba(155,135,245,0.2) 100%)",
-                        boxShadow: "0 4px 20px rgba(106,104,223,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
+                        background: "linear-gradient(135deg, rgba(106,104,223,0.1) 0%, rgba(155,135,245,0.06) 100%)",
+                        boxShadow: "0 2px 12px rgba(106,104,223,0.1)",
                       }}
                     >
                       <Edit3 className="w-4 h-4" />
@@ -605,10 +601,10 @@ const Profile = () => {
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setShowSearch(true)}
-                      className="flex-1 py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border border-white/[0.15] text-white"
+                      className="flex-1 py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border border-[#2E2C2D]/[0.08] text-[#2E2C2D]/70"
                       style={{
-                        background: "linear-gradient(-45deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.08) 100%)",
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
+                        background: "rgba(255,255,255,0.9)",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
                       }}
                     >
                       <Search className="w-4 h-4" />
@@ -624,16 +620,16 @@ const Profile = () => {
                     className={cn(
                       "flex-1 py-2.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 border transition-all",
                       isFollowing
-                        ? "border-white/20 text-white/80"
+                        ? "border-[#2E2C2D]/[0.08] text-[#2E2C2D]/70"
                         : "border-transparent text-white"
                     )}
                     style={{
                       background: isFollowing
-                        ? "linear-gradient(-45deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)"
+                        ? "rgba(255,255,255,0.9)"
                         : "linear-gradient(135deg, #EC4899 0%, #DB2777 50%, #FD91D9 100%)",
                       boxShadow: isFollowing
-                        ? "0 4px 16px rgba(0,0,0,0.2)"
-                        : "0 4px 20px rgba(106,104,223,0.4), 0 0 40px rgba(253,145,217,0.15)",
+                        ? "0 2px 8px rgba(0,0,0,0.04)"
+                        : "0 4px 20px rgba(236,72,153,0.3)",
                     }}
                   >
                     {followLoading ? (
@@ -655,28 +651,28 @@ const Profile = () => {
             </div>
           </GlassCard>
 
-          {/* ── Stat Cards (same as Analytics) ── */}
+          {/* ── Stat Cards ── */}
           <div className="grid grid-cols-4 gap-2">
             {[
-              { img: statStreak3d, value: String(currentStreak), label: "Streak", grad: "linear-gradient(135deg, #EC4899, #DB2777)", bg: "linear-gradient(150deg, rgba(236,72,153,0.25) 0%, rgba(219,39,119,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(236,72,153,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
-              { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Rank", grad: "linear-gradient(135deg, #6A68DF, #EC4899)", bg: "linear-gradient(150deg, rgba(106,104,223,0.25) 0%, rgba(88,80,200,0.15) 50%, rgba(236,72,153,0.1) 100%)", shadow: "0 8px 32px rgba(106,104,223,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
-              { img: statExams3d, value: String(totalExams), label: "Exams", grad: "linear-gradient(135deg, #FD91D9, #EFB995)", bg: "linear-gradient(150deg, rgba(253,145,217,0.2) 0%, rgba(239,185,149,0.15) 50%, rgba(106,104,223,0.1) 100%)", shadow: "0 8px 32px rgba(253,145,217,0.12), inset 0 1px 0 rgba(255,255,255,0.2)" },
-              { img: statXp3d, value: String(totalXP), label: "Total XP", grad: "linear-gradient(135deg, #FD91D9, #AF2D50)", bg: "linear-gradient(150deg, rgba(253,145,217,0.15) 0%, rgba(175,45,80,0.2) 50%, rgba(253,145,217,0.1) 100%)", shadow: "0 8px 32px rgba(175,45,80,0.15), inset 0 1px 0 rgba(255,255,255,0.2)" },
+              { img: statStreak3d, value: String(currentStreak), label: "Streak", grad: "linear-gradient(135deg, #EC4899, #DB2777)", bg: "linear-gradient(150deg, rgba(236,72,153,0.12) 0%, rgba(219,39,119,0.06) 50%, rgba(106,104,223,0.04) 100%)", shadow: "0 2px 16px rgba(236,72,153,0.08), 0 0 0 1px rgba(0,0,0,0.02)" },
+              { img: statRank3d, value: `#${leaderboardRank ?? "—"}`, label: "Rank", grad: "linear-gradient(135deg, #6A68DF, #EC4899)", bg: "linear-gradient(150deg, rgba(106,104,223,0.12) 0%, rgba(88,80,200,0.06) 50%, rgba(236,72,153,0.04) 100%)", shadow: "0 2px 16px rgba(106,104,223,0.08), 0 0 0 1px rgba(0,0,0,0.02)" },
+              { img: statExams3d, value: String(totalExams), label: "Exams", grad: "linear-gradient(135deg, #FD91D9, #EFB995)", bg: "linear-gradient(150deg, rgba(253,145,217,0.1) 0%, rgba(239,185,149,0.06) 50%, rgba(106,104,223,0.04) 100%)", shadow: "0 2px 16px rgba(253,145,217,0.06), 0 0 0 1px rgba(0,0,0,0.02)" },
+              { img: statXp3d, value: String(totalXP), label: "Total XP", grad: "linear-gradient(135deg, #FD91D9, #AF2D50)", bg: "linear-gradient(150deg, rgba(253,145,217,0.08) 0%, rgba(175,45,80,0.1) 50%, rgba(253,145,217,0.04) 100%)", shadow: "0 2px 16px rgba(175,45,80,0.08), 0 0 0 1px rgba(0,0,0,0.02)" },
             ].map((card) => (
               <motion.div
                 key={card.label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl overflow-hidden border border-white/[0.12] relative"
+                className="rounded-2xl overflow-hidden border border-[#2E2C2D]/[0.06] relative"
                 style={{ background: card.bg, boxShadow: card.shadow }}
               >
-                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.04) 50%, transparent 70%)" }} />
+                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(254,254,254,0.3) 50%, transparent 70%)" }} />
                 <div className="relative z-10 p-3 flex flex-col items-center text-center">
                   <img src={card.img} alt={card.label} className="w-12 h-12 sm:w-14 sm:h-14 object-contain mb-1" />
-                  <p className="text-white text-xl sm:text-2xl font-extrabold leading-none">
+                  <p className="text-xl sm:text-2xl font-extrabold leading-none">
                     <span style={{ background: card.grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{card.value}</span>
                   </p>
-                  <p className="text-white/70 text-[9px] sm:text-[10px] font-bold mt-0.5 uppercase tracking-wide">{card.label}</p>
+                  <p className="text-[#2E2C2D]/50 text-[9px] sm:text-[10px] font-bold mt-0.5 uppercase tracking-wide">{card.label}</p>
                 </div>
               </motion.div>
             ))}
@@ -684,28 +680,27 @@ const Profile = () => {
 
           {/* ── Weekly XP Chart ── */}
           <GlassCard className="p-4 sm:p-5">
-            <h3 className="text-white font-bold text-sm sm:text-base text-center mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
+            <h3 className="text-[#2E2C2D] font-bold text-sm sm:text-base text-center mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
               Weekly XP Points History
             </h3>
-            <p className="text-white/40 text-[10px] sm:text-xs text-center mb-3">Last 7 days</p>
+            <p className="text-[#2E2C2D]/35 text-[10px] sm:text-xs text-center mb-3">Last 7 days</p>
 
-            {/* Legend */}
             {!isOwnProfile && weeklyXpSelf.length > 0 && (
               <div className="flex items-center gap-4 mb-3 px-1">
                 <div className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#EFB995" }} />
-                  <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">{profile?.full_name || "User"}</span>
+                  <span className="text-[#2E2C2D]/40 text-[9px] sm:text-[10px] font-medium">{profile?.full_name || "User"}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#EC4899" }} />
-                  <span className="text-white/50 text-[9px] sm:text-[10px] font-medium">You</span>
+                  <span className="text-[#2E2C2D]/40 text-[9px] sm:text-[10px] font-medium">You</span>
                 </div>
               </div>
             )}
 
             <div
               className="rounded-xl p-3 sm:p-4"
-              style={{ background: "linear-gradient(180deg, rgba(253,145,217,0.15) 0%, rgba(255,255,255,0.05) 100%)" }}
+              style={{ background: "linear-gradient(180deg, rgba(253,145,217,0.08) 0%, rgba(255,255,255,0.5) 100%)" }}
             >
               <div className="h-48 sm:h-56 overflow-visible">
                 <ResponsiveContainer width="100%" height="100%">
@@ -719,14 +714,13 @@ const Profile = () => {
                   >
                     <XAxis
                       dataKey="label"
-                      tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 9 }}
+                      tick={{ fill: "rgba(46,44,45,0.45)", fontSize: 9 }}
                       axisLine={false}
                       tickLine={false}
                       interval={0}
                     />
-                    <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} width={30} />
+                    <YAxis tick={{ fill: "rgba(46,44,45,0.3)", fontSize: 10 }} axisLine={false} tickLine={false} width={30} />
                     <Tooltip content={() => null} />
-                    {/* Target user's line */}
                     <Line
                       type="linear"
                       dataKey="targetXp"
@@ -740,7 +734,7 @@ const Profile = () => {
                         const isOther = !isOwnProfile;
                         return (
                           <g key={`target-${props.index}`}>
-                            <text x={cx} y={cy - (isOther ? 22 : 14)} textAnchor="middle" fill={isOther ? "#EFB995" : "#FD91D9"} fontSize={9} fontWeight={600}>{xpVal}</text>
+                            <text x={cx} y={cy - (isOther ? 22 : 14)} textAnchor="middle" fill={isOther ? "#EFB995" : "#EC4899"} fontSize={9} fontWeight={600}>{xpVal}</text>
                             <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
                               <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill={isOther ? "#EFB995" : "#FD91D9"} stroke={isOther ? "#D4945A" : "#EC4899"} strokeWidth="1" />
                             </svg>
@@ -749,7 +743,6 @@ const Profile = () => {
                       }}
                       activeDot={{ r: 6, fill: isOwnProfile ? "#FD91D9" : "#EFB995", stroke: "#fff", strokeWidth: 2 }}
                     />
-                    {/* Self line when viewing other profile */}
                     {!isOwnProfile && weeklyXpSelf.length > 0 && (
                       <Line
                         type="linear"
@@ -762,7 +755,7 @@ const Profile = () => {
                           const xpVal = payload?.selfXp ?? 0;
                           return (
                             <g key={`self-${props.index}`}>
-                              <text x={cx} y={cy - 14} textAnchor="middle" fill="#FD91D9" fontSize={9} fontWeight={600}>{xpVal}</text>
+                              <text x={cx} y={cy - 14} textAnchor="middle" fill="#EC4899" fontSize={9} fontWeight={600}>{xpVal}</text>
                               <svg x={cx - 8} y={cy - 8} width={16} height={16} viewBox="0 0 24 24" fill="none">
                                 <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2z" fill="#FD91D9" stroke="#EC4899" strokeWidth="1" />
                               </svg>
@@ -790,7 +783,6 @@ const Profile = () => {
               return reached.length > 0 ? reached[reached.length - 1] : null;
             };
 
-            // Fixed pink/purple/pale palette — each badge always unique
             const badgeStyles = [
               { grad: "linear-gradient(135deg, #FF6B9D, #C2185B)", shadow: "0 0 24px rgba(255,107,157,0.5)", ring: "rgba(255,107,157,0.25)", textColor: "#FF6B9D" },
               { grad: "linear-gradient(135deg, #A78BFA, #5B21B6)", shadow: "0 0 24px rgba(167,139,250,0.5)", ring: "rgba(167,139,250,0.25)", textColor: "#A78BFA" },
@@ -812,21 +804,19 @@ const Profile = () => {
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FD91D9, #EC4899)", boxShadow: "0 2px 10px rgba(253,145,217,0.3)" }}>
                     <Award className="w-4 h-4 text-white" />
                   </div>
-                  <h3 className="text-white font-bold text-sm sm:text-base uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>Achievements</h3>
+                  <h3 className="text-[#2E2C2D] font-bold text-sm sm:text-base uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>Achievements</h3>
                 </div>
-                <p className="text-white/40 text-sm text-center py-6" style={{ fontFamily: "Poppins, sans-serif" }}>No badges to display</p>
+                <p className="text-[#2E2C2D]/35 text-sm text-center py-6" style={{ fontFamily: "Poppins, sans-serif" }}>No badges to display</p>
               </GlassCard>
             );
 
             return (
               <GlassCard className="p-4 sm:p-5 relative overflow-hidden">
-                {/* Background shimmer */}
                 <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full opacity-[0.07]" style={{ background: "radial-gradient(circle, #FD91D9, transparent 70%)" }} />
-                  <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, #EC4899, transparent 70%)" }} />
+                  <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full opacity-[0.04]" style={{ background: "radial-gradient(circle, #FD91D9, transparent 70%)" }} />
+                  <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full opacity-[0.03]" style={{ background: "radial-gradient(circle, #EC4899, transparent 70%)" }} />
                 </div>
 
-                {/* Header */}
                 <div className="relative z-10 flex items-center gap-2 mb-5">
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center"
@@ -834,13 +824,12 @@ const Profile = () => {
                   >
                     <Award className="w-4 h-4 text-white" />
                   </div>
-                  <h3 className="text-white font-bold text-sm sm:text-base uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>
+                  <h3 className="text-[#2E2C2D] font-bold text-sm sm:text-base uppercase tracking-wider" style={{ fontFamily: "Poppins, sans-serif" }}>
                     Achievements
                   </h3>
-                  <div className="flex-1 h-px ml-1" style={{ background: "linear-gradient(90deg, rgba(253,145,217,0.3), transparent)" }} />
+                  <div className="flex-1 h-px ml-1" style={{ background: "linear-gradient(90deg, rgba(253,145,217,0.2), transparent)" }} />
                 </div>
 
-                {/* Badge Grid - centered showcase */}
                 <div className="relative z-10 flex flex-wrap justify-center gap-4 sm:gap-6">
                   {achieved.map((b, i) => {
                     const Icon = b.icon;
@@ -858,34 +847,28 @@ const Profile = () => {
                         className="flex flex-col items-center"
                       >
                         <div className="relative">
-                          {/* Outer glow pulse */}
                           <div
                             className="absolute -inset-3 rounded-full animate-pulse"
-                            style={{ background: s.ring, filter: "blur(10px)", opacity: 0.6 }}
+                            style={{ background: s.ring, filter: "blur(10px)", opacity: 0.4 }}
                           />
-                          {/* Badge circle */}
                           <div
-                            className="relative w-[72px] h-[72px] sm:w-[88px] sm:h-[88px] rounded-full flex flex-col items-center justify-center border-[2.5px] border-white/30"
+                            className="relative w-[72px] h-[72px] sm:w-[88px] sm:h-[88px] rounded-full flex flex-col items-center justify-center border-[2.5px] border-white/50"
                             style={{
                               background: s.grad,
-                              boxShadow: `${s.shadow}, inset 0 2px 0 rgba(255,255,255,0.35), 0 4px 20px rgba(0,0,0,0.3)`,
+                              boxShadow: `${s.shadow}, inset 0 2px 0 rgba(255,255,255,0.35), 0 4px 20px rgba(0,0,0,0.15)`,
                             }}
                           >
-                            {/* Inner glass highlight */}
                             <div
                               className="absolute inset-0 rounded-full pointer-events-none"
                               style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 45%)" }}
                             />
-                            {/* Icon */}
                             <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-lg mb-0.5" strokeWidth={2.5} />
-                            {/* Number */}
                             <span
                               className="text-white text-lg sm:text-xl font-extrabold leading-none drop-shadow-md"
                               style={{ fontFamily: "Poppins, sans-serif" }}
                             >
                               {b.topLabel(b.highest!)}
                             </span>
-                            {/* Sub-label */}
                             <span
                               className="text-white/80 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider leading-none mt-0.5 drop-shadow-sm"
                               style={{ fontFamily: "Poppins, sans-serif" }}
@@ -908,14 +891,14 @@ const Profile = () => {
               <img src={subjectBooks3dNew} alt="Subjects" className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 object-contain" />
               <div
                 className="flex-1 rounded-xl p-3"
-                style={{ background: "linear-gradient(135deg, rgba(253,145,217,0.35) 0%, rgba(175,45,80,0.35) 100%)" }}
+                style={{ background: "linear-gradient(135deg, rgba(253,145,217,0.15) 0%, rgba(175,45,80,0.1) 100%)" }}
               >
-                <h3 className="text-white font-semibold text-sm sm:text-base">Subject Progress</h3>
-                <p className="text-white/50 text-[10px] sm:text-xs">Your performance across subjects</p>
+                <h3 className="text-[#2E2C2D] font-semibold text-sm sm:text-base">Subject Progress</h3>
+                <p className="text-[#2E2C2D]/40 text-[10px] sm:text-xs">Your performance across subjects</p>
               </div>
             </div>
             {subjectProgress.length === 0 ? (
-              <div className="text-center py-8 text-white/40 text-sm">No subjects found for your class.</div>
+              <div className="text-center py-8 text-[#2E2C2D]/35 text-sm">No subjects found for your class.</div>
             ) : (
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 {subjectProgress.map((sub, index) => {
@@ -927,13 +910,13 @@ const Profile = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="rounded-xl px-2 py-1.5 sm:px-3 sm:py-3 border border-white/10 bg-white/5 backdrop-blur-sm flex flex-row items-center gap-2 sm:gap-2.5"
+                      className="rounded-xl px-2 py-1.5 sm:px-3 sm:py-3 border border-[#2E2C2D]/[0.06] bg-[#2E2C2D]/[0.02] flex flex-row items-center gap-2 sm:gap-2.5"
                     >
                       <img src={subjectIcon3d} alt="" className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 object-contain" />
                       <div className="flex-1 min-w-0 flex flex-col gap-1">
-                        <span className="text-white text-[11px] sm:text-sm font-medium truncate">{sub.name}</span>
+                        <span className="text-[#2E2C2D] text-[11px] sm:text-sm font-medium truncate">{sub.name}</span>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                          <div className="flex-1 h-1.5 rounded-full bg-[#2E2C2D]/[0.06] overflow-hidden">
                             <motion.div
                               className="h-full rounded-full"
                               style={{ background: "linear-gradient(90deg, #E040A0, #A040E0)" }}
@@ -942,7 +925,7 @@ const Profile = () => {
                               transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
                             />
                           </div>
-                          <span className="text-[10px] text-white/40 font-medium">{progress}%</span>
+                          <span className="text-[10px] text-[#2E2C2D]/40 font-medium">{progress}%</span>
                         </div>
                         <div className="flex gap-2 text-[8px] sm:text-[9px] font-medium">
                           <span className="text-[#58CC02]">{sub.correct} Correct</span>
@@ -960,7 +943,7 @@ const Profile = () => {
           {/* ── Bloom Level Progress ── */}
           {bloomLevels.length > 0 && (
             <GlassCard className="p-4 sm:p-5">
-              <h3 className="text-white font-bold text-sm sm:text-base mb-4 uppercase tracking-wider">Bloom's Taxonomy</h3>
+              <h3 className="text-[#2E2C2D] font-bold text-sm sm:text-base mb-4 uppercase tracking-wider">Bloom's Taxonomy</h3>
               <div className="flex justify-center">
                 <GlowingPieChart
                   data={bloomLevels}
@@ -977,49 +960,48 @@ const Profile = () => {
       {/* ── Edit Profile Dialog ── */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent
-          className="border-white/[0.15] max-w-md max-h-[85vh] overflow-y-auto mx-4"
+          className="border-[#2E2C2D]/[0.08] max-w-md max-h-[85vh] overflow-y-auto mx-4"
           style={{
-            background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)",
-            boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+            background: "#FEFEFE",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.15)",
           }}
         >
           <DialogHeader>
-            <DialogTitle className="text-white font-bold text-lg" style={{ fontFamily: "Poppins, sans-serif" }}>Edit Profile</DialogTitle>
+            <DialogTitle className="text-[#2E2C2D] font-bold text-lg" style={{ fontFamily: "Poppins, sans-serif" }}>Edit Profile</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="flex justify-center [&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0">
               <AvatarUpload userId={user.id} userName={editName} size="lg" showUploadButton={false} interactive />
             </div>
             <div>
-              <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1 block">Full Name</label>
+              <label className="text-[#2E2C2D]/50 text-xs font-semibold uppercase tracking-wider mb-1 block">Full Name</label>
               <Input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30"
+                className="bg-[#2E2C2D]/[0.03] border-[#2E2C2D]/[0.08] text-[#2E2C2D] placeholder:text-[#2E2C2D]/30"
               />
             </div>
             <div>
-              <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1 block">Username</label>
+              <label className="text-[#2E2C2D]/50 text-xs font-semibold uppercase tracking-wider mb-1 block">Username</label>
               <Input
                 value={editUsername}
                 onChange={(e) => { setEditUsername(e.target.value); setUsernameError(""); }}
                 placeholder="Choose a username"
-                className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30"
+                className="bg-[#2E2C2D]/[0.03] border-[#2E2C2D]/[0.08] text-[#2E2C2D] placeholder:text-[#2E2C2D]/30"
               />
-              {usernameError && <p className="text-red-400 text-xs mt-1 font-medium">{usernameError}</p>}
+              {usernameError && <p className="text-red-500 text-xs mt-1 font-medium">{usernameError}</p>}
             </div>
             <div>
-              <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1 block">School</label>
+              <label className="text-[#2E2C2D]/50 text-xs font-semibold uppercase tracking-wider mb-1 block">School</label>
               <Input
                 value={editSchool}
                 onChange={(e) => setEditSchool(e.target.value)}
-                className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30"
+                className="bg-[#2E2C2D]/[0.03] border-[#2E2C2D]/[0.08] text-[#2E2C2D] placeholder:text-[#2E2C2D]/30"
               />
             </div>
             <div>
-              <label className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3 block">Cover Color</label>
+              <label className="text-[#2E2C2D]/50 text-xs font-semibold uppercase tracking-wider mb-3 block">Cover Color</label>
               
-              {/* Preview banner */}
               <div
                 className="w-full h-16 rounded-xl mb-3 relative overflow-hidden"
                 style={{
@@ -1030,7 +1012,6 @@ const Profile = () => {
                 <div className="absolute inset-0" style={{ background: "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)" }} />
               </div>
 
-              {/* Preset colors grid */}
               <div className="grid grid-cols-6 gap-2 mb-3">
                 {[
                   "#EC4899", "#DB2777", "#FD91D9", "#E91E63", "#FF4B4B", "#FF5722",
@@ -1041,7 +1022,7 @@ const Profile = () => {
                     onClick={() => setEditCoverColor(c)}
                     className={cn(
                       "aspect-square rounded-xl border-2 transition-all hover:scale-110 active:scale-95",
-                      editCoverColor.toUpperCase() === c ? "border-white scale-105 shadow-lg" : "border-white/10"
+                      editCoverColor.toUpperCase() === c ? "border-[#2E2C2D] scale-105 shadow-lg" : "border-[#2E2C2D]/10"
                     )}
                     style={{
                       background: c,
@@ -1051,10 +1032,9 @@ const Profile = () => {
                 ))}
               </div>
 
-              {/* Hex input + color picker */}
               <div className="flex items-center gap-2">
                 <div
-                  className="w-9 h-9 rounded-lg shrink-0 cursor-pointer relative overflow-hidden border border-white/20"
+                  className="w-9 h-9 rounded-lg shrink-0 cursor-pointer relative overflow-hidden border border-[#2E2C2D]/15"
                   style={{ background: editCoverColor }}
                 >
                   <input
@@ -1065,7 +1045,7 @@ const Profile = () => {
                   />
                 </div>
                 <div className="flex-1 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm font-mono">#</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2E2C2D]/30 text-sm font-mono">#</span>
                   <Input
                     value={editCoverColor.replace("#", "").toUpperCase()}
                     onChange={(e) => {
@@ -1074,7 +1054,7 @@ const Profile = () => {
                     }}
                     maxLength={6}
                     placeholder="6A68DF"
-                    className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30 pl-7 font-mono text-sm tracking-widest"
+                    className="bg-[#2E2C2D]/[0.03] border-[#2E2C2D]/[0.08] text-[#2E2C2D] placeholder:text-[#2E2C2D]/30 pl-7 font-mono text-sm tracking-widest"
                   />
                 </div>
               </div>
@@ -1086,7 +1066,7 @@ const Profile = () => {
               className="w-full py-2.5 rounded-full font-bold text-sm text-white"
               style={{
                 background: "linear-gradient(135deg, #EC4899 0%, #DB2777 50%, #FD91D9 100%)",
-                boxShadow: "0 4px 20px rgba(106,104,223,0.4)",
+                boxShadow: "0 4px 20px rgba(236,72,153,0.3)",
               }}
             >
               Save Changes
@@ -1098,38 +1078,33 @@ const Profile = () => {
       {/* ── Followers Dialog ── */}
       <Dialog open={showFollowers} onOpenChange={setShowFollowers}>
         <DialogContent
-          className="border-white/[0.15] max-w-md max-h-[70vh] overflow-y-auto"
+          className="border-[#2E2C2D]/[0.08] max-w-md max-h-[70vh] overflow-y-auto"
           style={{
-            background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)",
-            boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+            background: "#FEFEFE",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.15)",
           }}
         >
           <DialogHeader>
-            <DialogTitle className="text-white font-bold" style={{ fontFamily: "Poppins, sans-serif" }}>Followers</DialogTitle>
+            <DialogTitle className="text-[#2E2C2D] font-bold" style={{ fontFamily: "Poppins" }}>Followers</DialogTitle>
           </DialogHeader>
-          {followersList.length > 0 ? (
+          {followersList.length === 0 ? (
+            <p className="text-[#2E2C2D]/40 text-sm text-center py-4">No followers yet</p>
+          ) : (
             <div className="space-y-2 mt-2">
-              {followersList.map((f) => (
-                <Link
-                  key={f.user_id}
-                  to={`/profile?id=${f.user_id}`}
-                  onClick={() => setShowFollowers(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.08] hover:bg-white/[0.04] transition-colors"
+              {followersList.map((u) => (
+                <button
+                  key={u.user_id}
+                  onClick={() => { setShowFollowers(false); navigate(`/profile?id=${u.user_id}`); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#2E2C2D]/[0.03] transition-colors text-left"
                 >
-                  <div className="[&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 shrink-0">
-                    <AvatarUpload userId={f.user_id} userName={f.full_name} size="sm" showUploadButton={false} />
-                  </div>
+                  <AvatarUpload userId={u.user_id} userName={u.full_name} size="sm" showUploadButton={false} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm truncate flex items-center gap-1">{f.full_name}{isVerifiedEmail(f.email) && <VerifiedBadge size={14} />}</p>
-                    <p className="text-white/40 text-xs truncate">
-                      {f.username ? `@${f.username} • ` : ""}Class {f.class} • {f.school_name}
-                    </p>
+                    <p className="text-[#2E2C2D] text-sm font-semibold truncate">{u.full_name}</p>
+                    <p className="text-[#2E2C2D]/40 text-[10px] truncate">{u.username ? `@${u.username}` : `Class ${u.class}`}</p>
                   </div>
-                </Link>
+                </button>
               ))}
             </div>
-          ) : (
-            <p className="text-white/40 text-sm text-center py-6">No followers yet</p>
           )}
         </DialogContent>
       </Dialog>
@@ -1137,101 +1112,88 @@ const Profile = () => {
       {/* ── Following Dialog ── */}
       <Dialog open={showFollowing} onOpenChange={setShowFollowing}>
         <DialogContent
-          className="border-white/[0.15] max-w-md max-h-[70vh] overflow-y-auto"
+          className="border-[#2E2C2D]/[0.08] max-w-md max-h-[70vh] overflow-y-auto"
           style={{
-            background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)",
-            boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+            background: "#FEFEFE",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.15)",
           }}
         >
           <DialogHeader>
-            <DialogTitle className="text-white font-bold" style={{ fontFamily: "Poppins, sans-serif" }}>Following</DialogTitle>
+            <DialogTitle className="text-[#2E2C2D] font-bold" style={{ fontFamily: "Poppins" }}>Following</DialogTitle>
           </DialogHeader>
-          {followingList.length > 0 ? (
+          {followingList.length === 0 ? (
+            <p className="text-[#2E2C2D]/40 text-sm text-center py-4">Not following anyone yet</p>
+          ) : (
             <div className="space-y-2 mt-2">
-              {followingList.map((f) => (
-                <Link
-                  key={f.user_id}
-                  to={`/profile?id=${f.user_id}`}
-                  onClick={() => setShowFollowing(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.08] hover:bg-white/[0.04] transition-colors"
+              {followingList.map((u) => (
+                <button
+                  key={u.user_id}
+                  onClick={() => { setShowFollowing(false); navigate(`/profile?id=${u.user_id}`); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#2E2C2D]/[0.03] transition-colors text-left"
                 >
-                  <div className="[&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 shrink-0">
-                    <AvatarUpload userId={f.user_id} userName={f.full_name} size="sm" showUploadButton={false} />
-                  </div>
+                  <AvatarUpload userId={u.user_id} userName={u.full_name} size="sm" showUploadButton={false} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm truncate flex items-center gap-1">{f.full_name}{isVerifiedEmail(f.email) && <VerifiedBadge size={14} />}</p>
-                    <p className="text-white/40 text-xs truncate">
-                      {f.username ? `@${f.username} • ` : ""}Class {f.class} • {f.school_name}
-                    </p>
+                    <p className="text-[#2E2C2D] text-sm font-semibold truncate">{u.full_name}</p>
+                    <p className="text-[#2E2C2D]/40 text-[10px] truncate">{u.username ? `@${u.username}` : `Class ${u.class}`}</p>
                   </div>
-                </Link>
+                </button>
               ))}
             </div>
-          ) : (
-            <p className="text-white/40 text-sm text-center py-6">Not following anyone yet</p>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* ── Search Friends Dialog ── */}
+      {/* ── Search Users Dialog ── */}
       <Dialog open={showSearch} onOpenChange={setShowSearch}>
         <DialogContent
-          className="border-white/[0.15] max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[80vh] overflow-y-auto overflow-x-hidden mx-4"
+          className="border-[#2E2C2D]/[0.08] max-w-md max-h-[70vh] overflow-y-auto"
           style={{
-            background: "linear-gradient(135deg, #291A30 0%, #5B0329 38%, #31065A 100%)",
-            boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+            background: "#FEFEFE",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.15)",
           }}
         >
           <DialogHeader>
-            <DialogTitle className="text-white font-bold" style={{ fontFamily: "Poppins, sans-serif" }}>Find Friends</DialogTitle>
+            <DialogTitle className="text-[#2E2C2D] font-bold" style={{ fontFamily: "Poppins" }}>Find Friends</DialogTitle>
           </DialogHeader>
-          <div className="mt-2 space-y-4">
-            <div className="flex gap-2">
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, email, or username..."
-                className="bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/30 flex-1"
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleSearch}
-                disabled={searchLoading}
-                className="px-4 py-2 rounded-xl font-bold text-sm text-white"
-                style={{
-                  background: "linear-gradient(135deg, #EC4899, #DB2777)",
-                  boxShadow: "0 4px 16px rgba(236,72,153,0.3)",
-                }}
+          <div className="flex items-center gap-2 mt-2">
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="Search by name, email, or username..."
+              className="bg-[#2E2C2D]/[0.03] border-[#2E2C2D]/[0.08] text-[#2E2C2D] placeholder:text-[#2E2C2D]/30"
+            />
+            <Button
+              onClick={handleSearch}
+              disabled={searchLoading}
+              className="rounded-full px-4 text-white"
+              style={{ background: "linear-gradient(135deg, #EC4899, #6A68DF)" }}
+            >
+              {searchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            </Button>
+          </div>
+          <div className="space-y-2 mt-3">
+            {searchResults.map((u) => (
+              <button
+                key={u.user_id}
+                onClick={() => { setShowSearch(false); navigate(`/profile?id=${u.user_id}`); }}
+                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#2E2C2D]/[0.03] transition-colors text-left"
               >
-                {searchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-              </motion.button>
-            </div>
-            {searchResults.length > 0 ? (
-              <div className="space-y-2">
-                {searchResults.map((r) => (
-                  <Link
-                    key={r.user_id}
-                    to={`/profile?id=${r.user_id}`}
-                    onClick={() => setShowSearch(false)}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.08] hover:bg-white/[0.04] transition-colors"
-                  >
-                    <div className="[&_*]:ring-0 [&_*]:ring-offset-0 [&_*]:border-0 shrink-0">
-                      <AvatarUpload userId={r.user_id} userName={r.full_name} size="sm" showUploadButton={false} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-sm truncate flex items-center gap-1">{r.full_name}{isVerifiedEmail(r.email) && <VerifiedBadge size={14} />}</p>
-                      <p className="text-white/40 text-xs truncate">
-                        {r.username ? `@${r.username} • ` : ""}Class {r.class}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : searchQuery && !searchLoading ? (
-              <p className="text-white/40 text-sm text-center py-6">No results found</p>
-            ) : null}
+                <AvatarUpload userId={u.user_id} userName={u.full_name} size="sm" showUploadButton={false} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#2E2C2D] text-sm font-semibold truncate flex items-center gap-1">
+                    {u.full_name}
+                    {isVerifiedEmail(u.email) && <VerifiedBadge size={14} />}
+                  </p>
+                  <p className="text-[#2E2C2D]/40 text-[10px] truncate">
+                    {u.username ? `@${u.username} · ` : ""}Class {u.class} · {u.school_name}
+                  </p>
+                </div>
+              </button>
+            ))}
+            {searchResults.length === 0 && searchQuery && !searchLoading && (
+              <p className="text-[#2E2C2D]/35 text-sm text-center py-6">No users found</p>
+            )}
           </div>
         </DialogContent>
       </Dialog>

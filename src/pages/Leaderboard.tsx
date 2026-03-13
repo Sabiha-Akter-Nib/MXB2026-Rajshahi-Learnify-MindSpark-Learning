@@ -173,8 +173,8 @@ const Leaderboard = () => {
         <div className="min-h-[80vh] flex flex-col items-center justify-center px-6 text-center">
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mb-6">
             <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ background: `linear-gradient(135deg, ${BRAND.purple}30, ${BRAND.pink}30)` }}>
-              <Lock className="w-10 h-10 style={{ color: BRAND.purple + '80' }}" />
+              style={{ background: `linear-gradient(135deg, ${BRAND.purple}20, ${BRAND.pink}20)` }}>
+              <Lock className="w-10 h-10" style={{ color: BRAND.purple + '60' }} />
             </div>
             <motion.img src={mascotImg} alt="mascot" className="w-28 h-28 mx-auto mb-4 drop-shadow-2xl"
               animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity }} />
@@ -204,33 +204,32 @@ const Leaderboard = () => {
 
         {/* Header */}
         <header className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white/10" asChild>
-            <Link to="/dashboard"><ArrowLeft className="w-5 h-5 text-white/70" /></Link>
+          <Button variant="ghost" size="icon" className="rounded-xl hover:bg-[#2E2C2D]/[0.04]" asChild>
+            <Link to="/dashboard"><ArrowLeft className="w-5 h-5 text-[#2E2C2D]/60" /></Link>
           </Button>
           <div className="flex-1">
-            <h1 className="text-white font-bold text-lg flex items-center gap-2">
+            <h1 className="text-[#2E2C2D] font-bold text-lg flex items-center gap-2">
               <Trophy className="w-5 h-5" style={{ color: BRAND.peach }} />
               Leaderboards
             </h1>
-            <p className="text-white/40 text-xs">National Rankings</p>
+            <p className="text-[#2E2C2D]/35 text-xs">National Rankings</p>
           </div>
         </header>
 
         {/* Your XP Progress Bar */}
         {currentUser && currentLeague && (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+          <div className="rounded-2xl border border-[#2E2C2D]/[0.06] bg-white/80 px-4 py-3" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-lg">{currentLeague.emoji}</span>
-                <span className="text-white font-semibold text-sm">{currentLeague.name}</span>
+                <span className="text-[#2E2C2D] font-semibold text-sm">{currentLeague.name}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Zap className="w-3.5 h-3.5" style={{ color: BRAND.peach }} />
-                <span className="text-white font-bold text-sm">{currentUser.totalXp.toLocaleString()} XP</span>
+                <span className="text-[#2E2C2D] font-bold text-sm">{currentUser.totalXp.toLocaleString()} XP</span>
               </div>
             </div>
-            {/* Progress bar */}
-            <div className="relative h-3 rounded-full overflow-hidden bg-white/10">
+            <div className="relative h-3 rounded-full overflow-hidden bg-[#2E2C2D]/[0.06]">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{
@@ -245,11 +244,11 @@ const Leaderboard = () => {
               />
             </div>
             <div className="flex items-center justify-between mt-1.5">
-              <span className="text-white/40 text-[10px] font-medium">{currentLeague.minXp.toLocaleString()} XP</span>
+              <span className="text-[#2E2C2D]/35 text-[10px] font-medium">{currentLeague.minXp.toLocaleString()} XP</span>
               {xpToNext > 0 ? (
-                <span className="text-white/40 text-[10px] font-medium">
+                <span className="text-[#2E2C2D]/35 text-[10px] font-medium">
                   {currentLeague.maxXp === Infinity ? "∞" : currentLeague.maxXp.toLocaleString()} XP
-                  <span className="ml-1 text-white/25">({xpToNext} to go)</span>
+                  <span className="ml-1 text-[#2E2C2D]/20">({xpToNext} to go)</span>
                 </span>
               ) : (
                 <span className="text-[10px] font-bold" style={{ color: BRAND.peach }}>MAX LEAGUE 👑</span>
@@ -259,9 +258,9 @@ const Leaderboard = () => {
         )}
 
         {/* Reset Countdown Timer */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
+        <div className="rounded-2xl border border-[#2E2C2D]/[0.06] bg-white/80 px-4 py-3 flex items-center gap-3" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
           <Clock className="w-4 h-4 flex-shrink-0" style={{ color: BRAND.peach }} />
-          <p className="text-white/50 text-xs flex-1">Resets in</p>
+          <p className="text-[#2E2C2D]/40 text-xs flex-1">Resets in</p>
           <div className="flex items-center gap-1.5">
             {[
               { val: countdown.d, label: "d" },
@@ -271,18 +270,18 @@ const Leaderboard = () => {
             ].map(({ val, label }) => (
               <div key={label} className="flex items-center gap-0.5">
                 <span
-                  className="text-white font-bold text-sm tabular-nums min-w-[22px] text-center rounded-lg px-1 py-0.5"
-                  style={{ background: "rgba(255,255,255,0.08)" }}
+                  className="text-[#2E2C2D] font-bold text-sm tabular-nums min-w-[22px] text-center rounded-lg px-1 py-0.5"
+                  style={{ background: "rgba(46,44,45,0.05)" }}
                 >
                   {String(val).padStart(2, "0")}
                 </span>
-                <span className="text-white/30 text-[10px] font-medium">{label}</span>
+                <span className="text-[#2E2C2D]/25 text-[10px] font-medium">{label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* League Tabs - Horizontal scrollable buttons */}
+        {/* League Tabs */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
           {LEAGUES.map(league => {
             const isActive = activeLeague === league.id;
@@ -295,7 +294,7 @@ const Leaderboard = () => {
                   "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0 border",
                   isActive
                     ? "text-white shadow-lg scale-[1.02]"
-                    : "text-white/50 border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
+                    : "text-[#2E2C2D]/40 border-[#2E2C2D]/[0.06] bg-white/80 hover:bg-[#2E2C2D]/[0.03]"
                 )}
                 style={isActive ? {
                   background: activeLeagueData.id === league.id ? league.gradient : undefined,
@@ -307,7 +306,7 @@ const Leaderboard = () => {
                 <span>{league.name.replace(" League", "")}</span>
                 <span className={cn(
                   "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
-                  isActive ? "bg-white/20 text-white" : "bg-white/5 text-white/30"
+                  isActive ? "bg-white/20 text-white" : "bg-[#2E2C2D]/[0.04] text-[#2E2C2D]/30"
                 )}>
                   {count}
                 </span>
@@ -317,7 +316,7 @@ const Leaderboard = () => {
         </div>
 
         {/* Active League Info Bar */}
-        <div className="rounded-2xl px-4 py-3 border border-white/10" style={{ background: activeLeagueData.bgColor }}>
+        <div className="rounded-2xl px-4 py-3 border border-[#2E2C2D]/[0.06]" style={{ background: activeLeagueData.bgColor }}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{activeLeagueData.emoji}</span>
@@ -331,23 +330,17 @@ const Leaderboard = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04]">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.08]">
               <Shield className="w-3.5 h-3.5" style={{ color: "#4ade80" }} />
               <span className="text-[10px] font-medium text-white/60">Top {activeLeagueData.safeZonePercent}% safe</span>
             </div>
           </div>
 
-          {/* Safe zone progress bar */}
           <div className="relative h-2 rounded-full overflow-hidden bg-white/10">
-            {/* Safe zone (green) */}
             <div
               className="absolute left-0 top-0 h-full rounded-l-full"
-              style={{
-                width: `${activeLeagueData.safeZonePercent}%`,
-                background: "linear-gradient(90deg, #22c55e, #4ade80)",
-              }}
+              style={{ width: `${activeLeagueData.safeZonePercent}%`, background: "linear-gradient(90deg, #22c55e, #4ade80)" }}
             />
-            {/* Neutral zone (yellow) */}
             <div
               className="absolute top-0 h-full"
               style={{
@@ -356,7 +349,6 @@ const Leaderboard = () => {
                 background: "linear-gradient(90deg, #eab308, #facc15)",
               }}
             />
-            {/* Demotion zone (red) */}
             <div
               className="absolute top-0 h-full rounded-r-full"
               style={{
@@ -365,12 +357,11 @@ const Leaderboard = () => {
                 background: "linear-gradient(90deg, #ef4444, #f87171)",
               }}
             />
-            {/* Shield icon at safe zone boundary */}
             <div
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10"
               style={{ left: `${activeLeagueData.safeZonePercent}%` }}
             >
-              <div className="w-4 h-4 rounded-full bg-[#1a1a2e] flex items-center justify-center border border-white/20">
+              <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center border border-white/30 shadow-sm">
                 <Shield className="w-2.5 h-2.5" style={{ color: "#4ade80" }} />
               </div>
             </div>
@@ -382,7 +373,7 @@ const Leaderboard = () => {
           </div>
         </div>
 
-        {/* Current user XP to next league (only if user is in this league) */}
+        {/* Current user XP to next league */}
         {currentUser && currentLeague && currentLeague.id === activeLeague && xpToNext > 0 && (
           <motion.div
             initial={{ opacity: 0, y: -5 }}
@@ -420,17 +411,16 @@ const Leaderboard = () => {
             transition={{ duration: 0.25 }}
           >
             {leagueUsers.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] py-16 text-center">
+              <div className="rounded-2xl border border-[#2E2C2D]/[0.06] bg-white/80 py-16 text-center">
                 <div className="text-4xl mb-3">{activeLeagueData.emoji}</div>
-                <p className="text-white/40 text-sm font-medium">No students in this league yet</p>
-                <p className="text-white/25 text-xs mt-1">Be the first to reach {activeLeagueData.name}!</p>
+                <p className="text-[#2E2C2D]/35 text-sm font-medium">No students in this league yet</p>
+                <p className="text-[#2E2C2D]/20 text-xs mt-1">Be the first to reach {activeLeagueData.name}!</p>
               </div>
             ) : (
               <>
                 {/* Podium */}
                 {top3.length > 0 && (
                   <div className="flex items-end justify-center gap-3 mb-4 px-4">
-                    {/* 2nd Place */}
                     {top3.length >= 2 ? (
                       <PodiumSlot
                         user={top3[1]}
@@ -443,7 +433,6 @@ const Leaderboard = () => {
                       />
                     ) : <div className="w-[30%]" />}
 
-                    {/* 1st Place */}
                     <PodiumSlot
                       user={top3[0]}
                       place={1}
@@ -455,7 +444,6 @@ const Leaderboard = () => {
                       crown
                     />
 
-                    {/* 3rd Place */}
                     {top3.length >= 3 ? (
                       <PodiumSlot
                         user={top3[2]}
@@ -488,8 +476,8 @@ const Leaderboard = () => {
                           className={cn(
                             "w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all text-left border",
                             u.isCurrentUser
-                              ? "border-white/20 bg-white/[0.08]"
-                              : "border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.06]",
+                              ? "border-[#EC4899]/20 bg-[#EC4899]/[0.05]"
+                              : "border-[#2E2C2D]/[0.04] bg-white/80 hover:bg-[#2E2C2D]/[0.03]",
                             isDemotion && "opacity-60"
                           )}
                         >
@@ -502,7 +490,7 @@ const Leaderboard = () => {
                             ) : rank === 3 ? (
                               <span className="text-base">🥉</span>
                             ) : (
-                              <span className="text-white/40 text-xs font-bold">#{rank}</span>
+                              <span className="text-[#2E2C2D]/35 text-xs font-bold">#{rank}</span>
                             )}
                           </div>
 
@@ -521,7 +509,7 @@ const Leaderboard = () => {
 
                           {/* Avatar */}
                           <Avatar className="w-10 h-10 border-2 flex-shrink-0" style={{
-                            borderColor: u.isCurrentUser ? BRAND.purple + "80" : "rgba(255,255,255,0.1)"
+                            borderColor: u.isCurrentUser ? BRAND.purple + "40" : "rgba(46,44,45,0.08)"
                           }}>
                             <AvatarImage src={u.avatarUrl || undefined} alt={u.displayName} />
                             <AvatarFallback className="text-white text-xs font-bold" style={{ background: activeLeagueData.gradient }}>
@@ -532,14 +520,14 @@ const Leaderboard = () => {
                           {/* Info */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className={cn("text-sm font-semibold truncate", u.isCurrentUser ? "text-white" : "text-white/80")}>
+                              <span className={cn("text-sm font-semibold truncate", u.isCurrentUser ? "text-[#2E2C2D]" : "text-[#2E2C2D]/70")}>
                                 {u.displayName}
                               </span>
                               {u.isCurrentUser && (
                                 <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: BRAND.purple }}>YOU</span>
                               )}
                             </div>
-                            <p className="text-white/35 text-[10px] truncate">
+                            <p className="text-[#2E2C2D]/30 text-[10px] truncate">
                               {u.username ? `@${u.username}` : `Class ${u.studentClass}`}{u.schoolName ? ` · ${u.schoolName}` : ""}
                             </p>
                           </div>
@@ -547,7 +535,7 @@ const Leaderboard = () => {
                           {/* XP */}
                           <div className="flex items-center gap-1 flex-shrink-0">
                             <Zap className="w-3 h-3" style={{ color: BRAND.peach }} />
-                            <span className="text-white/80 text-xs font-bold">{u.totalXp.toLocaleString()}</span>
+                            <span className="text-[#2E2C2D]/70 text-xs font-bold">{u.totalXp.toLocaleString()}</span>
                           </div>
                         </motion.button>
                       );
@@ -584,7 +572,6 @@ const PodiumSlot = ({ user, place, league, height, color, labelBg, onClick, crow
       whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.98 }}
     >
-      {/* Crown for 1st */}
       {crown && (
         <motion.div
           initial={{ y: -10, opacity: 0 }}
@@ -596,13 +583,12 @@ const PodiumSlot = ({ user, place, league, height, color, labelBg, onClick, crow
         </motion.div>
       )}
 
-      {/* Avatar */}
       <div className="relative mb-2">
         <div
           className="rounded-full p-[3px]"
           style={{ background: `linear-gradient(135deg, ${color}, ${color}90)` }}
         >
-          <Avatar className={cn("border-2 border-[#1a1a2e]", place === 1 ? "w-16 h-16" : "w-13 h-13")}>
+          <Avatar className={cn("border-2 border-white", place === 1 ? "w-16 h-16" : "w-13 h-13")}>
             <AvatarImage src={user.avatarUrl || undefined} alt={user.displayName} />
             <AvatarFallback className="text-white text-sm font-bold" style={{ background: league.gradient }}>
               {user.displayName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
@@ -611,26 +597,24 @@ const PodiumSlot = ({ user, place, league, height, color, labelBg, onClick, crow
         </div>
       </div>
 
-      {/* Name */}
-      <p className={cn("text-white font-semibold truncate max-w-full text-center", place === 1 ? "text-sm" : "text-xs")}>
+      <p className={cn("text-[#2E2C2D] font-semibold truncate max-w-full text-center", place === 1 ? "text-sm" : "text-xs")}>
         {user.displayName.split(" ")[0]}
       </p>
       {user.username && (
-        <p className="text-white/35 text-[9px] truncate max-w-full text-center">@{user.username}</p>
+        <p className="text-[#2E2C2D]/30 text-[9px] truncate max-w-full text-center">@{user.username}</p>
       )}
       <div className="flex items-center gap-1 mt-0.5">
         <Zap className="w-3 h-3" style={{ color: BRAND.peach }} />
-        <span className="text-white/70 text-[11px] font-bold">{user.totalXp.toLocaleString()}</span>
+        <span className="text-[#2E2C2D]/60 text-[11px] font-bold">{user.totalXp.toLocaleString()}</span>
       </div>
 
-      {/* Podium bar */}
       <div
         className={cn("w-full rounded-t-xl mt-2 flex items-end justify-center pb-2 border-t-2", height)}
         style={{
-          background: `linear-gradient(180deg, ${color}30, ${color}10)`,
+          background: `linear-gradient(180deg, ${color}20, ${color}08)`,
           borderColor: color,
-          borderLeft: `1px solid ${color}30`,
-          borderRight: `1px solid ${color}30`,
+          borderLeft: `1px solid ${color}20`,
+          borderRight: `1px solid ${color}20`,
         }}
       >
         <span
