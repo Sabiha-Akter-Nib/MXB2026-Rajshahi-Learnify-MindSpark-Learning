@@ -104,12 +104,12 @@ const DAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const GlassCard = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 <div
   className={cn(
-    "rounded-2xl border border-[#2E2C2D]/[0.06]",
+    "rounded-2xl border border-[#EC4899]/[0.08]",
     className
   )}
   style={{
-    background: "rgba(255,255,255,0.85)",
-    boxShadow: "0 2px 20px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)",
+    background: "rgba(255,255,255,0.88)",
+    boxShadow: "0 4px 24px rgba(236,72,153,0.06), 0 1px 3px rgba(106,104,223,0.04)",
   }}
   {...props}>
     {children}
