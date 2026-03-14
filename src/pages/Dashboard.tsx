@@ -475,7 +475,7 @@ const Dashboard = () => {
                         />
                       )}
                     </div>
-                    <span className="text-[8px] sm:text-[9px] text-[#2E2C2D]/40">{day}</span>
+                    <span className="text-[8px] sm:text-[9px] text-[#6A68DF]/50">{day}</span>
                   </div>);
               })}
             </div>
