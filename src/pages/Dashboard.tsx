@@ -192,13 +192,13 @@ const Dashboard = () => {
         from("study_sessions").
         select("xp_earned, duration_minutes, created_at").
         eq("user_id", user.id).
-        gte("created_at", weekStartDate.toISOString());
+        gte("created_at", weekStartUTC.toISOString());
 
         const { data: weeklyAssessmentsData } = await supabase.
         from("assessments").
         select("xp_earned").
         eq("user_id", user.id).
-        gte("created_at", weekStartDate.toISOString());
+        gte("created_at", weekStartUTC.toISOString());
 
         const sessionsXP = weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
         const assessmentsXP = weeklyAssessmentsData?.reduce((sum, a) => sum + (a.xp_earned || 0), 0) || 0;
