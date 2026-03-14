@@ -229,11 +229,11 @@ const Dashboard = () => {
           .from("study_sessions")
           .select("created_at, duration_minutes")
           .eq("user_id", user.id)
-          .gte("created_at", weekStartDate.toISOString());
+          .gte("created_at", weekStartUTC.toISOString());
 
         thisWeekSessions?.forEach((s) => {
           if (s.duration_minutes >= 1) {
-            const d = new Date(s.created_at);
+            const d = new Date(new Date(s.created_at).toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
             const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
             activeDays.add(bd);
           }
@@ -243,7 +243,7 @@ const Dashboard = () => {
           .from("assessments")
           .select("completed_at")
           .eq("user_id", user.id)
-          .gte("completed_at", weekStartDate.toISOString());
+          .gte("completed_at", weekStartUTC.toISOString());
 
         thisWeekAssessments?.forEach((a) => {
           const d = new Date(a.completed_at);
