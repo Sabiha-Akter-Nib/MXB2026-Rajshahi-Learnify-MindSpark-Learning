@@ -511,41 +511,47 @@ const Dashboard = () => {
         {/* ========== STAT CARDS (2 columns) ========== */}
         <div className="grid grid-cols-2 gap-4">
           {/* Total Study Time */}
-          <GlassCard className="p-3 sm:p-4 flex flex-row items-center gap-2.5 sm:gap-3">
+          <div className="rounded-2xl p-3 sm:p-4 flex flex-row items-center gap-2.5 sm:gap-3 border border-[#EC4899]/10"
+            style={{
+              background: "linear-gradient(145deg, rgba(255,255,255,0.9), rgba(253,145,217,0.08))",
+              boxShadow: "0 4px 20px rgba(236,72,153,0.08)",
+            }}>
             <div
-              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-[#EC4899]/15"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{
-                background: "linear-gradient(-45deg, rgba(236,72,153,0.08) 0%, rgba(106,104,223,0.05) 100%)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                background: "linear-gradient(135deg, rgba(236,72,153,0.15), rgba(239,185,149,0.12))",
               }}>
               <img src={statStudy3d} alt="Study time" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
             </div>
             <div className="flex-1 min-w-0 flex flex-col gap-1">
-              <h4 className="text-[#2E2C2D] font-bold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis" style={{ fontFamily: "'Poppins', sans-serif" }}>Total Study Time</h4>
-              <span className="text-[#2E2C2D] font-bold text-xl sm:text-3xl leading-none whitespace-nowrap overflow-hidden text-ellipsis">
+              <h4 className="text-[#EC4899]/70 font-semibold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis">Total Study Time</h4>
+              <span className="text-[#EC4899] font-bold text-xl sm:text-3xl leading-none whitespace-nowrap overflow-hidden text-ellipsis">
                 {formatStudyTime(weeklyStats.today_study_minutes)}
               </span>
             </div>
-          </GlassCard>
+          </div>
 
           {/* Total XP */}
-          <GlassCard className="p-3 sm:p-4 flex flex-row items-center gap-2.5 sm:gap-3">
+          <div className="rounded-2xl p-3 sm:p-4 flex flex-row items-center gap-2.5 sm:gap-3 border border-[#6A68DF]/10"
+            style={{
+              background: "linear-gradient(145deg, rgba(255,255,255,0.9), rgba(106,104,223,0.08))",
+              boxShadow: "0 4px 20px rgba(106,104,223,0.08)",
+            }}>
             <div
-              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-[#6A68DF]/15"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{
-                background: "linear-gradient(-45deg, rgba(106,104,223,0.08) 0%, rgba(236,72,153,0.05) 100%)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                background: "linear-gradient(135deg, rgba(106,104,223,0.15), rgba(236,72,153,0.08))",
               }}>
               <img src={statXp3d} alt="XP" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
             </div>
             <div className="flex-1 min-w-0 flex flex-col gap-1">
-              <h4 className="text-[#2E2C2D] font-bold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis" style={{ fontFamily: "'Poppins', sans-serif" }}>Total XP Points</h4>
+              <h4 className="text-[#6A68DF]/70 font-semibold text-xs sm:text-base leading-tight whitespace-nowrap overflow-hidden text-ellipsis">Total XP Points</h4>
               <div className="flex items-center gap-1">
-                <span className="text-[#2E2C2D] font-bold text-xl sm:text-3xl leading-none whitespace-nowrap">{stats?.total_xp || 0}</span>
+                <span className="text-[#6A68DF] font-bold text-xl sm:text-3xl leading-none whitespace-nowrap">{stats?.total_xp || 0}</span>
                 <img src={statXp3d} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain flex-shrink-0" />
               </div>
             </div>
-          </GlassCard>
+          </div>
         </div>
 
         {/* ========== SUBJECT PROGRESS ========== */}
