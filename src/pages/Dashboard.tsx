@@ -399,7 +399,7 @@ const Dashboard = () => {
                 
                   <img src={mod.img} alt={mod.label} className="w-14 h-14 sm:w-20 sm:h-20 object-contain" />
                 </motion.div>
-                <span className="text-[#2E2C2D]/70 text-[11px] sm:text-sm text-center leading-tight font-normal whitespace-nowrap">{mod.label}</span>
+                <span className="text-[#6A68DF]/80 text-[11px] sm:text-sm text-center leading-tight font-medium whitespace-nowrap">{mod.label}</span>
               </Link>
             )}
           </div>
