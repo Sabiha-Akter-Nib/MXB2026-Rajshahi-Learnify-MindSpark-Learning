@@ -175,7 +175,7 @@ const Dashboard = () => {
         });
 
         // Use BD timezone (UTC+6) for week boundaries
-        const bdNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+        const bdNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
         const jsDay = bdNow.getDay();
         const bdDayIndex = jsDay === 6 ? 0 : jsDay + 1;
         const weekStartDate = new Date(bdNow);
