@@ -174,15 +174,19 @@ const Dashboard = () => {
           current_streak: streak.currentStreak ?? statsData2?.data?.current_streak ?? 0,
         });
 
-        const now = new Date();
-        const jsDay = now.getDay();
+        // Use BD timezone (UTC+6) for week boundaries
+        const bdNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+        const jsDay = bdNow.getDay();
         const bdDayIndex = jsDay === 6 ? 0 : jsDay + 1;
-        const weekStartDate = new Date(now);
+        const weekStartDate = new Date(bdNow);
         weekStartDate.setDate(weekStartDate.getDate() - bdDayIndex);
         weekStartDate.setHours(0, 0, 0, 0);
+        // Convert BD midnight back to UTC for Supabase query
+        const weekStartUTC = new Date(weekStartDate.getTime() - 6 * 60 * 60 * 1000);
 
-        const todayStart = new Date();
+        const todayStart = new Date(bdNow);
         todayStart.setHours(0, 0, 0, 0);
+        const todayStartUTC = new Date(todayStart.getTime() - 6 * 60 * 60 * 1000);
 
         const { data: weeklySessionsData } = await supabase.
         from("study_sessions").
