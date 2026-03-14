@@ -612,26 +612,30 @@ const Dashboard = () => {
 
         {/* ========== ANALYTICS CTA CARD ========== */}
         <Link to="/analytics">
-          <GlassCard className="px-4 py-3 sm:px-5 sm:py-4 relative overflow-hidden" style={{ height: '130px' }}>
+          <GlassCard className="px-4 py-3 sm:px-5 sm:py-4 relative overflow-hidden" style={{
+            height: '130px',
+            background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(106,104,223,0.06))",
+            border: "1px solid rgba(106,104,223,0.1)",
+          }}>
             <div className="flex items-center gap-3 h-full">
               {/* 3D Analytics icon in glass container */}
               <div
-                className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0 border border-[#6A68DF]/15"
+                className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: "linear-gradient(-45deg, rgba(106,104,223,0.08) 0%, rgba(236,72,153,0.05) 100%)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                  background: "linear-gradient(135deg, rgba(106,104,223,0.12), rgba(236,72,153,0.08))",
                 }}>
                 <img src={analytics3d} alt="Analytics" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />
               </div>
 
               {/* Text content — constrained width, never overlaps Tugi */}
               <div className="flex-1 min-w-0 max-w-[50%] sm:max-w-[55%]">
-                <h3 className="text-[#2E2C2D] font-bold text-xs sm:text-lg leading-tight whitespace-nowrap overflow-hidden text-ellipsis">See your analytics now</h3>
-                <p className="text-[#2E2C2D]/50 text-[9px] sm:text-xs leading-snug mt-0.5 line-clamp-2">
+                <h3 className="text-[#6A68DF] font-bold text-xs sm:text-lg leading-tight whitespace-nowrap overflow-hidden text-ellipsis">See your analytics now</h3>
+                <p className="text-[#EC4899]/50 text-[9px] sm:text-xs leading-snug mt-0.5 line-clamp-2">
                   See the analytics of your improvements, performance, and blind spots
                 </p>
                 <div className="mt-1.5 sm:mt-2">
-                  <span className="inline-block px-3 py-1 sm:px-5 sm:py-1.5 rounded-full bg-[#EC4899]/10 border border-[#EC4899]/20 text-[#EC4899] text-[10px] sm:text-sm font-semibold">
+                  <span className="inline-block px-3 py-1 sm:px-5 sm:py-1.5 rounded-full text-white text-[10px] sm:text-sm font-semibold"
+                    style={{ background: "linear-gradient(135deg, #EC4899, #6A68DF)", boxShadow: "0 2px 12px rgba(236,72,153,0.3)" }}>
                     Let's see
                   </span>
                 </div>
