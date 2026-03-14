@@ -355,30 +355,30 @@ const Dashboard = () => {
               <AvatarUpload userId={user.id} userName={displayName} size="sm" showUploadButton={false} />
             </div>
             <div>
-              <h1 className="text-[#2E2C2D] font-semibold text-base sm:text-lg leading-tight flex items-center gap-1">Hi, {displayName}!{isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}</h1>
-              <p className="text-[#2E2C2D]/50 text-xs font-normal">{classText}, বাংলা ভার্সন</p>
+              <h1 className="text-[#6A68DF] font-semibold text-base sm:text-lg leading-tight flex items-center gap-1">Hi, {displayName}!{isVerifiedEmail(user?.email) && <VerifiedBadge size={16} />}</h1>
+              <p className="text-[#EC4899]/60 text-xs font-normal">{classText}, বাংলা ভার্সন</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
               <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#2E2C2D]/[0.08]"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#EC4899]/15"
                 style={{
-                  background: "rgba(255,255,255,0.9)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(253,145,217,0.08))",
+                  boxShadow: "0 2px 10px rgba(236,72,153,0.1)",
                 }}
               >
                 <img src={statStreakGlass} alt="" className="w-5 h-5 object-contain" />
-                <span className="text-[#2E2C2D] font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{currentStreak}</span>
+                <span className="text-[#EC4899] font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{currentStreak}</span>
               </div>
               <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#2E2C2D]/[0.08]"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#6A68DF]/15"
                 style={{
-                  background: "rgba(255,255,255,0.9)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(106,104,223,0.08))",
+                  boxShadow: "0 2px 10px rgba(106,104,223,0.1)",
                 }}
               >
                 <img src={statXp3d} alt="" className="w-5 h-5 object-contain" />
-                <span className="text-[#2E2C2D] font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{stats?.total_xp || 0}</span>
+                <span className="text-[#6A68DF] font-bold text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>{stats?.total_xp || 0}</span>
               </div>
             </div>
         </header>
