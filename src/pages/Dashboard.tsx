@@ -562,11 +562,11 @@ const Dashboard = () => {
             <div
               className="flex-1 rounded-xl p-3"
               style={{
-                background: "linear-gradient(135deg, rgba(253,145,217,0.2) 0%, rgba(175,45,80,0.15) 100%)"
+                background: "linear-gradient(135deg, rgba(106,104,223,0.1) 0%, rgba(236,72,153,0.08) 100%)"
               }}>
               
-              <h3 className="text-[#2E2C2D] font-semibold text-sm sm:text-base">Your subject-wise progress</h3>
-              <p className="text-[#2E2C2D]/50 text-[10px] sm:text-xs">
+              <h3 className="text-[#6A68DF] font-semibold text-sm sm:text-base">Your subject-wise progress</h3>
+              <p className="text-[#EC4899]/50 text-[10px] sm:text-xs">
                 Track your progress and check exam readiness
               </p>
             </div>
@@ -574,7 +574,7 @@ const Dashboard = () => {
 
           {/* Subject grid */}
           {subjects.length === 0 ?
-          <div className="text-center py-8 text-[#2E2C2D]/40 text-sm">No subjects found for your class.</div> :
+          <div className="text-center py-8 text-[#6A68DF]/40 text-sm">No subjects found for your class.</div> :
 
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {subjects.map((subject, index) =>
@@ -583,21 +583,25 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="rounded-xl px-2 py-1.5 sm:px-3 sm:py-3 border border-[#2E2C2D]/[0.06] bg-[#2E2C2D]/[0.02] flex flex-row items-center gap-2 sm:gap-2.5">
+              className="rounded-xl px-2 py-1.5 sm:px-3 sm:py-3 flex flex-row items-center gap-2 sm:gap-2.5"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,255,255,0.8), rgba(106,104,223,0.04))",
+                border: "1px solid rgba(106,104,223,0.08)",
+              }}>
               
                   <img src={subjectIcon3d} alt="" className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 object-contain" />
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <span className="text-[#2E2C2D] text-[11px] sm:text-sm font-medium truncate">{subject.name}</span>
+                    <span className="text-[#6A68DF] text-[11px] sm:text-sm font-medium truncate">{subject.name}</span>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 rounded-full bg-[#2E2C2D]/[0.06] overflow-hidden">
+                      <div className="flex-1 h-1.5 rounded-full bg-[#6A68DF]/[0.08] overflow-hidden">
                         <motion.div
                           className="h-full rounded-full"
-                          style={{ background: "linear-gradient(90deg, #E040A0, #A040E0)" }}
+                          style={{ background: "linear-gradient(90deg, #EC4899, #6A68DF)" }}
                           initial={{ width: 0 }}
                           animate={{ width: `${subject.progress}%` }}
                           transition={{ duration: 1, delay: 0.2 + index * 0.1 }} />
                       </div>
-                      <span className="text-[10px] text-[#2E2C2D]/40 font-medium">{subject.progress}%</span>
+                      <span className="text-[10px] text-[#EC4899]/60 font-medium">{subject.progress}%</span>
                     </div>
                   </div>
                 </motion.div>
