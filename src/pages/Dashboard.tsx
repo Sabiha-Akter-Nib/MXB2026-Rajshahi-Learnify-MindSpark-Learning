@@ -406,9 +406,15 @@ const Dashboard = () => {
         </GlassCard>
 
         {/* ========== STREAK CARD ========== */}
-        <GlassCard className="px-3 py-3 sm:px-4 sm:py-3.5 flex items-center gap-3">
+        <GlassCard className="px-3 py-3 sm:px-4 sm:py-3.5 flex items-center gap-3"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.92), rgba(253,145,217,0.06))",
+            boxShadow: "0 4px 24px rgba(236,72,153,0.08), 0 1px 3px rgba(106,104,223,0.04)",
+            border: "1px solid rgba(236,72,153,0.1)",
+          }}>
           {/* Fire with overlaid number in rounded container */}
-          <div className="flex-shrink-0 relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#EC4899]/10 flex items-center justify-center">
+          <div className="flex-shrink-0 relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, rgba(236,72,153,0.12), rgba(106,104,223,0.08))" }}>
             <motion.img
               src={streakFlame3d}
               alt="Streak Fire"
@@ -416,22 +422,22 @@ const Dashboard = () => {
               animate={currentStreak > 0 ? { scale: [1, 1.08, 1], rotate: [0, -3, 3, 0] } : {}}
               transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }} />
             <span
-              className="absolute bottom-0 text-2xl sm:text-3xl text-[#2E2C2D] drop-shadow-[0_2px_4px_rgba(0,0,0,0.15)]"
+              className="absolute bottom-0 text-2xl sm:text-3xl text-[#EC4899] drop-shadow-[0_2px_4px_rgba(236,72,153,0.3)]"
               style={{
                 fontFamily: "'Black Han Sans', sans-serif",
-                WebkitTextStroke: '1.5px rgba(236,72,153,0.4)',
+                WebkitTextStroke: '1px rgba(106,104,223,0.3)',
               }}>
               {currentStreak}
             </span>
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="text-[#2E2C2D] text-sm sm:text-lg leading-snug font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
+            <h3 className="text-[#6A68DF] text-sm sm:text-lg leading-snug font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
               {currentStreak > 0 ?
               `${currentStreak} days streak, well done!` :
               "0 days streak, study to achieve!"}
             </h3>
-            <p className="text-[#2E2C2D]/50 mb-2 font-light text-[11px] sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">{streakComment}</p>
+            <p className="text-[#EC4899]/60 mb-2 font-light text-[11px] sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">{streakComment}</p>
             <div className="flex items-center gap-2 sm:gap-2.5">
               {DAYS_EN.map((day, i) => {
                 const bdIndex = dayMapping[i];
