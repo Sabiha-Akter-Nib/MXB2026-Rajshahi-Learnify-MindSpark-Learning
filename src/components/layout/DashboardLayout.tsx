@@ -1,5 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import DashboardBackground from "@/components/dashboard/DashboardBackground";
 import { Menu } from "lucide-react";
 
 interface DashboardLayoutProps {
