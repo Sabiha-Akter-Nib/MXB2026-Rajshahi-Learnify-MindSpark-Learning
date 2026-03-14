@@ -246,7 +246,7 @@ const Dashboard = () => {
           .gte("completed_at", weekStartUTC.toISOString());
 
         thisWeekAssessments?.forEach((a) => {
-          const d = new Date(a.completed_at);
+          const d = new Date(new Date(a.completed_at).toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
           const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
           activeDays.add(bd);
         });
