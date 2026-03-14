@@ -206,14 +206,14 @@ const Dashboard = () => {
         const weeklyMinutes = weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
 
         const todaySessionMinutes = weeklySessionsData?.reduce((sum, s) => {
-          return new Date(s.created_at) >= todayStart ? sum + (s.duration_minutes || 0) : sum;
+          return new Date(s.created_at) >= todayStartUTC ? sum + (s.duration_minutes || 0) : sum;
         }, 0) || 0;
 
         const { data: todayAssessments } = await supabase.
         from("assessments").
         select("id, time_taken_seconds").
         eq("user_id", user.id).
-        gte("completed_at", todayStart.toISOString());
+        gte("completed_at", todayStartUTC.toISOString());
 
         const todayAssessmentMinutes = todayAssessments?.reduce((sum, a) => {
           return sum + Math.max(1, Math.round((a.time_taken_seconds || 60) / 60));
