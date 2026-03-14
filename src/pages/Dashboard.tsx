@@ -174,27 +174,31 @@ const Dashboard = () => {
           current_streak: streak.currentStreak ?? statsData2?.data?.current_streak ?? 0,
         });
 
-        const now = new Date();
-        const jsDay = now.getDay();
+        // Use BD timezone (UTC+6) for week boundaries
+        const bdNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+        const jsDay = bdNow.getDay();
         const bdDayIndex = jsDay === 6 ? 0 : jsDay + 1;
-        const weekStartDate = new Date(now);
+        const weekStartDate = new Date(bdNow);
         weekStartDate.setDate(weekStartDate.getDate() - bdDayIndex);
         weekStartDate.setHours(0, 0, 0, 0);
+        // Convert BD midnight back to UTC for Supabase query
+        const weekStartUTC = new Date(weekStartDate.getTime() - 6 * 60 * 60 * 1000);
 
-        const todayStart = new Date();
+        const todayStart = new Date(bdNow);
         todayStart.setHours(0, 0, 0, 0);
+        const todayStartUTC = new Date(todayStart.getTime() - 6 * 60 * 60 * 1000);
 
         const { data: weeklySessionsData } = await supabase.
         from("study_sessions").
         select("xp_earned, duration_minutes, created_at").
         eq("user_id", user.id).
-        gte("created_at", weekStartDate.toISOString());
+        gte("created_at", weekStartUTC.toISOString());
 
         const { data: weeklyAssessmentsData } = await supabase.
         from("assessments").
         select("xp_earned").
         eq("user_id", user.id).
-        gte("created_at", weekStartDate.toISOString());
+        gte("created_at", weekStartUTC.toISOString());
 
         const sessionsXP = weeklySessionsData?.reduce((sum, s) => sum + (s.xp_earned || 0), 0) || 0;
         const assessmentsXP = weeklyAssessmentsData?.reduce((sum, a) => sum + (a.xp_earned || 0), 0) || 0;
@@ -202,14 +206,14 @@ const Dashboard = () => {
         const weeklyMinutes = weeklySessionsData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
 
         const todaySessionMinutes = weeklySessionsData?.reduce((sum, s) => {
-          return new Date(s.created_at) >= todayStart ? sum + (s.duration_minutes || 0) : sum;
+          return new Date(s.created_at) >= todayStartUTC ? sum + (s.duration_minutes || 0) : sum;
         }, 0) || 0;
 
         const { data: todayAssessments } = await supabase.
         from("assessments").
         select("id, time_taken_seconds").
         eq("user_id", user.id).
-        gte("completed_at", todayStart.toISOString());
+        gte("completed_at", todayStartUTC.toISOString());
 
         const todayAssessmentMinutes = todayAssessments?.reduce((sum, a) => {
           return sum + Math.max(1, Math.round((a.time_taken_seconds || 60) / 60));
@@ -225,11 +229,11 @@ const Dashboard = () => {
           .from("study_sessions")
           .select("created_at, duration_minutes")
           .eq("user_id", user.id)
-          .gte("created_at", weekStartDate.toISOString());
+          .gte("created_at", weekStartUTC.toISOString());
 
         thisWeekSessions?.forEach((s) => {
           if (s.duration_minutes >= 1) {
-            const d = new Date(s.created_at);
+            const d = new Date(new Date(s.created_at).toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
             const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
             activeDays.add(bd);
           }
@@ -239,10 +243,10 @@ const Dashboard = () => {
           .from("assessments")
           .select("completed_at")
           .eq("user_id", user.id)
-          .gte("completed_at", weekStartDate.toISOString());
+          .gte("completed_at", weekStartUTC.toISOString());
 
         thisWeekAssessments?.forEach((a) => {
-          const d = new Date(a.completed_at);
+          const d = new Date(new Date(a.completed_at).toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
           const bd = d.getDay() === 6 ? 0 : d.getDay() + 1;
           activeDays.add(bd);
         });

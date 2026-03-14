@@ -1,5 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import DashboardBackground from "@/components/dashboard/DashboardBackground";
 import { Menu } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -10,6 +11,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full" style={{ background: "#FEFEFE" }}>
+        <DashboardBackground />
         <AppSidebar />
         <div className="flex-1 flex flex-col min-h-screen relative min-w-0 overflow-x-hidden">
           {/* Mobile-only top bar with sidebar trigger */}
